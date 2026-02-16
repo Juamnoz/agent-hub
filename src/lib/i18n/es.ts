@@ -278,6 +278,33 @@ export const es: Translations = {
     deleteAccountWarning:
       "Todos tus agentes, FAQs y configuraciones serán eliminados permanentemente.",
   },
+  socialLinks: {
+    title: "Redes sociales y sitio web",
+    description:
+      "Agrega las URLs de las redes sociales y sitio web de tu hotel para que el agente pueda aprender de la información publicada.",
+    website: "Sitio web",
+    websitePlaceholder: "https://www.tuhotel.com",
+    facebook: "Facebook",
+    facebookPlaceholder: "https://facebook.com/tuhotel",
+    instagram: "Instagram",
+    instagramPlaceholder: "https://instagram.com/tuhotel",
+    tiktok: "TikTok",
+    tiktokPlaceholder: "https://tiktok.com/@tuhotel",
+    tripadvisor: "TripAdvisor",
+    tripadvisorPlaceholder: "https://tripadvisor.com/Hotel-TuHotel",
+    googleMaps: "Google Maps",
+    googleMapsPlaceholder: "https://maps.google.com/?cid=...",
+    scrapingTitle: "Scraping de información",
+    scrapingDescription:
+      "Extrae automáticamente la información de tu sitio web y redes sociales para entrenar al agente con datos actualizados de tu hotel.",
+    scrapeNow: "Extraer información ahora",
+    scraping: "Extrayendo información...",
+    scraped: "Última extracción",
+    scrapeSuccess: "Información extraída correctamente. El agente se actualizará con los nuevos datos.",
+    scrapeError: "Error al extraer la información. Verifica las URLs e intenta de nuevo.",
+    noWebsite: "Agrega al menos la URL de tu sitio web para poder extraer información.",
+    saved: "Redes sociales guardadas correctamente",
+  },
   agentSettings: {
     title: "Configuración del agente",
     configure: "Configurar",

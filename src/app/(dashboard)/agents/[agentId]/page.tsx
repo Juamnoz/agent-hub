@@ -11,6 +11,7 @@ import {
   Smartphone,
   BarChart3,
   Pencil,
+  Globe,
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -72,6 +73,11 @@ export default function AgentDetailPage({
     { label: t.agents.overview, href: `/agents/${agentId}`, icon: BarChart3 },
     { label: t.faqEditor.title, href: `/agents/${agentId}/faqs`, icon: HelpCircle },
     { label: t.agentSettings.title, href: `/agents/${agentId}/settings`, icon: Settings },
+    {
+      label: t.socialLinks.title,
+      href: `/agents/${agentId}/social`,
+      icon: Globe,
+    },
     {
       label: t.whatsapp.title,
       href: `/agents/${agentId}/whatsapp`,

@@ -278,6 +278,33 @@ export const en: Translations = {
     deleteAccountWarning:
       "All your agents, FAQs, and settings will be permanently deleted.",
   },
+  socialLinks: {
+    title: "Social media & website",
+    description:
+      "Add your hotel's social media and website URLs so the agent can learn from published information.",
+    website: "Website",
+    websitePlaceholder: "https://www.yourhotel.com",
+    facebook: "Facebook",
+    facebookPlaceholder: "https://facebook.com/yourhotel",
+    instagram: "Instagram",
+    instagramPlaceholder: "https://instagram.com/yourhotel",
+    tiktok: "TikTok",
+    tiktokPlaceholder: "https://tiktok.com/@yourhotel",
+    tripadvisor: "TripAdvisor",
+    tripadvisorPlaceholder: "https://tripadvisor.com/Hotel-YourHotel",
+    googleMaps: "Google Maps",
+    googleMapsPlaceholder: "https://maps.google.com/?cid=...",
+    scrapingTitle: "Information scraping",
+    scrapingDescription:
+      "Automatically extract information from your website and social media to train the agent with up-to-date hotel data.",
+    scrapeNow: "Scrape information now",
+    scraping: "Scraping information...",
+    scraped: "Last scraped",
+    scrapeSuccess: "Information extracted successfully. The agent will be updated with the new data.",
+    scrapeError: "Error extracting information. Check the URLs and try again.",
+    noWebsite: "Add at least your website URL to extract information.",
+    saved: "Social links saved successfully",
+  },
   agentSettings: {
     title: "Agent settings",
     configure: "Configure",

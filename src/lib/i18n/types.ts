@@ -196,6 +196,31 @@ export interface Translations {
     deleteAccountConfirm: string;
     deleteAccountWarning: string;
   };
+  socialLinks: {
+    title: string;
+    description: string;
+    website: string;
+    websitePlaceholder: string;
+    facebook: string;
+    facebookPlaceholder: string;
+    instagram: string;
+    instagramPlaceholder: string;
+    tiktok: string;
+    tiktokPlaceholder: string;
+    tripadvisor: string;
+    tripadvisorPlaceholder: string;
+    googleMaps: string;
+    googleMapsPlaceholder: string;
+    scrapingTitle: string;
+    scrapingDescription: string;
+    scrapeNow: string;
+    scraping: string;
+    scraped: string;
+    scrapeSuccess: string;
+    scrapeError: string;
+    noWebsite: string;
+    saved: string;
+  };
   agentSettings: {
     title: string;
     configure: string;

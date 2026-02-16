@@ -1,5 +1,14 @@
 export type AgentStatus = "active" | "inactive" | "setup";
 
+export interface SocialLinks {
+  website?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
+  tripadvisor?: string;
+  googleMaps?: string;
+}
+
 export interface Agent {
   id: string;
   userId: string;
@@ -11,6 +20,7 @@ export interface Agent {
   language: string;
   whatsappConnected: boolean;
   whatsappPhoneNumber?: string;
+  socialLinks?: SocialLinks;
   messageCount: number;
   faqCount: number;
   createdAt: string;
@@ -80,6 +90,13 @@ export const mockAgents: Agent[] = [
     language: "es",
     whatsappConnected: true,
     whatsappPhoneNumber: "+52 998 123 4567",
+    socialLinks: {
+      website: "https://hotelplayaazul.com",
+      facebook: "https://facebook.com/hotelplayaazul",
+      instagram: "https://instagram.com/hotelplayaazul",
+      tripadvisor: "https://tripadvisor.com/Hotel-Playa-Azul",
+      googleMaps: "https://maps.google.com/?cid=123456789",
+    },
     messageCount: 1247,
     faqCount: 8,
     createdAt: "2025-10-15T08:00:00Z",

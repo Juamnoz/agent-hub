@@ -24,6 +24,8 @@ function usePageTitle(pathname: string): string {
   if (pathname.match(/^\/agents\/[^/]+\/settings$/)) return t.agentSettings.title;
   if (pathname.match(/^\/agents\/[^/]+\/whatsapp$/)) return t.whatsapp.title;
   if (pathname.match(/^\/agents\/[^/]+\/analytics$/)) return t.analytics.title;
+  if (pathname.match(/^\/agents\/[^/]+\/conversations$/)) return t.conversations.title;
+  if (pathname.match(/^\/agents\/[^/]+\/crm$/)) return t.crm.title;
   if (pathname.match(/^\/agents\/[^/]+$/)) return t.agents.overview;
   return "Agent Hub";
 }

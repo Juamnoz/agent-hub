@@ -3,13 +3,27 @@ import {
   type Agent,
   type FAQ,
   type HotelContact,
+  type Conversation,
+  type ConversationTag,
+  type Message,
+  type CRMClient,
   type DashboardStats,
   type WeeklyMessageData,
+  type Integration,
+  type AlgorithmType,
+  type CommunicationStyle,
   mockAgents,
   mockFaqs,
   mockContacts,
+  mockConversations,
+  mockMessages,
+  mockConversationTags,
+  mockCRMClients,
   mockDashboardStats,
   mockWeeklyMessages,
+  mockIntegrations,
+  PLAN_INTEGRATION_LIMITS,
+  CURRENT_PLAN,
 } from "@/lib/mock-data";
 import { sendWebhook } from "@/lib/webhook";
 
@@ -18,6 +32,11 @@ interface AgentStore {
   currentAgent: Agent | null;
   faqs: FAQ[];
   contacts: HotelContact[];
+  conversations: Conversation[];
+  messages: Message[];
+  conversationTags: ConversationTag[];
+  clients: CRMClient[];
+  integrations: Integration[];
   stats: DashboardStats;
   weeklyMessages: WeeklyMessageData[];
 
@@ -44,6 +63,32 @@ interface AgentStore {
   updateContact: (id: string, updates: Partial<HotelContact>) => void;
   deleteContact: (id: string) => void;
 
+  // Conversations
+  loadConversations: (agentId: string) => void;
+  loadMessages: (conversationId: string) => void;
+  toggleConversationMode: (conversationId: string) => void;
+  setConversationStatus: (conversationId: string, status: import("@/lib/mock-data").ConversationStatus) => void;
+  resolveConversation: (conversationId: string) => void;
+  addMessageToConversation: (conversationId: string, content: string) => void;
+  addTagToConversation: (conversationId: string, tag: string) => void;
+  removeTagFromConversation: (conversationId: string, tag: string) => void;
+
+  // Conversation Tags
+  loadConversationTags: (agentId: string) => void;
+  addConversationTag: (agentId: string, name: string, color: string) => void;
+
+  // CRM Clients
+  loadClients: (agentId: string) => void;
+  updateClient: (id: string, updates: Partial<CRMClient>) => void;
+
+  // Integrations
+  loadIntegrations: (agentId: string) => void;
+  toggleIntegration: (integrationId: string) => void;
+  updateIntegrationConfig: (integrationId: string, config: {
+    environment?: "sandbox" | "production";
+    credentials: Record<string, string>;
+  }) => void;
+
   // Stats
   loadStats: () => void;
 }
@@ -53,6 +98,11 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   currentAgent: null,
   faqs: [],
   contacts: [],
+  conversations: [],
+  messages: [],
+  conversationTags: [],
+  clients: [],
+  integrations: [],
   stats: mockDashboardStats,
   weeklyMessages: mockWeeklyMessages,
 
@@ -202,6 +252,171 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       contacts: state.contacts.filter((c) => c.id !== id),
     }));
     sendWebhook("settings.updated", { action: "contact.deleted", contact: toDelete });
+  },
+
+  // -----------------------------------------------------------------------
+  // Conversations
+  // -----------------------------------------------------------------------
+
+  loadConversations: (agentId) => {
+    const conversations = mockConversations.filter((c) => c.agentId === agentId);
+    set({ conversations });
+  },
+
+  loadMessages: (conversationId) => {
+    const messages = mockMessages.filter((m) => m.conversationId === conversationId);
+    set({ messages });
+  },
+
+  toggleConversationMode: (conversationId) => {
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId
+          ? {
+              ...c,
+              status: c.status === "bot_handling" ? "human_handling" as const : "bot_handling" as const,
+            }
+          : c
+      ),
+    }));
+  },
+
+  setConversationStatus: (conversationId, status) => {
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId ? { ...c, status } : c
+      ),
+    }));
+  },
+
+  resolveConversation: (conversationId) => {
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId ? { ...c, status: "resolved" as const } : c
+      ),
+    }));
+  },
+
+  addMessageToConversation: (conversationId, content) => {
+    const conv = get().conversations.find((c) => c.id === conversationId);
+    if (!conv) return;
+    const newMessage: Message = {
+      id: crypto.randomUUID(),
+      conversationId,
+      agentId: conv.agentId,
+      role: "human",
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    set((state) => ({
+      messages: [...state.messages, newMessage],
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId
+          ? {
+              ...c,
+              messageCount: c.messageCount + 1,
+              lastMessage: content,
+              lastMessageAt: newMessage.createdAt,
+            }
+          : c
+      ),
+    }));
+  },
+
+  addTagToConversation: (conversationId, tag) => {
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId && !c.tags.includes(tag)
+          ? { ...c, tags: [...c.tags, tag] }
+          : c
+      ),
+    }));
+  },
+
+  removeTagFromConversation: (conversationId, tag) => {
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId
+          ? { ...c, tags: c.tags.filter((t) => t !== tag) }
+          : c
+      ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Conversation Tags
+  // -----------------------------------------------------------------------
+
+  loadConversationTags: (agentId) => {
+    const tags = mockConversationTags.filter((t) => t.agentId === agentId);
+    set({ conversationTags: tags });
+  },
+
+  addConversationTag: (agentId, name, color) => {
+    const newTag: ConversationTag = {
+      id: crypto.randomUUID(),
+      agentId,
+      name,
+      color,
+    };
+    set((state) => ({
+      conversationTags: [...state.conversationTags, newTag],
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // CRM Clients
+  // -----------------------------------------------------------------------
+
+  loadClients: (agentId) => {
+    const clients = mockCRMClients.filter((c) => c.agentId === agentId);
+    set({ clients });
+  },
+
+  updateClient: (id, updates) => {
+    set((state) => ({
+      clients: state.clients.map((c) =>
+        c.id === id ? { ...c, ...updates } : c
+      ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Integrations
+  // -----------------------------------------------------------------------
+
+  loadIntegrations: (agentId) => {
+    const integrations = mockIntegrations.filter((i) => i.agentId === agentId);
+    set({ integrations });
+  },
+
+  toggleIntegration: (integrationId) => {
+    const { integrations } = get();
+    const integration = integrations.find((i) => i.id === integrationId);
+    if (!integration) return;
+
+    // If enabling, check plan limit
+    if (!integration.enabled) {
+      const activeCount = integrations.filter((i) => i.enabled).length;
+      const limit = PLAN_INTEGRATION_LIMITS[CURRENT_PLAN];
+      if (activeCount >= limit) return;
+    }
+
+    set({
+      integrations: integrations.map((i) =>
+        i.id === integrationId ? { ...i, enabled: !i.enabled } : i
+      ),
+    });
+  },
+
+  updateIntegrationConfig: (integrationId, config) => {
+    set((state) => ({
+      integrations: state.integrations.map((i) =>
+        i.id === integrationId
+          ? { ...i, ...(config.environment ? { environment: config.environment } : {}), credentials: config.credentials, configured: true }
+          : i
+      ),
+    }));
   },
 
   // -----------------------------------------------------------------------

@@ -19,6 +19,18 @@ export interface SocialLinks {
   googleMaps?: string;
 }
 
+export type WhatsAppProvider = "meta" | "wati";
+
+export type AlgorithmType = "ecommerce" | "appointments" | "whatsapp-store" | "hotel" | "restaurant";
+
+export type CommunicationRegion = "neutral" | "colombian" | "mexican" | "argentinian";
+export type CommunicationRegister = "corporate" | "professional" | "relaxed" | "genz";
+
+export interface CommunicationStyle {
+  region: CommunicationRegion;
+  register: CommunicationRegister;
+}
+
 export interface Agent {
   id: string;
   userId: string;
@@ -30,12 +42,23 @@ export interface Agent {
   language: string;
   whatsappConnected: boolean;
   whatsappPhoneNumber?: string;
+  whatsappProvider?: WhatsAppProvider;
   socialLinks?: SocialLinks;
+  algorithmType?: AlgorithmType;
+  communicationStyle?: CommunicationStyle;
   messageCount: number;
   faqCount: number;
   createdAt: string;
   updatedAt: string;
 }
+
+export const ALGORITHM_RECOMMENDED_INTEGRATIONS: Record<AlgorithmType, string[]> = {
+  ecommerce: ["woocommerce", "shopify", "google-sheets", "gmail"],
+  appointments: ["google-calendar", "gmail"],
+  "whatsapp-store": ["google-sheets", "gmail"],
+  hotel: ["google-sheets", "google-calendar", "gmail"],
+  restaurant: ["google-calendar", "google-sheets"],
+};
 
 export interface FAQ {
   id: string;
@@ -47,6 +70,8 @@ export interface FAQ {
   isActive: boolean;
 }
 
+export type ConversationStatus = "bot_handling" | "human_handling" | "resolved";
+
 export interface Conversation {
   id: string;
   agentId: string;
@@ -54,18 +79,68 @@ export interface Conversation {
   contactName: string;
   messageCount: number;
   lastMessageAt: string;
+  lastMessage?: string;
+  status: ConversationStatus;
+  tags: string[];
+}
+
+export interface ConversationTag {
+  id: string;
+  agentId: string;
+  name: string;
+  color: string;
+}
+
+export interface CRMClient {
+  id: string;
+  agentId: string;
+  name: string;
+  phone: string;
+  email?: string;
+  firstContactAt: string;
+  lastContactAt: string;
+  totalConversations: number;
+  totalMessages: number;
+  tags: string[];
+  notes?: string;
+  status: "active" | "inactive" | "vip";
 }
 
 export interface Message {
   id: string;
   conversationId: string;
   agentId: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "human";
   content: string;
   matchedFaqId?: string;
   confidence?: number;
   createdAt: string;
 }
+
+export type PlanTier = "starter" | "pro" | "business" | "enterprise";
+
+export interface Integration {
+  id: string;
+  agentId: string;
+  name: string;
+  description: string;
+  category: "payments" | "operations" | "productivity" | "ecommerce";
+  icon: string;
+  requiredPlan: PlanTier;
+  enabled: boolean;
+  environment?: "sandbox" | "production";
+  credentials?: Record<string, string>;
+  configured?: boolean;
+}
+
+export const PLAN_INTEGRATION_LIMITS: Record<PlanTier, number> = {
+  starter: 2,
+  pro: 5,
+  business: Infinity,
+  enterprise: Infinity,
+};
+
+export const CURRENT_PLAN: PlanTier = "pro";
 
 export interface DashboardStats {
   totalAgents: number;
@@ -107,6 +182,8 @@ export const mockAgents: Agent[] = [
       tripadvisor: "https://tripadvisor.com/Hotel-Playa-Azul",
       googleMaps: "https://maps.google.com/?cid=123456789",
     },
+    algorithmType: "hotel",
+    communicationStyle: { region: "colombian", register: "professional" },
     messageCount: 1247,
     faqCount: 8,
     createdAt: "2025-10-15T08:00:00Z",
@@ -124,6 +201,8 @@ export const mockAgents: Agent[] = [
     language: "es",
     whatsappConnected: true,
     whatsappPhoneNumber: "+52 614 987 6543",
+    algorithmType: "hotel",
+    communicationStyle: { region: "neutral", register: "corporate" },
     messageCount: 834,
     faqCount: 6,
     createdAt: "2025-11-02T10:00:00Z",
@@ -140,6 +219,8 @@ export const mockAgents: Agent[] = [
     tone: "casual",
     language: "es",
     whatsappConnected: false,
+    algorithmType: "restaurant",
+    communicationStyle: { region: "mexican", register: "relaxed" },
     messageCount: 0,
     faqCount: 0,
     createdAt: "2026-02-10T14:00:00Z",
@@ -244,8 +325,11 @@ export const mockConversations: Conversation[] = [
     agentId: "agent-001",
     contactPhone: "+52 55 1234 5678",
     contactName: "Carlos Martinez",
-    messageCount: 6,
-    lastMessageAt: "2026-02-15T09:32:00Z",
+    messageCount: 9,
+    lastMessageAt: "2026-02-15T09:45:00Z",
+    lastMessage: "Carlos, te confirmo que tu habitación pet-friendly está lista para el 20 de febrero.",
+    status: "human_handling",
+    tags: ["reserva", "vip"],
   },
   {
     id: "conv-002",
@@ -254,6 +338,9 @@ export const mockConversations: Conversation[] = [
     contactName: "Sarah Johnson",
     messageCount: 4,
     lastMessageAt: "2026-02-14T18:45:00Z",
+    lastMessage: "I have noted your arrival for February 20 at 2:00 PM...",
+    status: "bot_handling",
+    tags: ["reserva"],
   },
   {
     id: "conv-003",
@@ -262,6 +349,9 @@ export const mockConversations: Conversation[] = [
     contactName: "Ana Lopez",
     messageCount: 3,
     lastMessageAt: "2026-02-14T14:20:00Z",
+    lastMessage: "Gracias!",
+    status: "resolved",
+    tags: ["info"],
   },
   {
     id: "conv-004",
@@ -270,6 +360,9 @@ export const mockConversations: Conversation[] = [
     contactName: "Roberto Diaz",
     messageCount: 5,
     lastMessageAt: "2026-02-15T07:10:00Z",
+    lastMessage: "La Ruta del Bosque por favor, para 2 personas.",
+    status: "bot_handling",
+    tags: ["reserva", "urgente"],
   },
   {
     id: "conv-005",
@@ -278,6 +371,9 @@ export const mockConversations: Conversation[] = [
     contactName: "James Wilson",
     messageCount: 2,
     lastMessageAt: "2026-02-13T22:05:00Z",
+    lastMessage: "Our cancellation policy allows free cancellation up to 48 hours before...",
+    status: "resolved",
+    tags: ["info"],
   },
 ];
 
@@ -343,6 +439,34 @@ export const mockMessages: Message[] = [
     matchedFaqId: "faq-006",
     confidence: 0.97,
     createdAt: "2026-02-15T09:31:03Z",
+  },
+
+  // Conversation 001 - Human takeover messages
+  {
+    id: "msg-006b",
+    conversationId: "conv-001",
+    agentId: "agent-001",
+    role: "human",
+    content:
+      "Carlos, te confirmo que tu habitación pet-friendly está lista para el 20 de febrero. Te asignamos la 305 con vista al mar.",
+    createdAt: "2026-02-15T09:35:00Z",
+  },
+  {
+    id: "msg-006c",
+    conversationId: "conv-001",
+    agentId: "agent-001",
+    role: "user",
+    content: "Excelente, muchas gracias por la atención personalizada!",
+    createdAt: "2026-02-15T09:40:00Z",
+  },
+  {
+    id: "msg-006d",
+    conversationId: "conv-001",
+    agentId: "agent-001",
+    role: "human",
+    content:
+      "Con gusto Carlos. También te incluimos early check-in a las 12 PM sin cargo adicional. Te esperamos!",
+    createdAt: "2026-02-15T09:45:00Z",
   },
 
   // Conversation 002 - Sarah Johnson
@@ -478,6 +602,124 @@ export const mockMessages: Message[] = [
     confidence: 0.91,
     createdAt: "2026-02-13T22:00:05Z",
   },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Conversation Tags
+// ---------------------------------------------------------------------------
+
+export const mockConversationTags: ConversationTag[] = [
+  { id: "tag-001", agentId: "agent-001", name: "reserva", color: "#3b82f6" },
+  { id: "tag-002", agentId: "agent-001", name: "pedido", color: "#f59e0b" },
+  { id: "tag-003", agentId: "agent-001", name: "queja", color: "#ef4444" },
+  { id: "tag-004", agentId: "agent-001", name: "urgente", color: "#dc2626" },
+  { id: "tag-005", agentId: "agent-001", name: "info", color: "#6b7280" },
+  { id: "tag-006", agentId: "agent-001", name: "vip", color: "#8b5cf6" },
+  { id: "tag-007", agentId: "agent-002", name: "reserva", color: "#3b82f6" },
+  { id: "tag-008", agentId: "agent-002", name: "urgente", color: "#dc2626" },
+  { id: "tag-009", agentId: "agent-002", name: "info", color: "#6b7280" },
+  { id: "tag-010", agentId: "agent-002", name: "queja", color: "#ef4444" },
+];
+
+// ---------------------------------------------------------------------------
+// Mock CRM Clients
+// ---------------------------------------------------------------------------
+
+export const mockCRMClients: CRMClient[] = [
+  {
+    id: "client-001",
+    agentId: "agent-001",
+    name: "Carlos Martinez",
+    phone: "+52 55 1234 5678",
+    email: "carlos.martinez@email.com",
+    firstContactAt: "2026-01-10T14:00:00Z",
+    lastContactAt: "2026-02-15T09:32:00Z",
+    totalConversations: 3,
+    totalMessages: 18,
+    tags: ["frecuente", "vip"],
+    notes: "Huésped frecuente. Prefiere habitaciones con vista al mar. Viaja con mascota pequeña.",
+    status: "vip",
+  },
+  {
+    id: "client-002",
+    agentId: "agent-001",
+    name: "Sarah Johnson",
+    phone: "+1 310 555 0199",
+    email: "sarah.j@gmail.com",
+    firstContactAt: "2026-02-14T18:30:00Z",
+    lastContactAt: "2026-02-14T18:45:00Z",
+    totalConversations: 1,
+    totalMessages: 4,
+    tags: ["nuevo"],
+    notes: "Primera visita. Llega el 20 de febrero. Necesita traslado aeropuerto.",
+    status: "active",
+  },
+  {
+    id: "client-003",
+    agentId: "agent-001",
+    name: "Ana Lopez",
+    phone: "+52 33 9876 5432",
+    firstContactAt: "2026-02-14T14:15:00Z",
+    lastContactAt: "2026-02-14T14:20:00Z",
+    totalConversations: 1,
+    totalMessages: 3,
+    tags: ["nuevo"],
+    status: "active",
+  },
+  {
+    id: "client-004",
+    agentId: "agent-002",
+    name: "Roberto Diaz",
+    phone: "+52 81 5555 1234",
+    email: "roberto.diaz@empresa.mx",
+    firstContactAt: "2025-12-20T10:00:00Z",
+    lastContactAt: "2026-02-15T07:10:00Z",
+    totalConversations: 5,
+    totalMessages: 22,
+    tags: ["frecuente", "vip"],
+    notes: "Cliente corporativo. Reserva actividades de aventura regularmente para su equipo.",
+    status: "vip",
+  },
+  {
+    id: "client-005",
+    agentId: "agent-002",
+    name: "James Wilson",
+    phone: "+44 7700 900123",
+    email: "j.wilson@uk.co",
+    firstContactAt: "2026-02-13T22:00:00Z",
+    lastContactAt: "2026-02-13T22:05:00Z",
+    totalConversations: 1,
+    totalMessages: 2,
+    tags: ["nuevo"],
+    status: "inactive",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Integrations
+// ---------------------------------------------------------------------------
+
+export const mockIntegrations: Integration[] = [
+  // agent-001
+  { id: "int-001", agentId: "agent-001", name: "wompi", description: "Pagos en línea y recaudos", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: true, environment: "sandbox", configured: true, credentials: { publicKey: "pub_test_abc123", privateKey: "prv_test_xyz789", eventsKey: "evt_test_def456" } },
+  { id: "int-002", agentId: "agent-001", name: "bold", description: "Pasarela de pagos Colombia", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
+  { id: "int-005", agentId: "agent-001", name: "invoicing", description: "DIAN Colombia", category: "operations", icon: "FileText", requiredPlan: "business", enabled: false },
+  { id: "int-006", agentId: "agent-001", name: "logistics", description: "Seguimiento de envíos", category: "operations", icon: "Package", requiredPlan: "business", enabled: false },
+  { id: "int-013", agentId: "agent-001", name: "google-sheets", description: "Lectura de catálogos y productos", category: "productivity", icon: "Table2", requiredPlan: "pro", enabled: false },
+  { id: "int-014", agentId: "agent-001", name: "google-calendar", description: "Agenda de reservas y citas", category: "productivity", icon: "Calendar", requiredPlan: "pro", enabled: false },
+  { id: "int-015", agentId: "agent-001", name: "gmail", description: "Confirmaciones y seguimiento por email", category: "productivity", icon: "Mail", requiredPlan: "pro", enabled: false },
+  { id: "int-016", agentId: "agent-001", name: "woocommerce", description: "Catálogo y pedidos WooCommerce", category: "ecommerce", icon: "Globe", requiredPlan: "business", enabled: false },
+  { id: "int-017", agentId: "agent-001", name: "shopify", description: "Catálogo y pedidos Shopify", category: "ecommerce", icon: "ShoppingBag", requiredPlan: "business", enabled: false },
+  // agent-002
+  { id: "int-007", agentId: "agent-002", name: "wompi", description: "Pagos en línea y recaudos", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
+  { id: "int-008", agentId: "agent-002", name: "bold", description: "Pasarela de pagos Colombia", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: true, environment: "sandbox", configured: true, credentials: { apiKey: "bold_test_key_123", secretKey: "bold_test_secret_456" } },
+  { id: "int-011", agentId: "agent-002", name: "invoicing", description: "DIAN Colombia", category: "operations", icon: "FileText", requiredPlan: "business", enabled: false },
+  { id: "int-012", agentId: "agent-002", name: "logistics", description: "Seguimiento de envíos", category: "operations", icon: "Package", requiredPlan: "business", enabled: false },
+  { id: "int-018", agentId: "agent-002", name: "google-sheets", description: "Lectura de catálogos y productos", category: "productivity", icon: "Table2", requiredPlan: "pro", enabled: false },
+  { id: "int-019", agentId: "agent-002", name: "google-calendar", description: "Agenda de reservas y citas", category: "productivity", icon: "Calendar", requiredPlan: "pro", enabled: false },
+  { id: "int-020", agentId: "agent-002", name: "gmail", description: "Confirmaciones y seguimiento por email", category: "productivity", icon: "Mail", requiredPlan: "pro", enabled: false },
+  { id: "int-021", agentId: "agent-002", name: "woocommerce", description: "Catálogo y pedidos WooCommerce", category: "ecommerce", icon: "Globe", requiredPlan: "business", enabled: false },
+  { id: "int-022", agentId: "agent-002", name: "shopify", description: "Catálogo y pedidos Shopify", category: "ecommerce", icon: "ShoppingBag", requiredPlan: "business", enabled: false },
 ];
 
 // ---------------------------------------------------------------------------

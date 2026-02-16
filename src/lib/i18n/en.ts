@@ -1,0 +1,303 @@
+import type { Translations } from "./types";
+
+export const en: Translations = {
+  common: {
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    edit: "Edit",
+    create: "Create",
+    back: "Back",
+    loading: "Loading...",
+    notFound: "Not found",
+    signOut: "Sign out",
+    signIn: "Sign in",
+    getStarted: "Get started",
+    learnMore: "Learn more",
+    search: "Search",
+    noResults: "No results",
+    success: "Operation successful",
+    error: "An error occurred",
+    confirm: "Confirm",
+    language: "Language",
+  },
+  nav: {
+    dashboard: "Dashboard",
+    agents: "Agents",
+    billing: "Billing",
+    settings: "Settings",
+  },
+  landing: {
+    badge: "AI agent platform for hotels",
+    heroTitle: "Automate guest support with",
+    heroHighlight: "intelligent agents",
+    heroDescription:
+      "Create custom AI agents that answer your guests' questions via WhatsApp, 24 hours a day, 7 days a week.",
+    startTrial: "Start free trial",
+    seeHow: "See how it works",
+    featuresTitle: "Everything you need",
+    featuresDescription:
+      "Powerful tools to manage guest communication in an automated way.",
+    features: {
+      whatsapp: {
+        title: "WhatsApp Integration",
+        description:
+          "Connect your WhatsApp Business number and respond to your guests automatically.",
+      },
+      customAgents: {
+        title: "Custom Agents",
+        description:
+          "Set up agents with your hotel's personality and tone for a unique experience.",
+      },
+      instantResponses: {
+        title: "Instant Responses",
+        description:
+          "Your guests get answers right away, no matter the time of day.",
+      },
+      multilingual: {
+        title: "Multilingual Support",
+        description:
+          "Serve guests in Spanish, English, Portuguese, and French effortlessly.",
+      },
+      selfHosted: {
+        title: "Self-Hosted",
+        description:
+          "Keep full control of your data with a solution you can host on your own infrastructure.",
+      },
+      faqTemplates: {
+        title: "FAQ Templates",
+        description:
+          "Use predefined hotel templates and customize them to fit your needs.",
+      },
+    },
+    pricingTitle: "Simple, transparent pricing",
+    pricingDescription:
+      "One plan with everything included. No surprises or hidden fees.",
+    proPlan: "Pro Plan",
+    perMonth: "/month",
+    planFeatures: [
+      "Up to 5 agents",
+      "10,000 messages/month",
+      "WhatsApp integration",
+      "Unlimited FAQs",
+      "Advanced analytics",
+      "Priority support",
+    ],
+    footer: "Made with dedication for the hospitality industry.",
+  },
+  dashboard: {
+    title: "Dashboard",
+    totalAgents: "Total agents",
+    activeAgents: "Active agents",
+    messagesThisWeek: "Messages this week",
+    avgResponseTime: "Avg. response time",
+    yourAgents: "Your agents",
+    createAgent: "Create agent",
+    noAgentsTitle: "You have no agents yet",
+    noAgentsDescription:
+      "Create your first agent to start automating guest support.",
+    createFirstAgent: "Create first agent",
+    vsLastWeek: "vs. last week",
+  },
+  agents: {
+    title: "Agents",
+    newAgent: "New agent",
+    createTitle: "Create new agent",
+    agentName: "Agent name",
+    agentNamePlaceholder: "E.g.: Sun Hotel Assistant",
+    hotelName: "Hotel name",
+    hotelNamePlaceholder: "E.g.: Sun Beach Hotel",
+    language: "Language",
+    tone: "Tone",
+    toneOptions: {
+      formal: "Formal",
+      friendly: "Friendly",
+      casual: "Casual",
+    },
+    languageOptions: {
+      es: "Spanish",
+      en: "English",
+      pt: "Portuguese",
+      fr: "French",
+    },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+      setup: "Setting up",
+    },
+    msgs: "msgs",
+    faqs: "FAQs",
+    noAgentsTitle: "No agents",
+    noAgentsDescription:
+      "You haven't created any agents yet. Create one to get started.",
+    agentNotFound: "Agent not found",
+    agentNotFoundDescription:
+      "The agent you're looking for doesn't exist or has been deleted.",
+    backToAgents: "Back to agents",
+    overview: "Overview",
+    agentInfo: "Agent info",
+    hotel: "Hotel",
+    personality: "Personality",
+    personalityPlaceholder:
+      "Describe how the agent should behave with guests...",
+    systemPrompt: "System prompt",
+    systemPromptDescription:
+      "Advanced instructions that define the agent's behavior.",
+    quickStats: "Quick stats",
+    messages: "Messages",
+    whatsappConnected: "WhatsApp connected",
+    connected: "Connected",
+    notConnected: "Not connected",
+    editSettings: "Edit settings",
+  },
+  faqEditor: {
+    title: "Frequently asked questions",
+    addFaq: "Add FAQ",
+    editFaq: "Edit FAQ",
+    loadTemplates: "Load templates",
+    useHotelTemplates: "Use hotel templates",
+    noFaqsTitle: "No FAQs yet",
+    noFaqsDescription:
+      "Add frequently asked questions so your agent can answer common queries.",
+    addFirstFaq: "Add first FAQ",
+    question: "Question",
+    questionPlaceholder: "E.g.: What is the check-in time?",
+    answer: "Answer",
+    answerPlaceholder:
+      "E.g.: Check-in is available from 3:00 PM onwards.",
+    category: "Category",
+    categoryPlaceholder: "E.g.: Check-in / Check-out",
+    saveChanges: "Save changes",
+    faqUpdated: "FAQ updated successfully",
+    faqAdded: "FAQ added successfully",
+    faqDeleted: "FAQ deleted successfully",
+    templatesLoaded: "Templates loaded successfully",
+    required: "This field is required",
+  },
+  whatsapp: {
+    title: "WhatsApp Connection",
+    description:
+      "Connect your WhatsApp Business account so your agent can receive and reply to messages.",
+    connectedTitle: "WhatsApp connected",
+    connectedDescription:
+      "Your agent is receiving and replying to WhatsApp messages.",
+    disconnect: "Disconnect",
+    steps: {
+      createApp: {
+        title: "Create app on Meta",
+        description:
+          "Go to Meta for Developers and create a new Business-type application.",
+      },
+      configure: {
+        title: "Configure WhatsApp",
+        description:
+          "Add the WhatsApp product to your app and set up a phone number.",
+      },
+      webhook: {
+        title: "Set up webhook",
+        description:
+          "Copy the webhook URL and configure it in your Meta application.",
+      },
+      credentials: {
+        title: "Enter credentials",
+        description:
+          "Enter your access token and phone number ID.",
+      },
+      test: {
+        title: "Test connection",
+        description:
+          "Send a test message to verify everything is working correctly.",
+      },
+    },
+    accessToken: "Access token",
+    phoneNumberId: "Phone number ID",
+    connect: "Connect",
+    webhookUrl: "Webhook URL",
+    webhookCopied: "Webhook URL copied to clipboard",
+    connectionSuccess: "WhatsApp connection established successfully",
+    openMeta: "Open Meta for Developers",
+    next: "Next",
+    back: "Previous",
+    fillCredentials: "Fill in the credentials to continue",
+  },
+  analytics: {
+    title: "Analytics",
+    totalMessages: "Total messages",
+    conversations: "Conversations",
+    avgConfidence: "Avg. confidence",
+    responseTime: "Response time",
+    messagesThisWeek: "Messages this week",
+    recentConversations: "Recent conversations",
+    latestInteractions: "Latest interactions",
+    noConversations: "No conversations recorded yet",
+    messagesCount: "messages",
+    performanceMetrics: "Performance metrics",
+  },
+  billing: {
+    title: "Billing",
+    currentPlan: "Current plan",
+    proPlan: "Pro Plan",
+    perMonth: "/month",
+    active: "Active",
+    usage: "Usage",
+    agentsUsage: "Agents used",
+    messagesUsage: "Messages used",
+    whatsappLines: "WhatsApp lines",
+    manageSubscription: "Manage subscription",
+    cancelPlan: "Cancel plan",
+    paymentMethod: "Payment method",
+    visaEnding: "Visa ending in",
+    expires: "Expires",
+    updatePayment: "Update payment method",
+    subscriptionManaged: "Redirected to subscription portal",
+    planCancelled: "Plan cancelled successfully",
+  },
+  settingsPage: {
+    title: "Settings",
+    profile: "Profile",
+    profileDescription: "Manage your personal information and preferences.",
+    name: "Name",
+    email: "Email",
+    notifications: "Notifications",
+    emailNotifications: "Email notifications",
+    emailNotificationsDesc:
+      "Receive important notifications via email.",
+    weeklyReports: "Weekly reports",
+    weeklyReportsDesc:
+      "Receive a weekly summary of your agents' performance.",
+    agentAlerts: "Agent alerts",
+    agentAlertsDesc:
+      "Get alerts when an agent needs attention or has issues.",
+    saved: "Settings saved successfully",
+    dangerZone: "Danger zone",
+    deleteAccount: "Delete account",
+    deleteAccountDescription:
+      "Permanently delete your account and all associated data.",
+    deleteAccountConfirm:
+      "Are you sure you want to delete your account? This action cannot be undone.",
+    deleteAccountWarning:
+      "All your agents, FAQs, and settings will be permanently deleted.",
+  },
+  agentSettings: {
+    title: "Agent settings",
+    configure: "Configure",
+    basicInfo: "Basic info",
+    basicInfoDescription:
+      "Set up the name, hotel, and language for your agent.",
+    personalityTone: "Personality & tone",
+    personalityToneDescription:
+      "Define how your agent communicates with guests.",
+    dangerZone: "Danger zone",
+    dangerZoneDescription:
+      "Irreversible actions related to this agent.",
+    deleteAgent: "Delete agent",
+    deleteConfirmTitle: "Delete this agent?",
+    deleteConfirmDescription:
+      "This action is permanent. All FAQs, conversations, and settings for this agent will be deleted.",
+    deletePermanently: "Delete permanently",
+    settingsSaved: "Agent settings saved",
+    agentDeleted: "Agent deleted successfully",
+    agentCreated: "Agent created successfully",
+    fillRequired: "Please fill in all required fields",
+  },
+};

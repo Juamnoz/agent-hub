@@ -2,10 +2,12 @@ import { create } from "zustand";
 import {
   type Agent,
   type FAQ,
+  type HotelContact,
   type DashboardStats,
   type WeeklyMessageData,
   mockAgents,
   mockFaqs,
+  mockContacts,
   mockDashboardStats,
   mockWeeklyMessages,
 } from "@/lib/mock-data";
@@ -15,6 +17,7 @@ interface AgentStore {
   agents: Agent[];
   currentAgent: Agent | null;
   faqs: FAQ[];
+  contacts: HotelContact[];
   stats: DashboardStats;
   weeklyMessages: WeeklyMessageData[];
 
@@ -35,6 +38,12 @@ interface AgentStore {
   updateFaq: (id: string, updates: Partial<FAQ>) => void;
   deleteFaq: (id: string) => void;
 
+  // Contact CRUD
+  loadContacts: (agentId: string) => void;
+  addContact: (contact: Omit<HotelContact, "id">) => void;
+  updateContact: (id: string, updates: Partial<HotelContact>) => void;
+  deleteContact: (id: string) => void;
+
   // Stats
   loadStats: () => void;
 }
@@ -43,6 +52,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   agents: mockAgents,
   currentAgent: null,
   faqs: [],
+  contacts: [],
   stats: mockDashboardStats,
   weeklyMessages: mockWeeklyMessages,
 
@@ -97,6 +107,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         state.currentAgent?.id === id
           ? []
           : state.faqs.filter((faq) => faq.agentId !== id),
+      contacts: state.contacts.filter((c) => c.agentId !== id),
     }));
     sendWebhook("agent.deleted", { agent: deletedAgent });
   },
@@ -155,6 +166,42 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         : state.agents,
     }));
     sendWebhook("faq.deleted", { faq: faqToDelete });
+  },
+
+  // -----------------------------------------------------------------------
+  // Contact CRUD
+  // -----------------------------------------------------------------------
+
+  loadContacts: (agentId) => {
+    const contacts = mockContacts.filter((c) => c.agentId === agentId);
+    set({ contacts });
+  },
+
+  addContact: (contactData) => {
+    const newContact: HotelContact = {
+      ...contactData,
+      id: crypto.randomUUID(),
+    };
+    set((state) => ({ contacts: [...state.contacts, newContact] }));
+    sendWebhook("settings.updated", { action: "contact.created", contact: newContact });
+  },
+
+  updateContact: (id, updates) => {
+    set((state) => ({
+      contacts: state.contacts.map((c) =>
+        c.id === id ? { ...c, ...updates } : c
+      ),
+    }));
+    const updated = get().contacts.find((c) => c.id === id);
+    sendWebhook("settings.updated", { action: "contact.updated", contact: updated, updates });
+  },
+
+  deleteContact: (id) => {
+    const toDelete = get().contacts.find((c) => c.id === id);
+    set((state) => ({
+      contacts: state.contacts.filter((c) => c.id !== id),
+    }));
+    sendWebhook("settings.updated", { action: "contact.deleted", contact: toDelete });
   },
 
   // -----------------------------------------------------------------------

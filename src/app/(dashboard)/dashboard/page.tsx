@@ -2,7 +2,14 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Plus, Bot, Activity, MessageSquare, Clock } from "lucide-react";
+import {
+  Plus,
+  Bot,
+  Activity,
+  MessageSquare,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import type { Agent } from "@/lib/mock-data";
@@ -28,62 +35,79 @@ export default function DashboardPage() {
       : 0;
 
   return (
-    <div className="space-y-8">
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title={t.dashboard.totalAgents}
-          value={stats.totalAgents}
-          icon={Bot}
-        />
-        <StatsCard
-          title={t.dashboard.activeAgents}
-          value={stats.activeAgents}
-          icon={Activity}
-        />
-        <StatsCard
-          title={t.dashboard.messagesThisWeek}
-          value={stats.messagesThisWeek}
-          trend={{ value: weeklyChange, label: t.dashboard.vsLastWeek }}
-          icon={MessageSquare}
-        />
-        <StatsCard
-          title={t.dashboard.avgResponseTime}
-          value={stats.avgResponseTime}
-          icon={Clock}
-        />
+    <div className="space-y-6">
+      {/* Stats - horizontal scroll on mobile, grid on desktop */}
+      <div className="-mx-4 sm:mx-0">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible">
+          <StatsCard
+            title={t.dashboard.totalAgents}
+            value={stats.totalAgents}
+            icon={Bot}
+            accentColor="blue"
+            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
+          />
+          <StatsCard
+            title={t.dashboard.activeAgents}
+            value={stats.activeAgents}
+            icon={Activity}
+            accentColor="emerald"
+            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
+          />
+          <StatsCard
+            title={t.dashboard.messagesThisWeek}
+            value={stats.messagesThisWeek}
+            trend={{ value: weeklyChange, label: t.dashboard.vsLastWeek }}
+            icon={MessageSquare}
+            accentColor="violet"
+            className="min-w-[200px] shrink-0 sm:min-w-0 sm:shrink"
+          />
+          <StatsCard
+            title={t.dashboard.avgResponseTime}
+            value={stats.avgResponseTime}
+            icon={Clock}
+            accentColor="amber"
+            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
+          />
+        </div>
       </div>
 
-      {/* Your Agents */}
+      {/* Your Agents Section */}
       <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t.dashboard.yourAgents}</h2>
-          <Button asChild size="sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-[17px] font-semibold">{t.dashboard.yourAgents}</h2>
+          <Button
+            asChild
+            size="sm"
+            className="h-8 rounded-full px-3.5 text-[13px] font-medium bg-blue-600 hover:bg-blue-700"
+          >
             <Link href="/agents/new">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
               {t.dashboard.createAgent}
             </Link>
           </Button>
         </div>
 
         {agents.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:space-y-0">
             {agents.map((agent: Agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-              <Bot className="h-8 w-8 text-gray-400" />
+          <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+              <Bot className="h-7 w-7 text-white" />
             </div>
-            <h3 className="mb-1 text-lg font-medium">
+            <h3 className="text-[17px] font-semibold mb-1">
               {t.dashboard.noAgentsTitle}
             </h3>
-            <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground mb-5 max-w-[280px] mx-auto leading-relaxed">
               {t.dashboard.noAgentsDescription}
             </p>
-            <Button asChild>
+            <Button
+              asChild
+              className="h-10 rounded-full px-5 text-[14px] font-medium bg-blue-600 hover:bg-blue-700"
+            >
               <Link href="/agents/new">
                 <Plus className="mr-2 h-4 w-4" />
                 {t.dashboard.createFirstAgent}

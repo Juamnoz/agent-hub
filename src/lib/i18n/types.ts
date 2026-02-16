@@ -212,6 +212,28 @@ export interface Translations {
     deleteAccountConfirm: string;
     deleteAccountWarning: string;
   };
+  contacts: {
+    title: string;
+    description: string;
+    addContact: string;
+    editContact: string;
+    name: string;
+    namePlaceholder: string;
+    phone: string;
+    phonePlaceholder: string;
+    category: string;
+    categoryPlaceholder: string;
+    descriptionField: string;
+    descriptionPlaceholder: string;
+    noContactsTitle: string;
+    noContactsDescription: string;
+    addFirstContact: string;
+    saveChanges: string;
+    contactAdded: string;
+    contactUpdated: string;
+    contactDeleted: string;
+    required: string;
+  };
   socialLinks: {
     title: string;
     description: string;

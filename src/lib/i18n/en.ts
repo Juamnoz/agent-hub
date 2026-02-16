@@ -294,6 +294,28 @@ export const en: Translations = {
     deleteAccountWarning:
       "All your agents, FAQs, and settings will be permanently deleted.",
   },
+  contacts: {
+    title: "Hotel contacts",
+    description: "Useful phone numbers the agent can share with guests (front desk, transport, restaurants, etc.).",
+    addContact: "Add contact",
+    editContact: "Edit contact",
+    name: "Name",
+    namePlaceholder: "E.g.: Front desk",
+    phone: "Phone",
+    phonePlaceholder: "E.g.: +1 555 123 4567",
+    category: "Category",
+    categoryPlaceholder: "E.g.: Hotel, Transport, Dining",
+    descriptionField: "Description",
+    descriptionPlaceholder: "E.g.: Available 24 hours",
+    noContactsTitle: "No contacts",
+    noContactsDescription: "Add important hotel phone numbers so the agent can share them with guests.",
+    addFirstContact: "Add first contact",
+    saveChanges: "Save changes",
+    contactAdded: "Contact added successfully",
+    contactUpdated: "Contact updated successfully",
+    contactDeleted: "Contact deleted successfully",
+    required: "Name and phone are required",
+  },
   socialLinks: {
     title: "Social media & website",
     description:

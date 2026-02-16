@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, MessageSquare, HelpCircle, Wifi, WifiOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bot, MessageSquare, HelpCircle, ChevronRight } from "lucide-react";
 import type { Agent } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
 import { useLocaleStore } from "@/stores/locale-store";
 
-const statusStyles: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  inactive: "bg-gray-100 text-gray-600 border-gray-200",
-  setup: "bg-amber-100 text-amber-700 border-amber-200",
+const statusDot: Record<string, string> = {
+  active: "bg-emerald-500",
+  inactive: "bg-gray-400",
+  setup: "bg-amber-500",
+};
+
+const statusBadge: Record<string, string> = {
+  active: "bg-emerald-50 text-emerald-700",
+  inactive: "bg-gray-100 text-gray-600",
+  setup: "bg-amber-50 text-amber-700",
 };
 
 interface AgentCardProps {
@@ -23,44 +26,47 @@ export function AgentCard({ agent }: AgentCardProps) {
   const statusLabel = t.agents.status[agent.status] ?? agent.status;
 
   return (
-    <Link href={`/agents/${agent.id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Bot className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle className="text-base">{agent.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{agent.hotelName}</p>
-              </div>
-            </div>
-            <Badge variant="outline" className={cn("text-xs", statusStyles[agent.status])}>
-              {statusLabel}
-            </Badge>
+    <Link href={`/agents/${agent.id}`} className="group block">
+      <div className="rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
+        <div className="flex items-center gap-3.5">
+          {/* Avatar */}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+            <Bot className="h-5 w-5 text-white" />
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5" />
-              <span>{agent.messageCount} {t.agents.msgs}</span>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
             </div>
-            <div className="flex items-center gap-1.5">
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>{agent.faqCount} {t.agents.faqs}</span>
-            </div>
-            <div className="flex items-center gap-1.5 ml-auto">
-              {agent.whatsappConnected ? (
-                <Wifi className="h-3.5 w-3.5 text-emerald-500" />
-              ) : (
-                <WifiOff className="h-3.5 w-3.5 text-gray-400" />
-              )}
-            </div>
+            <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Chevron */}
+          <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-400" />
+        </div>
+
+        {/* Bottom stats row */}
+        <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span className="font-medium text-foreground">{agent.messageCount.toLocaleString()}</span>
+            <span>{t.agents.msgs}</span>
+          </div>
+          <div className="h-3 w-px bg-gray-200" />
+          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span className="font-medium text-foreground">{agent.faqCount}</span>
+            <span>{t.agents.faqs}</span>
+          </div>
+          <span
+            className={`ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadge[agent.status]}`}
+          >
+            {statusLabel}
+          </span>
+        </div>
+      </div>
     </Link>
   );
 }

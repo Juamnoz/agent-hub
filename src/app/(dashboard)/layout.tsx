@@ -19,6 +19,7 @@ function usePageTitle(pathname: string): string {
   };
 
   if (titles[pathname]) return titles[pathname];
+  if (pathname.match(/^\/agents\/[^/]+\/contacts$/)) return t.contacts.title;
   if (pathname.match(/^\/agents\/[^/]+\/faqs$/)) return t.faqEditor.title;
   if (pathname.match(/^\/agents\/[^/]+\/settings$/)) return t.agentSettings.title;
   if (pathname.match(/^\/agents\/[^/]+\/whatsapp$/)) return t.whatsapp.title;

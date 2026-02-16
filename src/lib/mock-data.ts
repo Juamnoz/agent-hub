@@ -1,5 +1,15 @@
 export type AgentStatus = "active" | "inactive" | "setup";
 
+export interface HotelContact {
+  id: string;
+  agentId: string;
+  name: string;
+  phone: string;
+  category: string;
+  description?: string;
+  isActive: boolean;
+}
+
 export interface SocialLinks {
   website?: string;
   facebook?: string;
@@ -85,7 +95,7 @@ export const mockAgents: Agent[] = [
     hotelName: "Hotel Playa Azul",
     status: "active",
     personality:
-      "Friendly and knowledgeable concierge who loves helping guests discover local attractions and ensures a comfortable stay.",
+      "Conserje amigable y conocedor que disfruta ayudar a los huéspedes a descubrir atracciones locales y asegurar una estadía cómoda.",
     tone: "friendly",
     language: "es",
     whatsappConnected: true,
@@ -109,7 +119,7 @@ export const mockAgents: Agent[] = [
     hotelName: "Hotel Sierra Nevada",
     status: "active",
     personality:
-      "Professional and attentive assistant specializing in mountain resort services and adventure tourism.",
+      "Asistente profesional y atento especializado en servicios de resort de montaña y turismo de aventura.",
     tone: "formal",
     language: "es",
     whatsappConnected: true,
@@ -126,7 +136,7 @@ export const mockAgents: Agent[] = [
     hotelName: "Boutique Roma",
     status: "setup",
     personality:
-      "Trendy and laid-back assistant for a boutique hotel in the Roma neighborhood.",
+      "Asistente moderno y relajado para un hotel boutique en la colonia Roma.",
     tone: "casual",
     language: "es",
     whatsappConnected: false,
@@ -145,9 +155,9 @@ export const mockFaqs: FAQ[] = [
   {
     id: "faq-001",
     agentId: "agent-001",
-    question: "What are the check-in and check-out times?",
+    question: "¿Cuáles son los horarios de check-in y check-out?",
     answer:
-      "Check-in is at 3:00 PM and check-out is at 12:00 PM. Early check-in and late check-out are available upon request, subject to availability. Please contact the front desk to arrange.",
+      "El check-in es a las 3:00 PM y el check-out a las 12:00 PM. El check-in anticipado y el check-out tardío están disponibles bajo solicitud, sujetos a disponibilidad. Por favor contacta a recepción para coordinarlo.",
     category: "General",
     sortOrder: 1,
     isActive: true,
@@ -155,70 +165,70 @@ export const mockFaqs: FAQ[] = [
   {
     id: "faq-002",
     agentId: "agent-001",
-    question: "Is WiFi available at the hotel?",
+    question: "¿Hay WiFi disponible en el hotel?",
     answer:
-      "Yes! Complimentary high-speed WiFi is available throughout the hotel, including all rooms, the lobby, pool area, and restaurant. The network name and password are provided at check-in.",
-    category: "Amenities",
+      "¡Sí! WiFi de alta velocidad gratuito está disponible en todo el hotel, incluyendo habitaciones, lobby, área de alberca y restaurante. El nombre de la red y contraseña se proporcionan al hacer check-in.",
+    category: "Amenidades",
     sortOrder: 2,
     isActive: true,
   },
   {
     id: "faq-003",
     agentId: "agent-001",
-    question: "What are the pool hours?",
+    question: "¿Cuál es el horario de la alberca?",
     answer:
-      "Our pool is open daily from 7:00 AM to 10:00 PM. Towels are provided poolside. We also offer a swim-up bar open from 11:00 AM to 8:00 PM.",
-    category: "Amenities",
+      "Nuestra alberca está abierta todos los días de 7:00 AM a 10:00 PM. Las toallas se proporcionan en el área de la alberca. También contamos con un bar acuático abierto de 11:00 AM a 8:00 PM.",
+    category: "Amenidades",
     sortOrder: 3,
     isActive: true,
   },
   {
     id: "faq-004",
     agentId: "agent-001",
-    question: "Does the hotel have a restaurant?",
+    question: "¿El hotel tiene restaurante?",
     answer:
-      "Yes, we have two on-site restaurants. 'Mar Abierto' serves breakfast (7-11 AM), lunch (12-4 PM), and dinner (6-10 PM). 'La Terraza' is our rooftop bar and grill open from 5 PM to midnight.",
-    category: "Dining",
+      "Sí, contamos con dos restaurantes. 'Mar Abierto' sirve desayuno (7-11 AM), comida (12-4 PM) y cena (6-10 PM). 'La Terraza' es nuestro bar y parrilla en la azotea, abierto de 5 PM a medianoche.",
+    category: "Gastronomía",
     sortOrder: 4,
     isActive: true,
   },
   {
     id: "faq-005",
     agentId: "agent-001",
-    question: "Is parking available?",
+    question: "¿Tienen estacionamiento?",
     answer:
-      "Yes, we offer complimentary self-parking for all guests. Valet parking is also available for $150 MXN per night. Electric vehicle charging stations are located in the parking garage.",
-    category: "Services",
+      "Sí, ofrecemos estacionamiento gratuito para todos los huéspedes. El servicio de valet también está disponible por $150 MXN por noche. Contamos con estaciones de carga para vehículos eléctricos en el estacionamiento.",
+    category: "Servicios",
     sortOrder: 5,
     isActive: true,
   },
   {
     id: "faq-006",
     agentId: "agent-001",
-    question: "Are pets allowed?",
+    question: "¿Aceptan mascotas?",
     answer:
-      "We welcome small pets (under 10 kg) in select pet-friendly rooms for an additional fee of $300 MXN per night. Please inform us at the time of booking so we can prepare your room accordingly.",
-    category: "Policies",
+      "Recibimos mascotas pequeñas (menores de 10 kg) en habitaciones seleccionadas pet-friendly con un cargo adicional de $300 MXN por noche. Por favor infórmanos al momento de la reservación para preparar tu habitación.",
+    category: "Políticas",
     sortOrder: 6,
     isActive: true,
   },
   {
     id: "faq-007",
     agentId: "agent-001",
-    question: "Do you offer airport transfer services?",
+    question: "¿Ofrecen servicio de traslado al aeropuerto?",
     answer:
-      "Yes, we provide airport shuttle service for $450 MXN per trip (one way). Transfers can be booked through the front desk or by sending us a WhatsApp message at least 24 hours in advance.",
-    category: "Services",
+      "Sí, ofrecemos servicio de traslado al aeropuerto por $450 MXN por viaje (sencillo). Los traslados se pueden reservar en recepción o enviándonos un mensaje de WhatsApp con al menos 24 horas de anticipación.",
+    category: "Servicios",
     sortOrder: 7,
     isActive: true,
   },
   {
     id: "faq-008",
     agentId: "agent-001",
-    question: "What is the cancellation policy?",
+    question: "¿Cuál es la política de cancelación?",
     answer:
-      "Free cancellation is available up to 48 hours before check-in. Cancellations made within 48 hours will be charged one night's stay. No-shows are charged the full reservation amount.",
-    category: "Policies",
+      "La cancelación gratuita está disponible hasta 48 horas antes del check-in. Las cancelaciones realizadas dentro de las 48 horas se cobrarán una noche de estadía. Los no-shows se cobran el monto total de la reservación.",
+    category: "Políticas",
     sortOrder: 8,
     isActive: true,
   },
@@ -505,75 +515,127 @@ export const mockWeeklyMessages: WeeklyMessageData[] = [
 
 export const faqTemplates: { question: string; answer: string; category: string }[] = [
   {
-    question: "What are the check-in and check-out times?",
+    question: "¿Cuáles son los horarios de check-in y check-out?",
     answer:
-      "Check-in is at 3:00 PM and check-out is at 12:00 PM. Early check-in and late check-out may be available upon request.",
+      "El check-in es a las 3:00 PM y el check-out a las 12:00 PM. El check-in anticipado y check-out tardío pueden estar disponibles bajo solicitud.",
     category: "General",
   },
   {
-    question: "Is WiFi available?",
+    question: "¿Hay WiFi disponible?",
     answer:
-      "Yes, complimentary high-speed WiFi is available in all rooms and public areas.",
-    category: "Amenities",
+      "Sí, WiFi de alta velocidad gratuito está disponible en todas las habitaciones y áreas públicas.",
+    category: "Amenidades",
   },
   {
-    question: "Do you have a swimming pool?",
+    question: "¿Tienen alberca?",
     answer:
-      "Yes, our pool is open daily from 7:00 AM to 10:00 PM. Towels are provided poolside.",
-    category: "Amenities",
+      "Sí, nuestra alberca está abierta todos los días de 7:00 AM a 10:00 PM. Las toallas se proporcionan en el área.",
+    category: "Amenidades",
   },
   {
-    question: "What dining options are available?",
+    question: "¿Qué opciones de comida tienen?",
     answer:
-      "We have an on-site restaurant serving breakfast, lunch, and dinner. Room service is also available.",
-    category: "Dining",
+      "Contamos con un restaurante que sirve desayuno, comida y cena. También ofrecemos servicio a la habitación.",
+    category: "Gastronomía",
   },
   {
-    question: "Is parking available?",
+    question: "¿Tienen estacionamiento?",
     answer:
-      "Yes, we offer complimentary self-parking for all guests. Valet parking is available for an additional fee.",
-    category: "Services",
+      "Sí, ofrecemos estacionamiento gratuito para todos los huéspedes. El servicio de valet está disponible con cargo adicional.",
+    category: "Servicios",
   },
   {
-    question: "Are pets allowed?",
+    question: "¿Aceptan mascotas?",
     answer:
-      "Small pets are welcome in designated pet-friendly rooms for an additional nightly fee. Please notify us at booking.",
-    category: "Policies",
+      "Las mascotas pequeñas son bienvenidas en habitaciones pet-friendly designadas con un cargo adicional por noche. Por favor notifícanos al reservar.",
+    category: "Políticas",
   },
   {
-    question: "Do you offer airport transfers?",
+    question: "¿Ofrecen traslado al aeropuerto?",
     answer:
-      "Yes, airport shuttle service is available. Please book at least 24 hours in advance through the front desk.",
-    category: "Services",
+      "Sí, el servicio de traslado al aeropuerto está disponible. Por favor reserva con al menos 24 horas de anticipación en recepción.",
+    category: "Servicios",
   },
   {
-    question: "What is the cancellation policy?",
+    question: "¿Cuál es la política de cancelación?",
     answer:
-      "Free cancellation up to 48 hours before check-in. Late cancellations are charged one night's stay.",
-    category: "Policies",
+      "Cancelación gratuita hasta 48 horas antes del check-in. Las cancelaciones tardías se cobran una noche de estadía.",
+    category: "Políticas",
   },
   {
-    question: "Do you have a gym or fitness center?",
+    question: "¿Tienen gimnasio?",
     answer:
-      "Yes, our fitness center is open 24 hours and includes cardio machines, free weights, and yoga mats.",
-    category: "Amenities",
+      "Sí, nuestro gimnasio está abierto las 24 horas e incluye máquinas de cardio, pesas libres y tapetes de yoga.",
+    category: "Amenidades",
   },
   {
-    question: "Is there a spa at the hotel?",
+    question: "¿Tienen spa?",
     answer:
-      "Yes, our spa offers massages, facials, and body treatments. Reservations are recommended.",
-    category: "Amenities",
+      "Sí, nuestro spa ofrece masajes, faciales y tratamientos corporales. Se recomienda hacer reservación.",
+    category: "Amenidades",
   },
   {
-    question: "Do you offer room service?",
+    question: "¿Ofrecen servicio a la habitación?",
     answer:
-      "Yes, room service is available from 6:00 AM to 11:00 PM daily. A late-night menu is available until 1:00 AM.",
-    category: "Dining",
+      "Sí, el servicio a la habitación está disponible de 6:00 AM a 11:00 PM. Un menú nocturno está disponible hasta la 1:00 AM.",
+    category: "Gastronomía",
   },
   {
-    question: "Is there a shuttle to nearby attractions?",
+    question: "¿Tienen transporte a atracciones cercanas?",
     answer:
-      "Yes, we offer a complimentary shuttle to major nearby attractions. Please check with the front desk for the schedule.",
-    category: "Services",
+      "Sí, ofrecemos transporte gratuito a las principales atracciones cercanas. Consulta en recepción los horarios disponibles.",
+    category: "Servicios",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Hotel Contacts (for agent-001)
+// ---------------------------------------------------------------------------
+
+export const mockContacts: HotelContact[] = [
+  {
+    id: "contact-001",
+    agentId: "agent-001",
+    name: "Recepción",
+    phone: "+52 998 123 4567",
+    category: "Hotel",
+    description: "Atención 24 horas",
+    isActive: true,
+  },
+  {
+    id: "contact-002",
+    agentId: "agent-001",
+    name: "Restaurante Mar Abierto",
+    phone: "+52 998 123 4568",
+    category: "Gastronomía",
+    description: "Reservaciones y servicio a habitación",
+    isActive: true,
+  },
+  {
+    id: "contact-003",
+    agentId: "agent-001",
+    name: "Spa & Bienestar",
+    phone: "+52 998 123 4569",
+    category: "Amenidades",
+    description: "Citas y tratamientos",
+    isActive: true,
+  },
+  {
+    id: "contact-004",
+    agentId: "agent-001",
+    name: "Transporte aeropuerto",
+    phone: "+52 998 555 1234",
+    category: "Transporte",
+    description: "Traslados y tours",
+    isActive: true,
+  },
+  {
+    id: "contact-005",
+    agentId: "agent-001",
+    name: "Emergencias",
+    phone: "911",
+    category: "Emergencias",
+    description: "Policía, bomberos, ambulancia",
+    isActive: true,
   },
 ];

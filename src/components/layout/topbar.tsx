@@ -22,29 +22,29 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
   const { t } = useLocaleStore();
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-white px-4 lg:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl px-4 lg:px-6">
       <button
         onClick={onMenuClick}
-        className="lg:hidden p-2 -ml-2 rounded-md hover:bg-accent"
+        className="lg:hidden flex h-8 w-8 items-center justify-center -ml-1 rounded-lg active:bg-gray-100 transition-colors"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-[18px] w-[18px]" />
       </button>
 
-      <h1 className="text-lg font-semibold">{title}</h1>
+      <h1 className="text-[17px] font-semibold tracking-tight">{title}</h1>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-1.5">
         <LocaleSwitcher />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
+                <AvatarFallback className="text-xs font-medium bg-blue-600 text-white">
                   JD
                 </AvatarFallback>
               </Avatar>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-48 rounded-xl">
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">John Doe</p>
               <p className="text-xs text-muted-foreground">john@hotel.com</p>

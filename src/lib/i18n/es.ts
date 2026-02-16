@@ -294,6 +294,28 @@ export const es: Translations = {
     deleteAccountWarning:
       "Todos tus agentes, FAQs y configuraciones serán eliminados permanentemente.",
   },
+  contacts: {
+    title: "Contactos del hotel",
+    description: "Números de teléfono útiles que el agente puede compartir con los huéspedes (recepción, transporte, restaurantes, etc.).",
+    addContact: "Agregar contacto",
+    editContact: "Editar contacto",
+    name: "Nombre",
+    namePlaceholder: "Ej: Recepción",
+    phone: "Teléfono",
+    phonePlaceholder: "Ej: +52 998 123 4567",
+    category: "Categoría",
+    categoryPlaceholder: "Ej: Hotel, Transporte, Gastronomía",
+    descriptionField: "Descripción",
+    descriptionPlaceholder: "Ej: Atención 24 horas",
+    noContactsTitle: "Sin contactos",
+    noContactsDescription: "Agrega los números de teléfono importantes del hotel para que el agente pueda compartirlos con los huéspedes.",
+    addFirstContact: "Agregar primer contacto",
+    saveChanges: "Guardar cambios",
+    contactAdded: "Contacto agregado correctamente",
+    contactUpdated: "Contacto actualizado correctamente",
+    contactDeleted: "Contacto eliminado correctamente",
+    required: "El nombre y teléfono son obligatorios",
+  },
   socialLinks: {
     title: "Redes sociales y sitio web",
     description:

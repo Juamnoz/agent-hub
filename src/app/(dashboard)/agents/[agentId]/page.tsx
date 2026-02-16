@@ -16,6 +16,10 @@ import {
   Circle,
   Bot,
   Sparkles,
+  Phone,
+  TrendingUp,
+  Clock,
+  Users,
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -25,7 +29,6 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 const statusColors: Record<string, string> = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -74,16 +77,7 @@ export default function AgentDetailPage({
     setup: t.agents.status.setup,
   };
 
-  const tabs = [
-    { label: t.agents.overview, href: `/agents/${agentId}`, icon: BarChart3 },
-    { label: t.faqEditor.title, href: `/agents/${agentId}/faqs`, icon: HelpCircle },
-    { label: t.agentSettings.title, href: `/agents/${agentId}/settings`, icon: Settings },
-    { label: t.socialLinks.title, href: `/agents/${agentId}/social`, icon: Globe },
-    { label: t.whatsapp.title, href: `/agents/${agentId}/whatsapp`, icon: Smartphone },
-    { label: t.analytics.title, href: `/agents/${agentId}/analytics`, icon: BarChart3 },
-  ];
-
-  // Determine setup status for each card
+  // Setup status
   const agentFaqs = faqs.filter((f) => f.agentId === agentId);
   const hasFaqs = agent.faqCount > 0 || agentFaqs.length > 0;
   const hasPersonality = !!agent.personality?.trim();
@@ -91,294 +85,312 @@ export default function AgentDetailPage({
   const hasSocial =
     agent.socialLinks &&
     Object.values(agent.socialLinks).some((v) => v && v.trim());
-
   const completedSteps = [hasFaqs, hasPersonality, hasWhatsapp, hasSocial].filter(Boolean).length;
-  const totalSteps = 4;
 
-  const setupCards = [
+  // Quick action cards (the main sections to configure)
+  const quickActions = [
     {
       title: t.agents.setupCards.faqsTitle,
-      description: t.agents.setupCards.faqsDescription,
       icon: HelpCircle,
       href: `/agents/${agentId}/faqs`,
       configured: hasFaqs,
-      stat: hasFaqs ? `${agent.faqCount} FAQs` : undefined,
-      accentColor: "blue",
+      stat: hasFaqs ? `${agent.faqCount}` : "0",
+      color: "blue" as const,
     },
     {
       title: t.agents.setupCards.personalityTitle,
-      description: t.agents.setupCards.personalityDescription,
       icon: Sparkles,
       href: `/agents/${agentId}/settings`,
       configured: hasPersonality,
       stat: hasPersonality
         ? t.agents.toneOptions[agent.tone as keyof typeof t.agents.toneOptions]
-        : undefined,
-      accentColor: "violet",
+        : "—",
+      color: "violet" as const,
+    },
+    {
+      title: t.contacts.title,
+      icon: Phone,
+      href: `/agents/${agentId}/contacts`,
+      configured: true,
+      stat: "",
+      color: "amber" as const,
     },
     {
       title: t.agents.setupCards.whatsappTitle,
-      description: t.agents.setupCards.whatsappDescription,
       icon: Smartphone,
       href: `/agents/${agentId}/whatsapp`,
       configured: hasWhatsapp,
-      stat: hasWhatsapp ? agent.whatsappPhoneNumber : undefined,
-      accentColor: "emerald",
+      stat: hasWhatsapp ? t.agents.connected : "—",
+      color: "emerald" as const,
     },
     {
       title: t.agents.setupCards.socialTitle,
-      description: t.agents.setupCards.socialDescription,
       icon: Globe,
       href: `/agents/${agentId}/social`,
       configured: !!hasSocial,
       stat: hasSocial
-        ? `${Object.values(agent.socialLinks!).filter((v) => v && v.trim()).length} URLs`
-        : undefined,
-      accentColor: "orange",
+        ? `${Object.values(agent.socialLinks!).filter((v) => v && v.trim()).length}`
+        : "0",
+      color: "orange" as const,
+    },
+    {
+      title: t.agents.setupCards.analyticsTitle,
+      icon: BarChart3,
+      href: `/agents/${agentId}/analytics`,
+      configured: true,
+      stat: "",
+      color: "gray" as const,
     },
   ];
 
-  const accentMap: Record<string, { bg: string; icon: string; border: string; ring: string }> = {
-    blue: {
-      bg: "bg-blue-50",
-      icon: "text-blue-600",
-      border: "border-blue-100",
-      ring: "ring-blue-600/10",
-    },
-    violet: {
-      bg: "bg-violet-50",
-      icon: "text-violet-600",
-      border: "border-violet-100",
-      ring: "ring-violet-600/10",
-    },
-    emerald: {
-      bg: "bg-emerald-50",
-      icon: "text-emerald-600",
-      border: "border-emerald-100",
-      ring: "ring-emerald-600/10",
-    },
-    orange: {
-      bg: "bg-orange-50",
-      icon: "text-orange-600",
-      border: "border-orange-100",
-      ring: "ring-orange-600/10",
-    },
+  const colorMap: Record<string, { bg: string; icon: string }> = {
+    blue: { bg: "bg-blue-50", icon: "text-blue-600" },
+    violet: { bg: "bg-violet-50", icon: "text-violet-600" },
+    emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
+    amber: { bg: "bg-amber-50", icon: "text-amber-600" },
+    orange: { bg: "bg-orange-50", icon: "text-orange-600" },
+    gray: { bg: "bg-gray-100", icon: "text-gray-600" },
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2 text-muted-foreground">
-          <Link href="/agents">
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            {t.agents.backToAgents}
-          </Link>
-        </Button>
+    <div className="space-y-5">
+      {/* Back */}
+      <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
+        <Link href="/agents">
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          {t.agents.backToAgents}
+        </Link>
+      </Button>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
-              <Bot className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold tracking-tight">{agent.name}</h1>
-                <Badge
-                  variant="outline"
-                  className={`${statusColors[agent.status]} gap-1.5 font-medium`}
-                >
-                  <span className={`h-1.5 w-1.5 rounded-full ${statusDot[agent.status]}`} />
-                  {statusLabels[agent.status]}
-                </Badge>
+      {/* Agent Hero Card - contains identity + metrics */}
+      <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+        {/* Agent Identity */}
+        <div className="p-4 pb-0 sm:p-5 sm:pb-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+                <Bot className="h-6 w-6 text-white" />
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">{agent.hotelName}</p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-[19px] font-bold tracking-tight">{agent.name}</h1>
+                  <Badge
+                    variant="outline"
+                    className={`${statusColors[agent.status]} gap-1 text-[11px] font-medium px-1.5 py-0`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${statusDot[agent.status]}`} />
+                    {statusLabels[agent.status]}
+                  </Badge>
+                </div>
+                <p className="text-[13px] text-muted-foreground">{agent.hotelName}</p>
+              </div>
             </div>
-          </div>
-          <Button asChild size="sm" variant="outline" className="shrink-0">
-            <Link href={`/agents/${agentId}/settings`}>
-              <Pencil className="mr-1.5 h-3.5 w-3.5" />
-              {t.agents.editSettings}
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Tab Navigation - scrollable on mobile */}
-      <div className="-mx-4 sm:mx-0">
-        <nav className="flex overflow-x-auto scrollbar-hide border-b px-4 sm:px-0">
-          {tabs.map((tab, index) => {
-            const Icon = tab.icon;
-            const isActive = index === 0;
-            return (
-              <Link
-                key={tab.label}
-                href={tab.href}
-                className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors shrink-0 ${
-                  isActive
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
+            <Button asChild size="sm" variant="ghost" className="shrink-0 h-8 w-8 p-0">
+              <Link href={`/agents/${agentId}/settings`}>
+                <Pencil className="h-4 w-4 text-muted-foreground" />
               </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Quick Stats Row */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <div className="rounded-xl border bg-white p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {t.agents.messages}
-          </p>
-          <p className="text-2xl font-bold tracking-tight mt-1">{agent.messageCount.toLocaleString()}</p>
-        </div>
-        <div className="rounded-xl border bg-white p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {t.agents.faqs}
-          </p>
-          <p className="text-2xl font-bold tracking-tight mt-1">{agent.faqCount}</p>
-        </div>
-        <div className="rounded-xl border bg-white p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            WhatsApp
-          </p>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                agent.whatsappConnected ? "bg-emerald-500" : "bg-gray-300"
-              }`}
-            />
-            <span className="text-sm font-semibold">
-              {agent.whatsappConnected ? t.agents.connected : t.agents.notConnected}
-            </span>
+            </Button>
           </div>
         </div>
-        <div className="rounded-xl border bg-white p-4">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Setup
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-2xl font-bold tracking-tight">
-              {completedSteps}/{totalSteps}
-            </span>
-            <div className="flex gap-0.5">
-              {[hasFaqs, hasPersonality, hasWhatsapp, hasSocial].map((done, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 w-4 rounded-full ${done ? "bg-blue-500" : "bg-gray-200"}`}
+
+        {/* Inline Metrics - horizontal scroll on mobile like Apple Health */}
+        <div className="mt-4 -mx-px">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            <Link
+              href={`/agents/${agentId}/analytics`}
+              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors group"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <MessageSquare className="h-3 w-3 text-blue-500" />
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  {t.agents.messages}
+                </span>
+              </div>
+              <p className="text-[22px] font-bold tracking-tight leading-none">
+                {agent.messageCount.toLocaleString()}
+              </p>
+            </Link>
+
+            <Link
+              href={`/agents/${agentId}/faqs`}
+              className="flex-1 min-w-[80px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <HelpCircle className="h-3 w-3 text-violet-500" />
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  FAQs
+                </span>
+              </div>
+              <p className="text-[22px] font-bold tracking-tight leading-none">
+                {agent.faqCount}
+              </p>
+            </Link>
+
+            <Link
+              href={`/agents/${agentId}/whatsapp`}
+              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Smartphone className="h-3 w-3 text-emerald-500" />
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  WhatsApp
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    agent.whatsappConnected ? "bg-emerald-500" : "bg-gray-300"
+                  }`}
                 />
-              ))}
+                <span className="text-[13px] font-semibold">
+                  {agent.whatsappConnected ? t.agents.connected : t.agents.notConnected}
+                </span>
+              </div>
+            </Link>
+
+            <div className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-black/[0.06]">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="h-3 w-3 text-amber-500" />
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Setup
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[22px] font-bold tracking-tight leading-none">
+                  {completedSteps}/4
+                </span>
+                <div className="flex gap-0.5 mt-0.5">
+                  {[hasFaqs, hasPersonality, hasWhatsapp, hasSocial].map((done, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 w-3 rounded-full ${done ? "bg-blue-500" : "bg-gray-200"}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Setup Configuration Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {setupCards.map((card) => {
-          const Icon = card.icon;
-          const colors = accentMap[card.accentColor];
-
+      {/* Quick Actions Grid - iOS-style rounded icon grid */}
+      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6 sm:gap-3">
+        {quickActions.map((action) => {
+          const Icon = action.icon;
+          const colors = colorMap[action.color];
           return (
             <Link
-              key={card.title}
-              href={card.href}
+              key={action.title}
+              href={action.href}
               className="group block"
             >
-              <Card className="relative overflow-hidden border transition-all duration-200 hover:shadow-md hover:border-gray-300 group-focus-visible:ring-2 group-focus-visible:ring-blue-500 group-focus-visible:ring-offset-2">
-                {/* Top accent line */}
-                <div
-                  className={`absolute inset-x-0 top-0 h-0.5 ${colors.bg.replace("50", "400")}`}
-                  style={{
-                    backgroundColor:
-                      card.accentColor === "blue"
-                        ? "#3b82f6"
-                        : card.accentColor === "violet"
-                        ? "#8b5cf6"
-                        : card.accentColor === "emerald"
-                        ? "#10b981"
-                        : "#f97316",
-                  }}
-                />
-
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3.5 min-w-0">
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${colors.bg} ring-1 ${colors.ring}`}
-                      >
-                        <Icon className={`h-5 w-5 ${colors.icon}`} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-[15px] leading-tight">
-                            {card.title}
-                          </h3>
-                          {card.configured ? (
-                            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                          ) : (
-                            <Circle className="h-4 w-4 shrink-0 text-gray-300" />
-                          )}
-                        </div>
-                        <p className="text-[13px] text-muted-foreground mt-1 leading-relaxed">
-                          {card.description}
-                        </p>
-                        {card.stat && (
-                          <Badge
-                            variant="secondary"
-                            className="mt-2.5 text-xs font-medium"
-                          >
-                            {card.stat}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 mt-1 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-600" />
+              <div className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3.5 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.96] hover:shadow-md">
+                <div className="relative">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${colors.bg}`}
+                  >
+                    <Icon className={`h-5 w-5 ${colors.icon}`} />
                   </div>
-                </CardContent>
-              </Card>
+                  {action.configured && action.color !== "gray" ? (
+                    <CheckCircle2 className="absolute -top-1 -right-1 h-4 w-4 text-emerald-500 bg-white rounded-full" />
+                  ) : !action.configured ? (
+                    <Circle className="absolute -top-1 -right-1 h-4 w-4 text-gray-300 bg-white rounded-full" />
+                  ) : null}
+                </div>
+                <span className="text-[12px] font-medium text-center leading-tight line-clamp-2">
+                  {action.title.split(" ").slice(0, 2).join(" ")}
+                </span>
+              </div>
             </Link>
           );
         })}
       </div>
 
-      {/* Analytics Preview */}
-      <Link href={`/agents/${agentId}/analytics`} className="group block">
-        <Card className="overflow-hidden border transition-all duration-200 hover:shadow-md hover:border-gray-300">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-50 ring-1 ring-gray-600/5">
-                  <BarChart3 className="h-5 w-5 text-gray-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[15px]">
-                    {t.agents.setupCards.analyticsTitle}
-                  </h3>
-                  <p className="text-[13px] text-muted-foreground mt-0.5">
-                    {t.agents.setupCards.analyticsDescription}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-4 text-right">
-                  <div>
-                    <p className="text-lg font-bold">{agent.messageCount.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{t.agents.messages}</p>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
+      {/* Detailed Setup Cards - only unconfigured items shown prominently */}
+      {completedSteps < 4 && (
+        <div className="space-y-2.5">
+          <h2 className="text-[15px] font-semibold text-muted-foreground px-0.5">
+            {t.agents.setupCards.pending}
+          </h2>
+          {!hasFaqs && (
+            <SetupCard
+              title={t.agents.setupCards.faqsTitle}
+              description={t.agents.setupCards.faqsDescription}
+              icon={HelpCircle}
+              href={`/agents/${agentId}/faqs`}
+              color="blue"
+            />
+          )}
+          {!hasPersonality && (
+            <SetupCard
+              title={t.agents.setupCards.personalityTitle}
+              description={t.agents.setupCards.personalityDescription}
+              icon={Sparkles}
+              href={`/agents/${agentId}/settings`}
+              color="violet"
+            />
+          )}
+          {!hasWhatsapp && (
+            <SetupCard
+              title={t.agents.setupCards.whatsappTitle}
+              description={t.agents.setupCards.whatsappDescription}
+              icon={Smartphone}
+              href={`/agents/${agentId}/whatsapp`}
+              color="emerald"
+            />
+          )}
+          {!hasSocial && (
+            <SetupCard
+              title={t.agents.setupCards.socialTitle}
+              description={t.agents.setupCards.socialDescription}
+              icon={Globe}
+              href={`/agents/${agentId}/social`}
+              color="orange"
+            />
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function SetupCard({
+  title,
+  description,
+  icon: Icon,
+  href,
+  color,
+}: {
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  color: string;
+}) {
+  const colorMap: Record<string, { bg: string; icon: string }> = {
+    blue: { bg: "bg-blue-50", icon: "text-blue-600" },
+    violet: { bg: "bg-violet-50", icon: "text-violet-600" },
+    emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
+    orange: { bg: "bg-orange-50", icon: "text-orange-600" },
+  };
+  const colors = colorMap[color] ?? colorMap.blue;
+
+  return (
+    <Link href={href} className="group block">
+      <div className="flex items-center gap-3.5 rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.99] hover:shadow-md">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colors.bg}`}
+        >
+          <Icon className={`h-5 w-5 ${colors.icon}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[15px] font-semibold leading-tight">{title}</h3>
+          <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-1">
+            {description}
+          </p>
+        </div>
+        <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-400" />
+      </div>
+    </Link>
   );
 }

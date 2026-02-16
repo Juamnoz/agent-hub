@@ -97,6 +97,22 @@ export interface Translations {
     connected: string;
     notConnected: string;
     editSettings: string;
+    configure: string;
+    setupCards: {
+      faqsTitle: string;
+      faqsDescription: string;
+      personalityTitle: string;
+      personalityDescription: string;
+      whatsappTitle: string;
+      whatsappDescription: string;
+      socialTitle: string;
+      socialDescription: string;
+      analyticsTitle: string;
+      analyticsDescription: string;
+      configured: string;
+      pending: string;
+      viewDetails: string;
+    };
   };
   faqEditor: {
     title: string;

@@ -130,14 +130,14 @@ export default function NewAgentPage() {
                   onClick={() => setAlgorithmType(key)}
                   className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
-                      ? "ring-2 ring-blue-500 bg-blue-50/50 shadow-md"
+                      ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
                       : "ring-black/[0.06] bg-white hover:shadow-md hover:ring-black/[0.1]"
                   }`}
                 >
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-blue-100" : "bg-gray-100"}`}>
-                    <Icon className={`h-5 w-5 ${selected ? "text-blue-600" : "text-gray-500"}`} />
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-orange-100" : "bg-gray-100"}`}>
+                    <Icon className={`h-5 w-5 ${selected ? "text-orange-600" : "text-gray-500"}`} />
                   </div>
-                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-blue-700" : "text-gray-700"}`}>
+                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-orange-700" : "text-gray-700"}`}>
                     {t.personalityBuilder.algorithms[tKey].name}
                   </span>
                   <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">

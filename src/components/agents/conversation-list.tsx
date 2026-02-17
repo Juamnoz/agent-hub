@@ -42,7 +42,7 @@ function getInitials(name: string) {
 }
 
 const initialsColors = [
-  "from-blue-400 to-blue-500",
+  "from-orange-400 to-orange-500",
   "from-violet-400 to-violet-500",
   "from-emerald-400 to-emerald-500",
   "from-amber-400 to-amber-500",
@@ -57,7 +57,7 @@ function getColor(name: string) {
 
 function StatusBadge({ status, t }: { status: ConversationStatus; t: ReturnType<typeof useLocaleStore.getState>["t"] }) {
   const config = {
-    bot_handling: { label: t.conversations.botHandling, icon: "🤖", bg: "bg-blue-100 text-blue-700" },
+    bot_handling: { label: t.conversations.botHandling, icon: "🤖", bg: "bg-orange-100 text-orange-700" },
     human_handling: { label: t.conversations.humanHandling, icon: "👤", bg: "bg-amber-100 text-amber-700" },
     resolved: { label: t.conversations.resolved, icon: "✓", bg: "bg-green-100 text-green-700" },
   };
@@ -133,7 +133,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
               placeholder={t.conversations.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-orange-500/20 transition-all"
             />
           </div>
           {/* Status filter tabs */}
@@ -144,7 +144,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
                 onClick={() => setStatusFilter(fb.key)}
                 className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-medium transition-colors ${
                   statusFilter === fb.key
-                    ? "bg-blue-500 text-white"
+                    ? "bg-orange-500 text-white"
                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
@@ -219,7 +219,7 @@ function ConversationRow({
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-gray-100 ${
-        isSelected ? "bg-blue-50/60" : "hover:bg-gray-50"
+        isSelected ? "bg-orange-50/60" : "hover:bg-gray-50"
       }`}
     >
       <div
@@ -317,7 +317,7 @@ function ChatView({
           <div className="flex items-center gap-2 shrink-0">
             {/* Bot / Human iOS toggle */}
             <div className="flex items-center gap-1.5">
-              <Bot className={`h-4 w-4 transition-colors ${!isHuman && !isResolved ? "text-blue-500" : "text-gray-300"}`} />
+              <Bot className={`h-4 w-4 transition-colors ${!isHuman && !isResolved ? "text-orange-500" : "text-gray-300"}`} />
               <button
                 onClick={() =>
                   setConversationStatus(
@@ -326,7 +326,7 @@ function ChatView({
                   )
                 }
                 className={`relative h-[28px] w-[50px] rounded-full transition-colors duration-300 ${
-                  isHuman ? "bg-amber-400" : "bg-blue-500"
+                  isHuman ? "bg-amber-400" : "bg-orange-500"
                 }`}
               >
                 <span
@@ -464,7 +464,7 @@ function TagDropdown({
               style={{ backgroundColor: tag.color }}
             />
             <span className="flex-1 text-left">{tag.name}</span>
-            {active && <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />}
+            {active && <CheckCircle2 className="h-3.5 w-3.5 text-orange-500" />}
           </button>
         );
       })}
@@ -484,7 +484,7 @@ function TagDropdown({
               placeholder={t.conversations.tagName}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full rounded-lg border px-2 py-1 text-[12px] outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border px-2 py-1 text-[12px] outline-none focus:ring-2 focus:ring-orange-500/20"
               autoFocus
             />
             <div className="flex gap-1">
@@ -493,7 +493,7 @@ function TagDropdown({
                   key={c}
                   onClick={() => setNewColor(c)}
                   className={`h-5 w-5 rounded-full transition-all ${
-                    newColor === c ? "ring-2 ring-offset-1 ring-blue-500" : ""
+                    newColor === c ? "ring-2 ring-offset-1 ring-orange-500" : ""
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -511,7 +511,7 @@ function TagDropdown({
                   setCreating(false);
                 }
               }}
-              className="w-full rounded-lg bg-blue-500 px-2 py-1 text-[12px] font-medium text-white hover:bg-blue-600 transition-colors"
+              className="w-full rounded-lg bg-orange-500 px-2 py-1 text-[12px] font-medium text-white hover:bg-orange-600 transition-colors"
             >
               {t.conversations.createTag}
             </button>
@@ -552,12 +552,12 @@ function MessageInput({
             }
           }}
           placeholder={t.conversations.writeMessage}
-          className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-[14px] outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+          className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-[14px] outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 transition-all"
         />
         <button
           onClick={handleSend}
           disabled={!text.trim()}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white transition-colors hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-blue-500"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white transition-colors hover:bg-orange-600 disabled:opacity-40 disabled:hover:bg-orange-500"
         >
           <Send className="h-4 w-4" />
         </button>
@@ -583,7 +583,7 @@ function MessageBubble({
 
   let bubbleClass: string;
   if (isAgent) {
-    bubbleClass = "bg-blue-500 text-white rounded-br-md";
+    bubbleClass = "bg-orange-500 text-white rounded-br-md";
   } else if (isHuman) {
     bubbleClass = "bg-emerald-500 text-white rounded-br-md";
   } else {

@@ -1,3 +1,55 @@
+// ---------------------------------------------------------------------------
+// Training Chat Types
+// ---------------------------------------------------------------------------
+
+export type TrainingMessageRole = "user" | "agent" | "system";
+export type TrainingToolType = "file" | "prices" | "schedule" | "menu" | "faq" | "sheets";
+
+export interface TrainingMessage {
+  id: string;
+  agentId: string;
+  role: TrainingMessageRole;
+  content: string;
+  toolType?: TrainingToolType;
+  knowledgeSaved?: boolean;
+  attachmentName?: string;
+}
+
+export const mockTrainingResponses: Record<string, string[]> = {
+  prices: [
+    "Perfecto, ya registre la informacion de precios. Voy a usar estos datos para responder consultas sobre tarifas y costos. Si necesitas actualizar algun precio, solo dimelo.",
+    "Excelente, tengo los precios guardados. Cuando un cliente pregunte por tarifas, usare esta informacion para darle una respuesta precisa.",
+    "Listo, precios actualizados en mi base de conocimiento. Puedo responder consultas de precios a partir de ahora.",
+  ],
+  schedule: [
+    "Perfecto, ya tengo los horarios registrados. Voy a informar a los clientes sobre disponibilidad y horarios de atencion cuando pregunten.",
+    "Horarios guardados correctamente. Ahora puedo responder preguntas sobre cuando estan disponibles los servicios.",
+    "Excelente, ya conozco los horarios. Si cambian, solo avisame y los actualizo de inmediato.",
+  ],
+  menu: [
+    "Ya tengo el menu registrado. Cuando los clientes pregunten por opciones de comida, les dare esta informacion con gusto.",
+    "Menu guardado. Puedo recomendar platillos y responder sobre opciones disponibles, precios y alergenos.",
+    "Perfecto, ya conozco las opciones del menu. Si hay cambios de temporada, solo dimelo para actualizar.",
+  ],
+  faq: [
+    "Pregunta frecuente registrada. La proxima vez que un cliente haga esta pregunta, la respondere automaticamente.",
+    "FAQ guardada en mi conocimiento. Esto me ayuda a dar respuestas mas rapidas y precisas.",
+    "Excelente, ya tengo esta pregunta y respuesta. Voy a usarla para atender consultas similares.",
+  ],
+  sheets: [
+    "Datos de la hoja importados correctamente. Ahora tengo acceso a esta informacion para responder consultas.",
+    "Informacion de Google Sheets procesada. Puedo usar estos datos para dar respuestas mas completas.",
+    "Perfecto, ya integre los datos de la hoja. Si actualizas el documento, dimelo para re-importar.",
+  ],
+  general: [
+    "Entendido, he guardado esta informacion. La usare para dar mejores respuestas a los clientes.",
+    "Perfecto, ya lo tengo registrado. Esto me ayuda a conocer mejor tu negocio y atender mejor a los clientes.",
+    "Excelente, informacion guardada. Cada detalle que me compartes me hace mas util para tu negocio.",
+    "Gracias por compartir eso. Ya lo tengo en mi base de conocimiento y lo usare cuando sea relevante.",
+    "Listo, aprendido. Si hay algo mas que deba saber sobre tu negocio, estoy aqui para escucharte.",
+  ],
+};
+
 export type AgentStatus = "active" | "inactive" | "setup";
 
 export interface HotelContact {
@@ -137,6 +189,13 @@ export const PLAN_INTEGRATION_LIMITS: Record<PlanTier, number> = {
   starter: 2,
   pro: 5,
   business: Infinity,
+  enterprise: Infinity,
+};
+
+export const PLAN_AGENT_LIMITS: Record<PlanTier, number> = {
+  starter: 1,
+  pro: 10,
+  business: 25,
   enterprise: Infinity,
 };
 

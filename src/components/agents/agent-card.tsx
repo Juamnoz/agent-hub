@@ -30,7 +30,7 @@ export function AgentCard({ agent }: AgentCardProps) {
       <div className="rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
         <div className="flex items-center gap-3.5">
           {/* Avatar */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
             <Bot className="h-5 w-5 text-white" />
           </div>
 

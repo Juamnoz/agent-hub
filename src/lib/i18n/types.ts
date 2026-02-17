@@ -24,6 +24,7 @@ export interface Translations {
   nav: {
     dashboard: string;
     agents: string;
+    training: string;
     billing: string;
     settings: string;
   };
@@ -425,6 +426,34 @@ export interface Translations {
     registerDescriptions: { corporate: string; professional: string; relaxed: string; genz: string };
     recommended: string;
     hotelNameLabels: { ecommerce: string; appointments: string; whatsappStore: string; hotel: string; restaurant: string };
+  };
+  trainingChat: {
+    title: string;
+    subtitle: string;
+    welcomeTitle: string;
+    welcomeSubtitle: string;
+    inputPlaceholder: string;
+    knowledgeSaved: string;
+    typing: string;
+    clearChat: string;
+    tools: {
+      uploadFile: string;
+      prices: string;
+      schedule: string;
+      menu: string;
+      faqs: string;
+      sheets: string;
+    };
+    toolPrompts: {
+      prices: string;
+      schedule: string;
+      menu: string;
+      faqs: string;
+      sheets: string;
+    };
+    quickActionTitle: string;
+    quickActionDescription: string;
+    fileUploaded: string;
   };
   agentSettings: {
     title: string;

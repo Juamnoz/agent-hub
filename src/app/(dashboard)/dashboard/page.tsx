@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
-import type { Agent } from "@/lib/mock-data";
+import { type Agent, PLAN_AGENT_LIMITS, CURRENT_PLAN } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { StatsCard } from "@/components/analytics/stats-card";
 import { AgentCard } from "@/components/agents/agent-card";
@@ -36,39 +36,33 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Stats - horizontal scroll on mobile, grid on desktop */}
-      <div className="-mx-4 sm:mx-0">
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible">
-          <StatsCard
-            title={t.dashboard.totalAgents}
-            value={stats.totalAgents}
-            icon={Bot}
-            accentColor="blue"
-            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
-          />
-          <StatsCard
-            title={t.dashboard.activeAgents}
-            value={stats.activeAgents}
-            icon={Activity}
-            accentColor="emerald"
-            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
-          />
-          <StatsCard
-            title={t.dashboard.messagesThisWeek}
-            value={stats.messagesThisWeek}
-            trend={{ value: weeklyChange, label: t.dashboard.vsLastWeek }}
-            icon={MessageSquare}
-            accentColor="violet"
-            className="min-w-[200px] shrink-0 sm:min-w-0 sm:shrink"
-          />
-          <StatsCard
-            title={t.dashboard.avgResponseTime}
-            value={stats.avgResponseTime}
-            icon={Clock}
-            accentColor="amber"
-            className="min-w-[160px] shrink-0 sm:min-w-0 sm:shrink"
-          />
-        </div>
+      {/* Stats - 2x2 grid on mobile, 4 cols on desktop */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatsCard
+          title={t.dashboard.totalAgents}
+          value={`${stats.totalAgents}/${PLAN_AGENT_LIMITS[CURRENT_PLAN] === Infinity ? "∞" : PLAN_AGENT_LIMITS[CURRENT_PLAN]}`}
+          icon={Bot}
+          accentColor="blue"
+        />
+        <StatsCard
+          title={t.dashboard.activeAgents}
+          value={stats.activeAgents}
+          icon={Activity}
+          accentColor="emerald"
+        />
+        <StatsCard
+          title={t.dashboard.messagesThisWeek}
+          value={stats.messagesThisWeek}
+          trend={{ value: weeklyChange, label: t.dashboard.vsLastWeek }}
+          icon={MessageSquare}
+          accentColor="violet"
+        />
+        <StatsCard
+          title={t.dashboard.avgResponseTime}
+          value={stats.avgResponseTime}
+          icon={Clock}
+          accentColor="amber"
+        />
       </div>
 
       {/* Your Agents Section */}
@@ -78,7 +72,7 @@ export default function DashboardPage() {
           <Button
             asChild
             size="sm"
-            className="h-8 rounded-full px-3.5 text-[13px] font-medium bg-blue-600 hover:bg-blue-700"
+            className="h-8 rounded-full px-3.5 text-[13px] font-medium bg-orange-500 hover:bg-orange-600"
           >
             <Link href="/agents/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -95,7 +89,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
               <Bot className="h-7 w-7 text-white" />
             </div>
             <h3 className="text-[17px] font-semibold mb-1">
@@ -106,7 +100,7 @@ export default function DashboardPage() {
             </p>
             <Button
               asChild
-              className="h-10 rounded-full px-5 text-[14px] font-medium bg-blue-600 hover:bg-blue-700"
+              className="h-10 rounded-full px-5 text-[14px] font-medium bg-orange-500 hover:bg-orange-600"
             >
               <Link href="/agents/new">
                 <Plus className="mr-2 h-4 w-4" />

@@ -131,7 +131,7 @@ export function ConnectionWizard({
               +1 (555) 123-4567
             </Badge>
             {connectedProvider && (
-              <Badge variant="outline" className="text-[11px] bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="outline" className="text-[11px] bg-orange-50 text-orange-700 border-orange-200">
                 {t.whatsapp.connectedVia} {connectedProvider === "wati" ? "WATI" : "Meta API"}
               </Badge>
             )}
@@ -159,9 +159,9 @@ export function ConnectionWizard({
           {/* WATI - Recommended */}
           <button
             onClick={() => { setProvider("wati"); setCurrentStep(0); }}
-            className="group relative flex flex-col items-center rounded-2xl bg-white px-3 py-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md hover:ring-blue-200 active:scale-[0.96] text-center"
+            className="group relative flex flex-col items-center rounded-2xl bg-white px-3 py-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md hover:ring-orange-200 active:scale-[0.96] text-center"
           >
-            <Badge className="absolute -top-1.5 right-2 bg-blue-600 text-white text-[9px] px-1.5 py-0 leading-4">
+            <Badge className="absolute -top-1.5 right-2 bg-orange-500 text-white text-[9px] px-1.5 py-0 leading-4">
               {t.whatsapp.recommended}
             </Badge>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 mb-2">
@@ -176,10 +176,10 @@ export function ConnectionWizard({
           {/* Direct Meta API */}
           <button
             onClick={() => { setProvider("meta"); setCurrentStep(0); }}
-            className="group flex flex-col items-center rounded-2xl bg-white px-3 py-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md hover:ring-blue-200 active:scale-[0.96] text-center"
+            className="group flex flex-col items-center rounded-2xl bg-white px-3 py-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md hover:ring-orange-200 active:scale-[0.96] text-center"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 mb-2">
-              <Smartphone className="h-5 w-5 text-blue-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 mb-2">
+              <Smartphone className="h-5 w-5 text-orange-600" />
             </div>
             <h3 className="text-[13px] font-semibold leading-tight">{t.whatsapp.directMeta}</h3>
             <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
@@ -223,7 +223,7 @@ export function ConnectionWizard({
               {i < currentStep ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               ) : i === currentStep ? (
-                <Circle className="h-5 w-5 text-blue-600 fill-blue-600" />
+                <Circle className="h-5 w-5 text-orange-600 fill-orange-600" />
               ) : (
                 <Circle className="h-5 w-5 text-gray-300" />
               )}

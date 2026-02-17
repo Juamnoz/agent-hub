@@ -17,6 +17,7 @@ import {
   Circle,
   Bot,
   Sparkles,
+  GraduationCap,
   Phone,
   TrendingUp,
   Clock,
@@ -119,6 +120,14 @@ export default function AgentDetailPage({
       color: "blue" as const,
     },
     {
+      title: t.trainingChat.quickActionTitle,
+      icon: GraduationCap,
+      href: `/agents/${agentId}/train`,
+      configured: true,
+      stat: "",
+      color: "violet" as const,
+    },
+    {
       title: t.agents.setupCards.personalityTitle,
       icon: Sparkles,
       href: `/agents/${agentId}/settings`,
@@ -181,8 +190,8 @@ export default function AgentDetailPage({
   ];
 
   const colorMap: Record<string, { bg: string; icon: string }> = {
-    blue: { bg: "bg-blue-50", icon: "text-blue-600" },
-    violet: { bg: "bg-violet-50", icon: "text-violet-600" },
+    blue: { bg: "bg-orange-50", icon: "text-orange-600" },
+    violet: { bg: "bg-orange-50", icon: "text-orange-600" },
     emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
     amber: { bg: "bg-amber-50", icon: "text-amber-600" },
     orange: { bg: "bg-orange-50", icon: "text-orange-600" },
@@ -206,7 +215,7 @@ export default function AgentDetailPage({
         <div className="p-4 pb-0 sm:p-5 sm:pb-0">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3.5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
                 <Bot className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -239,7 +248,7 @@ export default function AgentDetailPage({
               className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors group"
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <MessageSquare className="h-3 w-3 text-blue-500" />
+                <MessageSquare className="h-3 w-3 text-orange-500" />
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                   {t.agents.messages}
                 </span>
@@ -301,7 +310,7 @@ export default function AgentDetailPage({
                   {[hasFaqs, hasPersonality, hasWhatsapp, hasSocial].map((done, i) => (
                     <div
                       key={i}
-                      className={`h-1.5 w-3 rounded-full ${done ? "bg-blue-500" : "bg-gray-200"}`}
+                      className={`h-1.5 w-3 rounded-full ${done ? "bg-orange-500" : "bg-gray-200"}`}
                     />
                   ))}
                 </div>
@@ -432,7 +441,7 @@ export default function AgentDetailPage({
             </button>
             <button
               onClick={() => setDeleteStep(0)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-blue-600 transition-colors active:bg-blue-50"
+              className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
             >
               {t.common.cancel}
             </button>
@@ -462,7 +471,7 @@ export default function AgentDetailPage({
             </button>
             <button
               onClick={() => setDeleteStep(0)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-blue-600 transition-colors active:bg-blue-50"
+              className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
             >
               {t.common.cancel}
             </button>
@@ -562,10 +571,10 @@ function IntegrationsSection({
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                        locked ? "bg-gray-100" : "bg-blue-50"
+                        locked ? "bg-gray-100" : "bg-orange-50"
                       }`}
                     >
-                      <Icon className={`h-5 w-5 ${locked ? "text-gray-400" : "text-blue-600"}`} />
+                      <Icon className={`h-5 w-5 ${locked ? "text-gray-400" : "text-orange-600"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
@@ -585,7 +594,7 @@ function IntegrationsSection({
                           </Badge>
                         )}
                         {!locked && isRecommended(integration) && (
-                          <Badge className="text-[10px] bg-blue-50 text-blue-700 border-blue-200" variant="outline">
+                          <Badge className="text-[10px] bg-orange-50 text-orange-700 border-orange-200" variant="outline">
                             {t.personalityBuilder.recommended}
                           </Badge>
                         )}
@@ -643,8 +652,8 @@ function SetupCard({
   color: string;
 }) {
   const colorMap: Record<string, { bg: string; icon: string }> = {
-    blue: { bg: "bg-blue-50", icon: "text-blue-600" },
-    violet: { bg: "bg-violet-50", icon: "text-violet-600" },
+    blue: { bg: "bg-orange-50", icon: "text-orange-600" },
+    violet: { bg: "bg-orange-50", icon: "text-orange-600" },
     emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
     orange: { bg: "bg-orange-50", icon: "text-orange-600" },
   };

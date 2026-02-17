@@ -110,8 +110,8 @@ export function ContactsEditor({ agentId }: ContactsEditorProps) {
 
       {agentContacts.length === 0 ? (
         <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.04]">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
-            <Phone className="h-6 w-6 text-blue-600" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50">
+            <Phone className="h-6 w-6 text-orange-600" />
           </div>
           <h3 className="font-semibold mb-1">{t.contacts.noContactsTitle}</h3>
           <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
@@ -136,8 +136,8 @@ export function ContactsEditor({ agentId }: ContactsEditorProps) {
                     className="rounded-xl bg-white p-3.5 ring-1 ring-black/[0.04] mb-2"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                        <Phone className="h-4 w-4 text-blue-600" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50">
+                        <Phone className="h-4 w-4 text-orange-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[15px] font-medium truncate">

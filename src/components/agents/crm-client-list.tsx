@@ -27,7 +27,7 @@ function getInitials(name: string) {
 }
 
 const initialsColors = [
-  "from-blue-400 to-blue-500",
+  "from-orange-400 to-orange-500",
   "from-violet-400 to-violet-500",
   "from-emerald-400 to-emerald-500",
   "from-amber-400 to-amber-500",
@@ -42,7 +42,7 @@ function getColor(name: string) {
 
 const tagColors: Record<string, string> = {
   vip: "bg-amber-100 text-amber-700",
-  frecuente: "bg-blue-100 text-blue-700",
+  frecuente: "bg-orange-100 text-orange-700",
   nuevo: "bg-emerald-100 text-emerald-700",
 };
 
@@ -118,7 +118,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
               placeholder={t.conversations.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-orange-500/20 transition-all"
             />
           </div>
           {/* Filter chips */}
@@ -324,7 +324,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
                       rows={3}
-                      className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                      className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
@@ -340,7 +340,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                           setSelectedClient({ ...selectedClient, notes: notesValue });
                           setEditingNotes(false);
                         }}
-                        className="px-3 py-1.5 text-[13px] font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+                        className="px-3 py-1.5 text-[13px] font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
                       >
                         {t.common.save}
                       </button>
@@ -379,7 +379,7 @@ function FilterChip({
       onClick={onClick}
       className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all ${
         active
-          ? "bg-blue-500 text-white shadow-sm"
+          ? "bg-orange-500 text-white shadow-sm"
           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
       }`}
     >

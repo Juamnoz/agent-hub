@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agent Hub - AI Agents for Hotels",
+  title: "Lisa by Aic studio",
   description: "Platform where hotels manage AI agents that answer guest FAQs on WhatsApp",
 };
 

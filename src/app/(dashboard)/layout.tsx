@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { useLocaleStore } from "@/stores/locale-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 
 function usePageTitle(pathname: string): string {
   const { t } = useLocaleStore();
@@ -26,8 +27,9 @@ function usePageTitle(pathname: string): string {
   if (pathname.match(/^\/agents\/[^/]+\/analytics$/)) return t.analytics.title;
   if (pathname.match(/^\/agents\/[^/]+\/conversations$/)) return t.conversations.title;
   if (pathname.match(/^\/agents\/[^/]+\/crm$/)) return t.crm.title;
+  if (pathname.match(/^\/agents\/[^/]+\/train$/)) return t.trainingChat.title;
   if (pathname.match(/^\/agents\/[^/]+$/)) return t.agents.overview;
-  return "Agent Hub";
+  return "Lisa";
 }
 
 export default function DashboardLayout({
@@ -38,13 +40,14 @@ export default function DashboardLayout({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
   const title = usePageTitle(pathname);
+  const collapsed = useSidebarStore((s) => s.collapsed);
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       <Sidebar />
       <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 
-      <div className="lg:pl-60">
+      <div className={`transition-all duration-200 ${collapsed ? "lg:pl-16" : "lg:pl-60"}`}>
         <Topbar
           title={title}
           onMenuClick={() => setMobileNavOpen(true)}

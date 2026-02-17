@@ -44,11 +44,11 @@ export default function BillingPage() {
             <div
               key={plan.key}
               className={`relative flex flex-col rounded-2xl border-2 bg-white p-5 transition-shadow hover:shadow-md ${
-                isCurrent ? "border-blue-500 shadow-blue-100 shadow-md" : "border-gray-100"
+                isCurrent ? "border-orange-500 shadow-orange-100 shadow-md" : "border-gray-100"
               }`}
             >
               {isCurrent && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-500 px-3 py-0.5 text-[11px] font-semibold text-white">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-orange-500 px-3 py-0.5 text-[11px] font-semibold text-white">
                   {t.billing.currentPlanBadge}
                 </span>
               )}
@@ -57,11 +57,11 @@ export default function BillingPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                      isCurrent ? "bg-blue-100" : "bg-gray-100"
+                      isCurrent ? "bg-orange-100" : "bg-gray-100"
                     }`}
                   >
                     <Icon
-                      className={`h-4 w-4 ${isCurrent ? "text-blue-600" : "text-gray-600"}`}
+                      className={`h-4 w-4 ${isCurrent ? "text-orange-600" : "text-gray-600"}`}
                     />
                   </div>
                   <h3 className="text-[16px] font-bold text-gray-900">{planT.name}</h3>
@@ -91,7 +91,7 @@ export default function BillingPage() {
               ) : isCurrent ? (
                 <button
                   disabled
-                  className="w-full rounded-xl bg-blue-500 py-2.5 text-[13px] font-semibold text-white opacity-70 cursor-default"
+                  className="w-full rounded-xl bg-orange-500 py-2.5 text-[13px] font-semibold text-white opacity-70 cursor-default"
                 >
                   {t.billing.currentPlanBadge}
                 </button>
@@ -116,13 +116,13 @@ export default function BillingPage() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Bot className="h-4 w-4 text-blue-500" />
+                <Bot className="h-4 w-4 text-orange-500" />
                 <span className="text-[13px] font-medium text-gray-700">{t.billing.agentsUsage}</span>
               </div>
               <span className="text-[13px] font-semibold text-gray-900">3 / 3</span>
             </div>
             <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-              <div className="h-full rounded-full bg-blue-500" style={{ width: "100%" }} />
+              <div className="h-full rounded-full bg-orange-500" style={{ width: "100%" }} />
             </div>
           </div>
           {/* Conversations */}

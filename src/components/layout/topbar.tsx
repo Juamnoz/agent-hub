@@ -38,7 +38,7 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
           <DropdownMenuTrigger asChild>
             <button className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs font-medium bg-blue-600 text-white">
+                <AvatarFallback className="text-xs font-medium bg-orange-500 text-white">
                   JD
                 </AvatarFallback>
               </Avatar>

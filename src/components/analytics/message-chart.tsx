@@ -23,7 +23,7 @@ export function MessageChart({ data }: MessageChartProps) {
             <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
               <span className="text-xs text-muted-foreground">{d.messages}</span>
               <div
-                className="w-full bg-blue-500 rounded-t-sm min-h-[4px] transition-all"
+                className="w-full bg-orange-500 rounded-t-sm min-h-[4px] transition-all"
                 style={{ height: `${(d.messages / max) * 100}%` }}
               />
               <span className="text-xs text-muted-foreground">{d.day}</span>

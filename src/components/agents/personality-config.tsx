@@ -236,14 +236,14 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                   onClick={() => setAlgorithmType(key)}
                   className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
-                      ? "ring-2 ring-blue-500 bg-blue-50/50 shadow-md"
+                      ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
                       : "ring-black/[0.06] bg-white hover:shadow-md hover:ring-black/[0.1]"
                   }`}
                 >
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-blue-100" : "bg-gray-100"}`}>
-                    <Icon className={`h-5 w-5 ${selected ? "text-blue-600" : "text-gray-500"}`} />
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-orange-100" : "bg-gray-100"}`}>
+                    <Icon className={`h-5 w-5 ${selected ? "text-orange-600" : "text-gray-500"}`} />
                   </div>
-                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-blue-700" : "text-gray-700"}`}>
+                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-orange-700" : "text-gray-700"}`}>
                     {t.personalityBuilder.algorithms[tKey].name}
                   </span>
                   <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
@@ -275,12 +275,12 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                     onClick={() => setRegion(key)}
                     className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                       selected
-                        ? "ring-2 ring-blue-500 bg-blue-50/50 shadow-md"
+                        ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
                         : "ring-black/[0.06] bg-white hover:shadow-md"
                     }`}
                   >
                     <span className="text-2xl">{REGION_FLAGS[key]}</span>
-                    <span className={`text-[13px] font-semibold ${selected ? "text-blue-700" : "text-gray-700"}`}>
+                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-700" : "text-gray-700"}`}>
                       {t.personalityBuilder.regions[key]}
                     </span>
                     <span className="text-[11px] text-muted-foreground leading-tight italic">
@@ -304,11 +304,11 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                     onClick={() => setRegister(key)}
                     className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                       selected
-                        ? "ring-2 ring-blue-500 bg-blue-50/50 shadow-md"
+                        ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
                         : "ring-black/[0.06] bg-white hover:shadow-md"
                     }`}
                   >
-                    <span className={`text-[13px] font-semibold ${selected ? "text-blue-700" : "text-gray-700"}`}>
+                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-700" : "text-gray-700"}`}>
                       {t.personalityBuilder.registers[key]}
                     </span>
                     <span className="text-[11px] text-muted-foreground leading-tight">
@@ -383,13 +383,13 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
             <div className="space-y-2">
               <Label className="text-[14px] font-semibold">{t.personalityBuilder.previewTitle}</Label>
               <p className="text-[12px] text-muted-foreground">{t.personalityBuilder.previewSubtitle}</p>
-              <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 p-4 ring-1 ring-blue-100">
+              <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 p-4 ring-1 ring-orange-100">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500">
                     <Bot className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-semibold text-blue-700 mb-1">{name || agent.name}</p>
+                    <p className="text-[11px] font-semibold text-orange-700 mb-1">{name || agent.name}</p>
                     <p className="text-[13px] text-gray-700 leading-relaxed">{preview}</p>
                   </div>
                 </div>

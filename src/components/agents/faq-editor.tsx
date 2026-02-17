@@ -128,8 +128,8 @@ export function FaqEditor({ agentId }: FaqEditorProps) {
       {agentFaqs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="rounded-full bg-blue-50 p-3 mb-4">
-              <Plus className="h-6 w-6 text-blue-600" />
+            <div className="rounded-full bg-orange-50 p-3 mb-4">
+              <Plus className="h-6 w-6 text-orange-600" />
             </div>
             <h3 className="font-semibold mb-1">{t.faqEditor.noFaqsTitle}</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">

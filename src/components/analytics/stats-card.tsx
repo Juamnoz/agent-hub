@@ -12,9 +12,9 @@ interface StatsCardProps {
 
 const colorMap = {
   blue: {
-    bg: "bg-blue-50",
-    icon: "text-blue-600",
-    ring: "ring-blue-600/5",
+    bg: "bg-orange-50",
+    icon: "text-orange-600",
+    ring: "ring-orange-600/5",
   },
   emerald: {
     bg: "bg-emerald-50",
@@ -22,9 +22,9 @@ const colorMap = {
     ring: "ring-emerald-600/5",
   },
   violet: {
-    bg: "bg-violet-50",
-    icon: "text-violet-600",
-    ring: "ring-violet-600/5",
+    bg: "bg-orange-50",
+    icon: "text-orange-600",
+    ring: "ring-orange-600/5",
   },
   amber: {
     bg: "bg-amber-50",
@@ -46,22 +46,22 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
+        "rounded-2xl bg-white p-3 sm:p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
         className
       )}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-muted-foreground truncate">
+          <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground leading-tight">
             {title}
           </p>
-          <p className="text-[28px] font-bold tracking-tight leading-tight mt-1">
+          <p className="text-[22px] sm:text-[28px] font-bold tracking-tight leading-tight mt-0.5 sm:mt-1">
             {value}
           </p>
           {trend && (
             <p
               className={cn(
-                "text-xs font-medium mt-1.5",
+                "text-[10px] sm:text-xs font-medium mt-1",
                 trend.value >= 0 ? "text-emerald-600" : "text-red-500"
               )}
             >
@@ -72,12 +72,12 @@ export function StatsCard({
         </div>
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1",
+            "flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl ring-1",
             colors.bg,
             colors.ring
           )}
         >
-          <Icon className={cn("h-[18px] w-[18px]", colors.icon)} />
+          <Icon className={cn("h-3.5 w-3.5 sm:h-[18px] sm:w-[18px]", colors.icon)} />
         </div>
       </div>
     </div>

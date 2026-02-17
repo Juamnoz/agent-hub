@@ -12,6 +12,8 @@ import {
   type Integration,
   type AlgorithmType,
   type CommunicationStyle,
+  type TrainingMessage,
+  type TrainingToolType,
   mockAgents,
   mockFaqs,
   mockContacts,
@@ -22,6 +24,7 @@ import {
   mockDashboardStats,
   mockWeeklyMessages,
   mockIntegrations,
+  mockTrainingResponses,
   PLAN_INTEGRATION_LIMITS,
   CURRENT_PLAN,
 } from "@/lib/mock-data";
@@ -89,6 +92,11 @@ interface AgentStore {
     credentials: Record<string, string>;
   }) => void;
 
+  // Training Chat
+  trainingMessages: TrainingMessage[];
+  addTrainingMessage: (agentId: string, content: string, toolType?: TrainingToolType, attachmentName?: string) => void;
+  clearTrainingMessages: (agentId: string) => void;
+
   // Stats
   loadStats: () => void;
 }
@@ -103,6 +111,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   conversationTags: [],
   clients: [],
   integrations: [],
+  trainingMessages: [],
   stats: mockDashboardStats,
   weeklyMessages: mockWeeklyMessages,
 
@@ -416,6 +425,49 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           ? { ...i, ...(config.environment ? { environment: config.environment } : {}), credentials: config.credentials, configured: true }
           : i
       ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Training Chat
+  // -----------------------------------------------------------------------
+
+  addTrainingMessage: (agentId, content, toolType, attachmentName) => {
+    const userMsg: TrainingMessage = {
+      id: crypto.randomUUID(),
+      agentId,
+      role: "user",
+      content,
+      toolType,
+      attachmentName,
+    };
+    set((state) => ({
+      trainingMessages: [...state.trainingMessages, userMsg],
+    }));
+
+    // Simulate agent response after delay
+    const responseKey = toolType && mockTrainingResponses[toolType] ? toolType : "general";
+    const responses = mockTrainingResponses[responseKey];
+    const response = responses[Math.floor(Math.random() * responses.length)];
+
+    setTimeout(() => {
+      const agentMsg: TrainingMessage = {
+        id: crypto.randomUUID(),
+        agentId,
+        role: "agent",
+        content: response,
+        toolType,
+        knowledgeSaved: true,
+      };
+      set((state) => ({
+        trainingMessages: [...state.trainingMessages, agentMsg],
+      }));
+    }, 1500);
+  },
+
+  clearTrainingMessages: (agentId) => {
+    set((state) => ({
+      trainingMessages: state.trainingMessages.filter((m) => m.agentId !== agentId),
     }));
   },
 

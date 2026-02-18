@@ -8,6 +8,10 @@ export type WebhookEvent =
   | "faq.updated"
   | "faq.deleted"
   | "faq.templates_loaded"
+  | "product.created"
+  | "product.updated"
+  | "product.deleted"
+  | "product.imported"
   | "settings.updated";
 
 interface WebhookPayload {

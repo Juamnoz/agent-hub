@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   type Agent,
   type FAQ,
+  type Product,
   type HotelContact,
   type Conversation,
   type ConversationTag,
@@ -16,6 +17,7 @@ import {
   type TrainingToolType,
   mockAgents,
   mockFaqs,
+  mockProducts,
   mockContacts,
   mockConversations,
   mockMessages,
@@ -34,6 +36,7 @@ interface AgentStore {
   agents: Agent[];
   currentAgent: Agent | null;
   faqs: FAQ[];
+  products: Product[];
   contacts: HotelContact[];
   conversations: Conversation[];
   messages: Message[];
@@ -48,11 +51,18 @@ interface AgentStore {
   addAgent: (
     agent: Omit<
       Agent,
-      "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "faqCount"
+      "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "faqCount" | "productCount"
     >
   ) => void;
   updateAgent: (id: string, updates: Partial<Agent>) => void;
   deleteAgent: (id: string) => void;
+
+  // Product CRUD
+  loadProducts: (agentId: string) => void;
+  addProduct: (product: Omit<Product, "id" | "sortOrder">) => void;
+  importProducts: (agentId: string, source: string, newProducts: Omit<Product, "id" | "sortOrder">[]) => void;
+  updateProduct: (id: string, updates: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
 
   // FAQ CRUD
   loadFaqs: (agentId: string) => void;
@@ -105,6 +115,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   agents: mockAgents,
   currentAgent: null,
   faqs: [],
+  products: [],
   contacts: [],
   conversations: [],
   messages: [],
@@ -129,6 +140,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       userId: "user-001",
       messageCount: 0,
       faqCount: 0,
+      productCount: 0,
       createdAt: now,
       updatedAt: now,
     };
@@ -167,8 +179,84 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           ? []
           : state.faqs.filter((faq) => faq.agentId !== id),
       contacts: state.contacts.filter((c) => c.agentId !== id),
+      products: state.products.filter((p) => p.agentId !== id),
     }));
     sendWebhook("agent.deleted", { agent: deletedAgent });
+  },
+
+  // -----------------------------------------------------------------------
+  // Product CRUD
+  // -----------------------------------------------------------------------
+
+  loadProducts: (agentId) => {
+    const products = mockProducts.filter((p) => p.agentId === agentId);
+    set({ products });
+  },
+
+  addProduct: (productData) => {
+    const { products } = get();
+    const maxOrder = products.reduce(
+      (max, p) => Math.max(max, p.sortOrder),
+      0
+    );
+    const newProduct: Product = {
+      ...productData,
+      id: crypto.randomUUID(),
+      sortOrder: maxOrder + 1,
+    };
+    set((state) => ({
+      products: [...state.products, newProduct],
+      agents: state.agents.map((agent) =>
+        agent.id === productData.agentId
+          ? { ...agent, productCount: agent.productCount + 1 }
+          : agent
+      ),
+    }));
+    sendWebhook("product.created", { product: newProduct });
+  },
+
+  importProducts: (agentId, source, newProducts) => {
+    const { products } = get();
+    const maxOrder = products.reduce((max, p) => Math.max(max, p.sortOrder), 0);
+    const created: Product[] = newProducts.map((p, i) => ({
+      ...p,
+      id: crypto.randomUUID(),
+      sortOrder: maxOrder + 1 + i,
+    }));
+    set((state) => ({
+      products: [...state.products, ...created],
+      agents: state.agents.map((agent) =>
+        agent.id === agentId
+          ? { ...agent, productCount: agent.productCount + created.length }
+          : agent
+      ),
+    }));
+    sendWebhook("product.imported", { source, count: created.length, agentId });
+  },
+
+  updateProduct: (id, updates) => {
+    set((state) => ({
+      products: state.products.map((p) =>
+        p.id === id ? { ...p, ...updates } : p
+      ),
+    }));
+    const updatedProduct = get().products.find((p) => p.id === id);
+    sendWebhook("product.updated", { product: updatedProduct, updates });
+  },
+
+  deleteProduct: (id) => {
+    const productToDelete = get().products.find((p) => p.id === id);
+    set((state) => ({
+      products: state.products.filter((p) => p.id !== id),
+      agents: productToDelete
+        ? state.agents.map((agent) =>
+            agent.id === productToDelete.agentId
+              ? { ...agent, productCount: Math.max(0, agent.productCount - 1) }
+              : agent
+          )
+        : state.agents,
+    }));
+    sendWebhook("product.deleted", { product: productToDelete });
   },
 
   // -----------------------------------------------------------------------

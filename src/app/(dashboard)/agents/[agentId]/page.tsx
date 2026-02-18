@@ -63,7 +63,7 @@ export default function AgentDetailPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { agents, faqs, integrations, deleteAgent, loadIntegrations, toggleIntegration } = useAgentStore();
+  const { agents, faqs, products, integrations, deleteAgent, loadIntegrations, loadProducts, toggleIntegration } = useAgentStore();
   const { t } = useLocaleStore();
   const router = useRouter();
   const agent = agents.find((a) => a.id === agentId);
@@ -72,7 +72,8 @@ export default function AgentDetailPage({
 
   useEffect(() => {
     loadIntegrations(agentId);
-  }, [agentId, loadIntegrations]);
+    loadProducts(agentId);
+  }, [agentId, loadIntegrations, loadProducts]);
 
   if (!agent) {
     return (
@@ -108,6 +109,9 @@ export default function AgentDetailPage({
     agent.socialLinks &&
     Object.values(agent.socialLinks).some((v) => v && v.trim());
   const completedSteps = [hasFaqs, hasPersonality, hasWhatsapp, hasSocial].filter(Boolean).length;
+
+  const showProducts = ["whatsapp-store", "ecommerce", "restaurant"].includes(agent.algorithmType ?? "");
+  const hasProducts = agent.productCount > 0;
 
   // Quick action cards (the main sections to configure)
   const quickActions = [
@@ -145,6 +149,18 @@ export default function AgentDetailPage({
       stat: "",
       color: "amber" as const,
     },
+    ...(showProducts
+      ? [
+          {
+            title: t.products.catalogTitle,
+            icon: ShoppingBag,
+            href: `/agents/${agentId}/products`,
+            configured: hasProducts,
+            stat: hasProducts ? `${agent.productCount}` : "0",
+            color: "orange" as const,
+          },
+        ]
+      : []),
     {
       title: t.agents.setupCards.conversationsTitle,
       icon: MessageSquare,

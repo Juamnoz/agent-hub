@@ -6,10 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Bot,
+  ShoppingBag,
   CreditCard,
   Settings,
   LogOut,
-  GraduationCap,
+  Sparkles,
   ChevronDown,
   Check,
 } from "lucide-react";
@@ -38,15 +39,16 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const router = useRouter();
   const { t } = useLocaleStore();
   const agents = useAgentStore((s) => s.agents);
-  const [trainingExpanded, setTrainingExpanded] = useState(false);
+  const [lisaExpanded, setLisaExpanded] = useState(false);
 
-  const isTrainingActive = pathname.endsWith("/train");
-  const trainMatch = pathname.match(/^\/agents\/([^/]+)\/train$/);
-  const currentTrainAgentId = trainMatch?.[1] ?? null;
+  const isLisaActive = pathname.startsWith("/lisa");
+  const lisaMatch = pathname.match(/^\/lisa\/([^/]+)$/);
+  const currentLisaAgentId = lisaMatch?.[1] ?? null;
 
   const navItems = [
     { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard },
     { label: t.nav.agents, href: "/agents", icon: Bot },
+    { label: t.nav.products, href: "/products", icon: ShoppingBag },
   ];
 
   const bottomNavItems = [
@@ -55,9 +57,9 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   ];
 
   function handleSelectAgent(agentId: string) {
-    setTrainingExpanded(false);
+    setLisaExpanded(false);
     onOpenChange(false);
-    router.push(`/agents/${agentId}/train`);
+    router.push(`/lisa/${agentId}`);
   }
 
   return (
@@ -86,7 +88,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                 onClick={() => onOpenChange(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive && !isTrainingActive
+                  isActive && !isLisaActive
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
@@ -97,23 +99,23 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
             );
           })}
 
-          {/* Training item with expandable agent selector */}
+          {/* Lisa item with expandable agent selector */}
           <div>
             <button
-              onClick={() => setTrainingExpanded((prev) => !prev)}
+              onClick={() => setLisaExpanded((prev) => !prev)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full",
-                isTrainingActive
+                isLisaActive
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
-              <GraduationCap className="h-4 w-4" />
-              <span className="flex-1 text-left">{t.nav.training}</span>
+              <Sparkles className="h-4 w-4" />
+              <span className="flex-1 text-left">Lisa</span>
               <ChevronDown
                 className={cn(
                   "h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200",
-                  trainingExpanded && "rotate-180"
+                  lisaExpanded && "rotate-180"
                 )}
               />
             </button>
@@ -122,64 +124,70 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
             <div
               className={cn(
                 "overflow-hidden transition-all duration-200",
-                trainingExpanded ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+                lisaExpanded ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
               )}
             >
+              {/* New agent option */}
+              <Link
+                href="/lisa"
+                onClick={() => { setLisaExpanded(false); onOpenChange(false); }}
+                className="flex items-center gap-2 mx-3 mt-2 mb-1 rounded-lg px-3 py-2 text-[13px] font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {t.lisa.newAgent}
+              </Link>
+
               {agents.length === 0 ? (
-                <div className="px-4 py-4 text-center">
+                <div className="px-4 py-3 text-center">
                   <p className="text-xs text-muted-foreground">
                     {t.agents.noAgentsDescription}
                   </p>
-                  <Link
-                    href="/agents/new"
-                    onClick={() => onOpenChange(false)}
-                    className="inline-block mt-2 text-xs font-medium text-orange-600 hover:underline"
-                  >
-                    {t.dashboard.createAgent}
-                  </Link>
                 </div>
               ) : (
-                <div className="py-1 max-h-52 overflow-y-auto">
-                  {agents.map((agent) => {
-                    const isSelected = currentTrainAgentId === agent.id;
-                    return (
-                      <button
-                        key={agent.id}
-                        onClick={() => handleSelectAgent(agent.id)}
-                        className={cn(
-                          "flex items-center gap-2.5 w-full pl-10 pr-3 py-2 text-left transition-colors rounded-md mx-1",
-                          isSelected
-                            ? "bg-accent"
-                            : "hover:bg-accent/50"
-                        )}
-                        style={{ width: "calc(100% - 0.5rem)" }}
-                      >
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 shrink-0">
-                          <Bot className="h-3.5 w-3.5 text-orange-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[13px] font-medium truncate">
-                              {agent.name}
-                            </span>
-                            <span
-                              className={cn(
-                                "h-1.5 w-1.5 rounded-full shrink-0",
-                                statusColors[agent.status] ?? "bg-gray-400"
-                              )}
-                            />
+                <>
+                  <div className="mx-4 my-1.5 border-t border-border" />
+                  <div className="py-1 max-h-52 overflow-y-auto">
+                    {agents.map((agent) => {
+                      const isSelected = currentLisaAgentId === agent.id;
+                      return (
+                        <button
+                          key={agent.id}
+                          onClick={() => handleSelectAgent(agent.id)}
+                          className={cn(
+                            "flex items-center gap-2.5 w-full pl-10 pr-3 py-2 text-left transition-colors rounded-md mx-1",
+                            isSelected
+                              ? "bg-accent"
+                              : "hover:bg-accent/50"
+                          )}
+                          style={{ width: "calc(100% - 0.5rem)" }}
+                        >
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 shrink-0">
+                            <Bot className="h-3.5 w-3.5 text-orange-600" />
                           </div>
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {agent.hotelName}
-                          </p>
-                        </div>
-                        {isSelected && (
-                          <Check className="h-3.5 w-3.5 text-orange-600 shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[13px] font-medium truncate">
+                                {agent.name}
+                              </span>
+                              <span
+                                className={cn(
+                                  "h-1.5 w-1.5 rounded-full shrink-0",
+                                  statusColors[agent.status] ?? "bg-gray-400"
+                                )}
+                              />
+                            </div>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {agent.hotelName}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <Check className="h-3.5 w-3.5 text-orange-600 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </div>

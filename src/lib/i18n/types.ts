@@ -24,7 +24,9 @@ export interface Translations {
   nav: {
     dashboard: string;
     agents: string;
+    products: string;
     training: string;
+    lisa: string;
     billing: string;
     settings: string;
   };
@@ -60,6 +62,8 @@ export interface Translations {
     avgResponseTime: string;
     yourAgents: string;
     createAgent: string;
+    createWithLisa: string;
+    createWithLisaDescription: string;
     noAgentsTitle: string;
     noAgentsDescription: string;
     createFirstAgent: string;
@@ -246,6 +250,10 @@ export interface Translations {
     weeklyReportsDesc: string;
     agentAlerts: string;
     agentAlertsDesc: string;
+    businessPreferences: string;
+    businessPreferencesDescription: string;
+    currency: string;
+    currencyDescription: string;
     saved: string;
     dangerZone: string;
     deleteAccount: string;
@@ -427,6 +435,22 @@ export interface Translations {
     recommended: string;
     hotelNameLabels: { ecommerce: string; appointments: string; whatsappStore: string; hotel: string; restaurant: string };
   };
+  lisa: {
+    title: string;
+    subtitle: string;
+    newAgent: string;
+    welcomeTitle: string;
+    welcomeSubtitle: string;
+    welcomeTrainingTitle: string;
+    welcomeTrainingSubtitle: string;
+    inputPlaceholder: string;
+    suggestions: {
+      hotel: string;
+      restaurant: string;
+      ecommerce: string;
+      appointment: string;
+    };
+  };
   trainingChat: {
     title: string;
     subtitle: string;
@@ -454,6 +478,51 @@ export interface Translations {
     quickActionTitle: string;
     quickActionDescription: string;
     fileUploaded: string;
+  };
+  products: {
+    title: string;
+    addProduct: string;
+    editProduct: string;
+    name: string;
+    namePlaceholder: string;
+    description: string;
+    descriptionPlaceholder: string;
+    price: string;
+    pricePlaceholder: string;
+    category: string;
+    categoryPlaceholder: string;
+    sku: string;
+    skuPlaceholder: string;
+    stock: string;
+    stockPlaceholder: string;
+    imageUrl: string;
+    imageUrlPlaceholder: string;
+    variants: string;
+    variantName: string;
+    variantNamePlaceholder: string;
+    variantOptions: string;
+    variantOptionsPlaceholder: string;
+    addVariant: string;
+    removeVariant: string;
+    noProductsTitle: string;
+    noProductsDescription: string;
+    addFirstProduct: string;
+    saveChanges: string;
+    productAdded: string;
+    productUpdated: string;
+    productDeleted: string;
+    required: string;
+    catalogTitle: string;
+    catalogDescription: string;
+    importTitle: string;
+    importFromEcommerce: string;
+    importFromSheets: string;
+    importFromWeb: string;
+    importing: string;
+    importSuccess: string;
+    productsImported: string;
+    requiresIntegration: string;
+    requiresWebsite: string;
   };
   agentSettings: {
     title: string;

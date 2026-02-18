@@ -125,6 +125,17 @@
   }
 }
 
+/* Lisa button gradient animation */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.lisa-btn {
+  background: linear-gradient(135deg, #f97316, #ea580c, #f59e0b, #f97316);
+  background-size: 300% 300%;
+  animation: gradient-shift 3s ease infinite;
+}
+
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;

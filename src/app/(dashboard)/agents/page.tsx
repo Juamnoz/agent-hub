@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Bot } from "lucide-react";
+import { Plus, Bot, Sparkles } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import type { Agent } from "@/lib/mock-data";
@@ -21,12 +21,20 @@ export default function AgentsPage() {
             {t.agents.noAgentsDescription}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/agents/new">
-            <Plus className="mr-2 h-4 w-4" />
-            {t.agents.newAgent}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="rounded-full">
+            <Link href="/agents/new">
+              <Plus className="mr-2 h-4 w-4" />
+              {t.agents.newAgent}
+            </Link>
+          </Button>
+          <Button asChild className="rounded-full lisa-btn text-white border-0">
+            <Link href="/lisa">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {t.dashboard.createWithLisa}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {agents.length > 0 ? (

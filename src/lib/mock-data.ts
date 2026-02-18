@@ -100,6 +100,7 @@ export interface Agent {
   communicationStyle?: CommunicationStyle;
   messageCount: number;
   faqCount: number;
+  productCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +112,26 @@ export const ALGORITHM_RECOMMENDED_INTEGRATIONS: Record<AlgorithmType, string[]>
   hotel: ["google-sheets", "google-calendar", "gmail"],
   restaurant: ["google-calendar", "google-sheets"],
 };
+
+export interface ProductVariant {
+  name: string;
+  options: string[];
+}
+
+export interface Product {
+  id: string;
+  agentId: string;
+  name: string;
+  description?: string;
+  price: number;
+  category: string;
+  imageUrl?: string;
+  sku?: string;
+  stock?: number;
+  variants: ProductVariant[];
+  isActive: boolean;
+  sortOrder: number;
+}
 
 export interface FAQ {
   id: string;
@@ -245,6 +266,7 @@ export const mockAgents: Agent[] = [
     communicationStyle: { region: "colombian", register: "professional" },
     messageCount: 1247,
     faqCount: 8,
+    productCount: 0,
     createdAt: "2025-10-15T08:00:00Z",
     updatedAt: "2026-02-14T12:30:00Z",
   },
@@ -264,6 +286,7 @@ export const mockAgents: Agent[] = [
     communicationStyle: { region: "neutral", register: "corporate" },
     messageCount: 834,
     faqCount: 6,
+    productCount: 0,
     createdAt: "2025-11-02T10:00:00Z",
     updatedAt: "2026-02-13T09:15:00Z",
   },
@@ -282,6 +305,7 @@ export const mockAgents: Agent[] = [
     communicationStyle: { region: "mexican", register: "relaxed" },
     messageCount: 0,
     faqCount: 0,
+    productCount: 3,
     createdAt: "2026-02-10T14:00:00Z",
     updatedAt: "2026-02-10T14:00:00Z",
   },
@@ -371,6 +395,57 @@ export const mockFaqs: FAQ[] = [
     category: "Políticas",
     sortOrder: 8,
     isActive: true,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Products (for agent-003 restaurant)
+// ---------------------------------------------------------------------------
+
+export const mockProducts: Product[] = [
+  {
+    id: "prod-001",
+    agentId: "agent-003",
+    name: "Tacos al Pastor",
+    description: "Tres tacos de cerdo adobado con piña, cilantro y cebolla. Servidos con salsa verde y limón.",
+    price: 85,
+    category: "Platillos principales",
+    sku: "TAC-001",
+    stock: 50,
+    variants: [
+      { name: "Tortilla", options: ["Maíz", "Harina"] },
+      { name: "Picor", options: ["Sin chile", "Medio", "Extra picante"] },
+    ],
+    isActive: true,
+    sortOrder: 1,
+  },
+  {
+    id: "prod-002",
+    agentId: "agent-003",
+    name: "Mezcal Artesanal",
+    description: "Mezcal joven de Oaxaca, 100% agave espadín. Servido con naranja y sal de gusano.",
+    price: 120,
+    category: "Bebidas",
+    sku: "BEB-001",
+    stock: 30,
+    variants: [
+      { name: "Medida", options: ["Caballito", "Doble"] },
+    ],
+    isActive: true,
+    sortOrder: 2,
+  },
+  {
+    id: "prod-003",
+    agentId: "agent-003",
+    name: "Churros con Chocolate",
+    description: "Seis churros recién hechos con azúcar y canela, acompañados de chocolate caliente para dippear.",
+    price: 65,
+    category: "Postres",
+    sku: "POS-001",
+    stock: 25,
+    variants: [],
+    isActive: false,
+    sortOrder: 3,
   },
 ];
 
@@ -809,6 +884,29 @@ export const mockWeeklyMessages: WeeklyMessageData[] = [
   { day: "Sat", messages: 18 },
   { day: "Sun", messages: 11 },
 ];
+
+// ---------------------------------------------------------------------------
+// Mock Import Products (3 sources)
+// ---------------------------------------------------------------------------
+
+export const mockImportProducts = {
+  ecommerce: [
+    { name: "Camiseta Logo Premium", description: "Camiseta 100% algodón con logo bordado. Disponible en negro, blanco y gris.", price: 349, category: "Ropa", sku: "CAM-001", stock: 120, variants: [{ name: "Talla", options: ["S", "M", "L", "XL"] }, { name: "Color", options: ["Negro", "Blanco", "Gris"] }], isActive: true },
+    { name: "Gorra Snapback", description: "Gorra ajustable con visera plana y logo bordado.", price: 199, category: "Accesorios", sku: "GOR-001", stock: 85, variants: [{ name: "Color", options: ["Negro", "Azul marino"] }], isActive: true },
+    { name: "Tenis Running Pro", description: "Tenis deportivos con suela de gel y malla transpirable.", price: 1299, category: "Calzado", sku: "TEN-001", stock: 45, variants: [{ name: "Talla", options: ["25", "26", "27", "28", "29"] }], isActive: true },
+    { name: "Mochila Urban 25L", description: "Mochila resistente al agua con compartimento para laptop 15\".", price: 599, category: "Accesorios", sku: "MOC-001", stock: 60, variants: [], isActive: true },
+  ],
+  sheets: [
+    { name: "Aceite de Oliva Extra Virgen 500ml", description: "Aceite importado de España, primera prensada en frío.", price: 189, category: "Alimentos", sku: "ALI-001", stock: 200, variants: [], isActive: true },
+    { name: "Jabón Artesanal Lavanda", description: "Jabón natural hecho a mano con aceites esenciales de lavanda.", price: 85, category: "Cuidado personal", sku: "JAB-001", stock: 150, variants: [{ name: "Peso", options: ["100g", "200g"] }], isActive: true },
+    { name: "Vela Aromática Soja", description: "Vela de cera de soja con aroma a vainilla. 40 horas de duración.", price: 245, category: "Hogar", sku: "VEL-001", stock: 90, variants: [{ name: "Aroma", options: ["Vainilla", "Canela", "Lavanda"] }], isActive: true },
+  ],
+  scraping: [
+    { name: "Suite Presidencial", description: "Habitación de lujo con vista panorámica al mar, sala de estar privada, jacuzzi en terraza y servicio de mayordomo incluido. Capacidad máxima 4 personas.", price: 8500, category: "Habitaciones", stock: 2, variants: [{ name: "Vista", options: ["Mar", "Ciudad"] }], isActive: true },
+    { name: "Tour Snorkel + Cenote", description: "Excursión de día completo incluyendo snorkel en arrecife de coral, visita a cenote sagrado, comida típica y transporte ida y vuelta desde el hotel.", price: 1800, category: "Experiencias", stock: 20, variants: [{ name: "Horario", options: ["7:00 AM", "9:00 AM"] }], isActive: true },
+    { name: "Paquete Spa Relajante", description: "Circuito completo de spa con masaje de piedras calientes 60 min, facial hidratante, acceso a sauna y vapor, y copa de vino espumoso de cortesía.", price: 2200, category: "Bienestar", stock: 10, variants: [{ name: "Duración", options: ["60 min", "90 min", "120 min"] }], isActive: true },
+  ],
+};
 
 // ---------------------------------------------------------------------------
 // FAQ Templates

@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Clock,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -69,16 +70,29 @@ export default function DashboardPage() {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[17px] font-semibold">{t.dashboard.yourAgents}</h2>
-          <Button
-            asChild
-            size="sm"
-            className="h-8 rounded-full px-3.5 text-[13px] font-medium bg-orange-500 hover:bg-orange-600"
-          >
-            <Link href="/agents/new">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {t.dashboard.createAgent}
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-full px-3.5 text-[13px] font-medium"
+            >
+              <Link href="/agents/new">
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {t.dashboard.createAgent}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="h-8 rounded-full px-3.5 text-[13px] font-medium lisa-btn text-white border-0"
+            >
+              <Link href="/lisa">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                {t.dashboard.createWithLisa}
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {agents.length > 0 ? (
@@ -100,15 +114,39 @@ export default function DashboardPage() {
             </p>
             <Button
               asChild
-              className="h-10 rounded-full px-5 text-[14px] font-medium bg-orange-500 hover:bg-orange-600"
+              className="h-10 rounded-full px-5 text-[14px] font-medium lisa-btn text-white border-0"
             >
-              <Link href="/agents/new">
-                <Plus className="mr-2 h-4 w-4" />
-                {t.dashboard.createFirstAgent}
+              <Link href="/lisa">
+                <Sparkles className="mr-2 h-4 w-4" />
+                {t.dashboard.createWithLisa}
               </Link>
             </Button>
           </div>
         )}
+      </div>
+      {/* Lisa CTA Card */}
+      <div className="rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 p-6 ring-1 ring-orange-200/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-md">
+            <Sparkles className="h-7 w-7 text-white" />
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className="text-[17px] font-semibold">{t.dashboard.createWithLisa}</h3>
+            <p className="text-[13px] text-muted-foreground mt-0.5 leading-relaxed">
+              {t.dashboard.createWithLisaDescription}
+            </p>
+          </div>
+          <Button
+            asChild
+            className="h-10 rounded-full px-5 text-[14px] font-medium lisa-btn text-white border-0 shadow-md"
+          >
+            <Link href="/lisa">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {t.dashboard.createWithLisa}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

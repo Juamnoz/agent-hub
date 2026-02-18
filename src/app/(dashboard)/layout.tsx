@@ -15,11 +15,13 @@ function usePageTitle(pathname: string): string {
     "/dashboard": t.nav.dashboard,
     "/agents": t.nav.agents,
     "/agents/new": t.agents.createTitle,
+    "/products": t.products.title,
     "/billing": t.nav.billing,
     "/settings": t.nav.settings,
   };
 
   if (titles[pathname]) return titles[pathname];
+  if (pathname.match(/^\/agents\/[^/]+\/products$/)) return t.products.title;
   if (pathname.match(/^\/agents\/[^/]+\/contacts$/)) return t.contacts.title;
   if (pathname.match(/^\/agents\/[^/]+\/faqs$/)) return t.faqEditor.title;
   if (pathname.match(/^\/agents\/[^/]+\/settings$/)) return t.agentSettings.title;
@@ -28,6 +30,8 @@ function usePageTitle(pathname: string): string {
   if (pathname.match(/^\/agents\/[^/]+\/conversations$/)) return t.conversations.title;
   if (pathname.match(/^\/agents\/[^/]+\/crm$/)) return t.crm.title;
   if (pathname.match(/^\/agents\/[^/]+\/train$/)) return t.trainingChat.title;
+  if (pathname === "/lisa") return "Lisa";
+  if (pathname.match(/^\/lisa\/[^/]+$/)) return "Lisa";
   if (pathname.match(/^\/agents\/[^/]+$/)) return t.agents.overview;
   return "Lisa";
 }

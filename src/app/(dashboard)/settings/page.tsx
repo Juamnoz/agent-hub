@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -33,6 +40,7 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(true);
   const [agentAlerts, setAgentAlerts] = useState(false);
+  const [currency, setCurrency] = useState("COP");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleSave = () => {
@@ -76,6 +84,44 @@ export default function SettingsPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Business Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.settingsPage.businessPreferences}</CardTitle>
+          <CardDescription>{t.settingsPage.businessPreferencesDescription}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currency">{t.settingsPage.currency}</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger id="currency" className="w-full sm:w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="COP">COP - Peso colombiano ($)</SelectItem>
+                <SelectItem value="MXN">MXN - Peso mexicano ($)</SelectItem>
+                <SelectItem value="ARS">ARS - Peso argentino ($)</SelectItem>
+                <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
+                <SelectItem value="EUR">EUR - Euro (&euro;)</SelectItem>
+                <SelectItem value="BRL">BRL - Real brasileiro (R$)</SelectItem>
+                <SelectItem value="PEN">PEN - Sol peruano (S/)</SelectItem>
+                <SelectItem value="CLP">CLP - Peso chileno ($)</SelectItem>
+                <SelectItem value="UYU">UYU - Peso uruguayo ($)</SelectItem>
+                <SelectItem value="BOB">BOB - Boliviano (Bs)</SelectItem>
+                <SelectItem value="PYG">PYG - Guaraní (₲)</SelectItem>
+                <SelectItem value="DOP">DOP - Peso dominicano (RD$)</SelectItem>
+                <SelectItem value="GTQ">GTQ - Quetzal (Q)</SelectItem>
+                <SelectItem value="CRC">CRC - Colón costarricense (₡)</SelectItem>
+                <SelectItem value="PAB">PAB - Balboa (B/.)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t.settingsPage.currencyDescription}
+            </p>
           </div>
         </CardContent>
       </Card>

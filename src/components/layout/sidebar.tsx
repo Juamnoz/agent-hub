@@ -6,14 +6,16 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Bot,
+  ShoppingBag,
   CreditCard,
   Settings,
   LogOut,
-  GraduationCap,
+  Sparkles,
   PanelLeftClose,
   PanelLeft,
   ChevronRight,
   Check,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -43,31 +45,32 @@ export function Sidebar() {
   const { t } = useLocaleStore();
   const { collapsed, toggleSidebar } = useSidebarStore();
   const agents = useAgentStore((s) => s.agents);
-  const [trainingOpen, setTrainingOpen] = useState(false);
+  const [lisaOpen, setLisaOpen] = useState(false);
 
   const navItems = [
     { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard },
     { label: t.nav.agents, href: "/agents", icon: Bot },
+    { label: t.nav.products, href: "/products", icon: ShoppingBag },
     { label: t.nav.billing, href: "/billing", icon: CreditCard },
     { label: t.nav.settings, href: "/settings", icon: Settings },
   ];
 
-  const isTrainingActive = pathname.endsWith("/train");
+  const isLisaActive = pathname.startsWith("/lisa");
 
-  // Extract current agent ID from pathname if on train page
-  const trainMatch = pathname.match(/^\/agents\/([^/]+)\/train$/);
-  const currentTrainAgentId = trainMatch?.[1] ?? null;
+  // Extract current agent ID from pathname if on lisa/[agentId] page
+  const lisaMatch = pathname.match(/^\/lisa\/([^/]+)$/);
+  const currentLisaAgentId = lisaMatch?.[1] ?? null;
 
   function handleSelectAgent(agentId: string) {
-    setTrainingOpen(false);
-    router.push(`/agents/${agentId}/train`);
+    setLisaOpen(false);
+    router.push(`/lisa/${agentId}`);
   }
 
-  function renderTrainingItem() {
+  function renderLisaItem() {
     const triggerClasses = cn(
       "flex items-center rounded-lg text-sm font-medium transition-colors w-full cursor-pointer",
       collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
-      isTrainingActive
+      isLisaActive
         ? "bg-accent text-accent-foreground"
         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
     );
@@ -75,14 +78,14 @@ export function Sidebar() {
     const trigger = (
       <PopoverTrigger asChild>
         <button className={triggerClasses}>
-          <GraduationCap className="h-4 w-4 shrink-0" />
+          <Sparkles className="h-4 w-4 shrink-0" />
           {!collapsed && (
             <>
-              <span className="flex-1 text-left">{t.nav.training}</span>
+              <span className="flex-1 text-left">Lisa</span>
               <ChevronRight
                 className={cn(
                   "h-3 w-3 text-muted-foreground/60 transition-transform",
-                  trainingOpen && "rotate-90"
+                  lisaOpen && "rotate-90"
                 )}
               />
             </>
@@ -92,12 +95,12 @@ export function Sidebar() {
     );
 
     return (
-      <Popover open={trainingOpen} onOpenChange={setTrainingOpen}>
+      <Popover open={lisaOpen} onOpenChange={setLisaOpen}>
         {collapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-            {!trainingOpen && (
-              <TooltipContent side="right">{t.nav.training}</TooltipContent>
+            {!lisaOpen && (
+              <TooltipContent side="right">Lisa</TooltipContent>
             )}
           </Tooltip>
         ) : (
@@ -110,66 +113,72 @@ export function Sidebar() {
           className="w-72 p-0 overflow-hidden"
         >
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-semibold">{t.nav.training}</p>
+            <p className="text-sm font-semibold">Lisa</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {t.trainingChat.subtitle}
+              {t.lisa.subtitle}
             </p>
           </div>
+          {/* New agent button */}
+          <div className="px-3 pt-3 pb-1">
+            <Link
+              href="/lisa"
+              onClick={() => setLisaOpen(false)}
+              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t.lisa.newAgent}
+            </Link>
+          </div>
           {agents.length === 0 ? (
-            <div className="px-4 py-6 text-center">
-              <GraduationCap className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">
+            <div className="px-4 py-4 text-center">
+              <p className="text-xs text-muted-foreground">
                 {t.agents.noAgentsDescription}
               </p>
-              <Link
-                href="/agents/new"
-                onClick={() => setTrainingOpen(false)}
-                className="inline-block mt-3 text-sm font-medium text-orange-600 hover:underline"
-              >
-                {t.dashboard.createAgent}
-              </Link>
             </div>
           ) : (
-            <div className="py-1 max-h-64 overflow-y-auto">
-              {agents.map((agent) => {
-                const isSelected = currentTrainAgentId === agent.id;
-                return (
-                  <button
-                    key={agent.id}
-                    onClick={() => handleSelectAgent(agent.id)}
-                    className={cn(
-                      "flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors",
-                      isSelected
-                        ? "bg-accent"
-                        : "hover:bg-accent/50"
-                    )}
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 shrink-0">
-                      <Bot className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium truncate">
-                          {agent.name}
-                        </span>
-                        <span
-                          className={cn(
-                            "h-1.5 w-1.5 rounded-full shrink-0",
-                            statusColors[agent.status] ?? "bg-gray-400"
-                          )}
-                        />
+            <>
+              <div className="mx-4 my-2 border-t border-border" />
+              <div className="py-1 pb-2 max-h-64 overflow-y-auto">
+                {agents.map((agent) => {
+                  const isSelected = currentLisaAgentId === agent.id;
+                  return (
+                    <button
+                      key={agent.id}
+                      onClick={() => handleSelectAgent(agent.id)}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors",
+                        isSelected
+                          ? "bg-accent"
+                          : "hover:bg-accent/50"
+                      )}
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 shrink-0">
+                        <Bot className="h-4 w-4 text-orange-600" />
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {agent.hotelName}
-                      </p>
-                    </div>
-                    {isSelected && (
-                      <Check className="h-4 w-4 text-orange-600 shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium truncate">
+                            {agent.name}
+                          </span>
+                          <span
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full shrink-0",
+                              statusColors[agent.status] ?? "bg-gray-400"
+                            )}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {agent.hotelName}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-orange-600 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </PopoverContent>
       </Popover>
@@ -231,7 +240,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 p-3">
-          {navItems.slice(0, 2).map((item) => {
+          {navItems.slice(0, 3).map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -242,7 +251,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center rounded-lg text-sm font-medium transition-colors",
                   collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
-                  isActive && !isTrainingActive
+                  isActive && !isLisaActive
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
@@ -264,10 +273,10 @@ export function Sidebar() {
             return link;
           })}
 
-          {/* Training item with agent selector popover */}
-          {renderTrainingItem()}
+          {/* Lisa item with agent selector popover */}
+          {renderLisaItem()}
 
-          {navItems.slice(2).map((item) => {
+          {navItems.slice(3).map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 

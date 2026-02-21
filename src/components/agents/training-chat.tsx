@@ -41,7 +41,7 @@ function WelcomeState({
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg">
         <Bot className="h-8 w-8 text-white" />
       </div>
-      <h2 className="text-lg font-bold text-gray-900">
+      <h2 className="text-lg font-bold text-foreground">
         {t.trainingChat.welcomeTitle.replace("{agentName}", agentName)}
       </h2>
       <p className="mt-1.5 max-w-xs text-center text-[13px] text-muted-foreground leading-relaxed">
@@ -52,7 +52,7 @@ function WelcomeState({
           <button
             key={s.toolType}
             onClick={() => onSuggestedAction(s.toolType)}
-            className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97]"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-all hover:bg-accent hover:shadow-md active:scale-[0.97]"
           >
             {s.icon}
             {s.label}
@@ -80,14 +80,14 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   if (message.role === "user") {
     return (
       <div className="flex justify-end px-4 py-1">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-gray-100 px-4 py-2.5">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-muted px-4 py-2.5">
           {message.attachmentName && (
             <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-orange-600">
               <Paperclip className="h-3 w-3" />
               {message.attachmentName}
             </div>
           )}
-          <p className="text-[14px] text-gray-900 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
     );
@@ -102,8 +102,8 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
         <Bot className="h-3.5 w-3.5 text-white" />
       </div>
       <div className="max-w-[80%]">
-        <div className="rounded-2xl rounded-bl-md bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-2.5">
-          <p className="text-[14px] text-gray-900 leading-relaxed whitespace-pre-wrap">{content}</p>
+        <div className="rounded-2xl rounded-bl-md bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30 px-4 py-2.5">
+          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
         {message.knowledgeSaved && content === message.content && (
           <div className="mt-1.5 flex justify-start">
@@ -285,9 +285,9 @@ export function TrainingChat({ agentId }: { agentId: string }) {
   if (!agent) return null;
 
   return (
-    <div className="flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+    <div className="flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
             <Bot className="h-4 w-4 text-white" />
@@ -300,7 +300,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
         {messages.length > 0 && (
           <button
             onClick={handleClear}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-gray-500 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Trash2 className="h-3.5 w-3.5" />
             {t.trainingChat.clearChat}
@@ -324,7 +324,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-gray-100 bg-white">
+      <div className="border-t border-border bg-card">
         <div className="flex items-end gap-2 px-3 py-2.5">
           <textarea
             ref={textareaRef}
@@ -333,7 +333,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
             onKeyDown={handleKeyDown}
             placeholder={t.trainingChat.inputPlaceholder}
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[14px] placeholder:text-gray-400 focus:border-orange-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
+            className="flex-1 resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:border-orange-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
             style={{ maxHeight: 120 }}
           />
           <button
@@ -354,7 +354,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
               <button
                 key={chip.type}
                 onClick={() => handleToolClick(chip.type)}
-                className="flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 transition-all hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97]"
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground hover:border-border active:scale-[0.97]"
               >
                 <Icon className="h-3.5 w-3.5" />
                 {label}

@@ -47,7 +47,7 @@ export default function DashboardLayout({
   const collapsed = useSidebarStore((s) => s.collapsed);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-background">
       <Sidebar />
       <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 

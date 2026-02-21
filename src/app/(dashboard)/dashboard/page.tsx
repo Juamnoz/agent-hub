@@ -102,7 +102,7 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className="rounded-2xl bg-card p-8 text-center ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
               <Bot className="h-7 w-7 text-white" />
             </div>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
         )}
       </div>
       {/* Lisa CTA Card */}
-      <div className="rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 p-6 ring-1 ring-orange-200/50 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <div className="rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-orange-950/40 p-6 ring-1 ring-orange-200/50 dark:ring-orange-800/30 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-md">
             <Sparkles className="h-7 w-7 text-white" />

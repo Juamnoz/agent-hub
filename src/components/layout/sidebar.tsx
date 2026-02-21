@@ -123,7 +123,7 @@ export function Sidebar() {
             <Link
               href="/lisa"
               onClick={() => setLisaOpen(false)}
-              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 dark:text-orange-400 transition-colors"
             >
               <Sparkles className="h-4 w-4" />
               {t.lisa.newAgent}
@@ -152,8 +152,8 @@ export function Sidebar() {
                           : "hover:bg-accent/50"
                       )}
                     >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 shrink-0">
-                        <Bot className="h-4 w-4 text-orange-600" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 shrink-0">
+                        <Bot className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -189,7 +189,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 border-r border-border bg-white transition-all duration-200",
+          "hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 border-r border-border bg-sidebar transition-all duration-200",
           collapsed ? "lg:w-16" : "lg:w-60"
         )}
       >

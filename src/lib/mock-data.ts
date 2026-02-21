@@ -71,7 +71,7 @@ export interface SocialLinks {
   googleMaps?: string;
 }
 
-export type WhatsAppProvider = "meta" | "wati";
+export type WhatsAppProvider = "meta" | "wati" | "coexistence";
 
 export type AlgorithmType = "ecommerce" | "appointments" | "whatsapp-store" | "hotel" | "restaurant";
 
@@ -215,8 +215,8 @@ export const PLAN_INTEGRATION_LIMITS: Record<PlanTier, number> = {
 
 export const PLAN_AGENT_LIMITS: Record<PlanTier, number> = {
   starter: 1,
-  pro: 10,
-  business: 25,
+  pro: 3,
+  business: 10,
   enterprise: Infinity,
 };
 

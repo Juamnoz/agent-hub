@@ -17,7 +17,6 @@ import {
   Circle,
   Bot,
   Sparkles,
-  GraduationCap,
   Phone,
   TrendingUp,
   Clock,
@@ -125,11 +124,11 @@ export default function AgentDetailPage({
     },
     {
       title: t.trainingChat.quickActionTitle,
-      icon: GraduationCap,
+      icon: Sparkles,
       href: `/agents/${agentId}/train`,
       configured: true,
       stat: "",
-      color: "violet" as const,
+      color: "lisa" as const,
     },
     {
       title: t.agents.setupCards.personalityTitle,
@@ -206,13 +205,14 @@ export default function AgentDetailPage({
   ];
 
   const colorMap: Record<string, { bg: string; icon: string }> = {
-    blue: { bg: "bg-orange-50", icon: "text-orange-600" },
-    violet: { bg: "bg-orange-50", icon: "text-orange-600" },
-    emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
-    amber: { bg: "bg-amber-50", icon: "text-amber-600" },
-    orange: { bg: "bg-orange-50", icon: "text-orange-600" },
-    rose: { bg: "bg-rose-50", icon: "text-rose-600" },
-    gray: { bg: "bg-gray-100", icon: "text-gray-600" },
+    blue: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
+    violet: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
+    emerald: { bg: "bg-emerald-50 dark:bg-emerald-500/15", icon: "text-emerald-600 dark:text-emerald-400" },
+    amber: { bg: "bg-amber-50 dark:bg-amber-500/15", icon: "text-amber-600 dark:text-amber-400" },
+    orange: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
+    rose: { bg: "bg-rose-50 dark:bg-rose-500/15", icon: "text-rose-600 dark:text-rose-400" },
+    gray: { bg: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
+    lisa: { bg: "bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm", icon: "text-white" },
   };
 
   return (
@@ -226,7 +226,7 @@ export default function AgentDetailPage({
       </Button>
 
       {/* Agent Hero Card - contains identity + metrics */}
-      <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+      <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
         {/* Agent Identity */}
         <div className="p-4 pb-0 sm:p-5 sm:pb-0">
           <div className="flex items-start justify-between gap-3">
@@ -261,7 +261,7 @@ export default function AgentDetailPage({
           <div className="flex overflow-x-auto scrollbar-hide">
             <Link
               href={`/agents/${agentId}/analytics`}
-              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors group"
+              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors group"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <MessageSquare className="h-3 w-3 text-orange-500" />
@@ -276,7 +276,7 @@ export default function AgentDetailPage({
 
             <Link
               href={`/agents/${agentId}/faqs`}
-              className="flex-1 min-w-[80px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors"
+              className="flex-1 min-w-[80px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <HelpCircle className="h-3 w-3 text-violet-500" />
@@ -291,7 +291,7 @@ export default function AgentDetailPage({
 
             <Link
               href={`/agents/${agentId}/whatsapp`}
-              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-black/[0.06] last:border-r-0 hover:bg-gray-50/50 transition-colors"
+              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Smartphone className="h-3 w-3 text-emerald-500" />
@@ -311,7 +311,7 @@ export default function AgentDetailPage({
               </div>
             </Link>
 
-            <div className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-black/[0.06]">
+            <div className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-border">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="h-3 w-3 text-amber-500" />
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -326,7 +326,7 @@ export default function AgentDetailPage({
                   {[hasFaqs, hasPersonality, hasWhatsapp, hasSocial].map((done, i) => (
                     <div
                       key={i}
-                      className={`h-1.5 w-3 rounded-full ${done ? "bg-orange-500" : "bg-gray-200"}`}
+                      className={`h-1.5 w-3 rounded-full ${done ? "bg-orange-500" : "bg-muted-foreground/20"}`}
                     />
                   ))}
                 </div>
@@ -347,20 +347,28 @@ export default function AgentDetailPage({
               href={action.href}
               className="group block"
             >
-              <div className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3.5 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.96] hover:shadow-md">
+              <div className={`flex flex-col items-center gap-2 rounded-2xl p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.96] hover:shadow-md ${
+                  action.color === "lisa"
+                    ? "bg-gradient-to-br from-orange-400 to-orange-600 ring-1 ring-orange-500/30"
+                    : "bg-card ring-1 ring-border"
+                }`}>
                 <div className="relative">
                   <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${colors.bg}`}
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                      action.color === "lisa" ? "bg-white/20" : colors.bg
+                    }`}
                   >
-                    <Icon className={`h-5 w-5 ${colors.icon}`} />
+                    <Icon className={`h-5 w-5 ${action.color === "lisa" ? "text-white" : colors.icon}`} />
                   </div>
-                  {action.configured && action.color !== "gray" ? (
-                    <CheckCircle2 className="absolute -top-1 -right-1 h-4 w-4 text-emerald-500 bg-white rounded-full" />
+                  {action.configured && action.color !== "gray" && action.color !== "lisa" ? (
+                    <CheckCircle2 className="absolute -top-1 -right-1 h-4 w-4 text-emerald-500 bg-card rounded-full" />
                   ) : !action.configured ? (
-                    <Circle className="absolute -top-1 -right-1 h-4 w-4 text-gray-300 bg-white rounded-full" />
+                    <Circle className="absolute -top-1 -right-1 h-4 w-4 text-gray-300 bg-card rounded-full" />
                   ) : null}
                 </div>
-                <span className="text-[12px] font-medium text-center leading-tight line-clamp-2">
+                <span className={`text-[12px] font-medium text-center leading-tight line-clamp-2 ${
+                  action.color === "lisa" ? "text-white" : ""
+                }`}>
                   {action.title.split(" ").slice(0, 2).join(" ")}
                 </span>
               </div>
@@ -435,15 +443,15 @@ export default function AgentDetailPage({
         {deleteStep === 0 && (
           <button
             onClick={() => setDeleteStep(1)}
-            className="w-full rounded-2xl bg-white px-4 py-3.5 text-[15px] font-medium text-red-500 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] active:bg-red-50"
+            className="w-full rounded-2xl bg-card px-4 py-3.5 text-[15px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] active:bg-red-50"
           >
             {t.agentSettings.deleteAgent}
           </button>
         )}
 
         {deleteStep === 1 && (
-          <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="px-5 py-4 text-center border-b border-black/[0.06]">
+          <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="px-5 py-4 text-center border-b border-border">
               <p className="text-[15px] font-semibold">{t.agentSettings.deleteConfirmTitle}</p>
               <p className="text-[13px] text-muted-foreground mt-1">
                 {t.agentSettings.deleteConfirmDescription}
@@ -451,7 +459,7 @@ export default function AgentDetailPage({
             </div>
             <button
               onClick={() => setDeleteStep(2)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-red-500 border-b border-black/[0.06] transition-colors active:bg-red-50"
+              className="w-full px-4 py-3 text-[15px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
             >
               {t.agentSettings.deletePermanently}
             </button>
@@ -580,14 +588,14 @@ function IntegrationsSection({
                 return (
                   <div
                     key={integration.id}
-                    className={`flex items-center gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all ${
+                    className={`flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all ${
                       locked ? "opacity-60 cursor-pointer" : !locked && integration.enabled ? "cursor-pointer hover:shadow-md" : ""
                     }`}
                     onClick={locked ? () => router.push("/billing") : !locked && integration.enabled ? () => onConfigure(integration) : undefined}
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                        locked ? "bg-gray-100" : "bg-orange-50"
+                        locked ? "bg-muted" : "bg-orange-50 dark:bg-orange-500/15"
                       }`}
                     >
                       <Icon className={`h-5 w-5 ${locked ? "text-gray-400" : "text-orange-600"}`} />
@@ -630,7 +638,7 @@ function IntegrationsSection({
                           onToggle(integration.id);
                         }}
                         className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${
-                          integration.enabled ? "bg-emerald-500" : "bg-gray-200"
+                          integration.enabled ? "bg-emerald-500" : "bg-muted-foreground/20"
                         }`}
                       >
                         <span
@@ -668,16 +676,16 @@ function SetupCard({
   color: string;
 }) {
   const colorMap: Record<string, { bg: string; icon: string }> = {
-    blue: { bg: "bg-orange-50", icon: "text-orange-600" },
-    violet: { bg: "bg-orange-50", icon: "text-orange-600" },
-    emerald: { bg: "bg-emerald-50", icon: "text-emerald-600" },
-    orange: { bg: "bg-orange-50", icon: "text-orange-600" },
+    blue: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
+    violet: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
+    emerald: { bg: "bg-emerald-50 dark:bg-emerald-500/15", icon: "text-emerald-600 dark:text-emerald-400" },
+    orange: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
   };
   const colors = colorMap[color] ?? colorMap.blue;
 
   return (
     <Link href={href} className="group block">
-      <div className="flex items-center gap-3.5 rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.99] hover:shadow-md">
+      <div className="flex items-center gap-3.5 rounded-2xl bg-card p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.99] hover:shadow-md">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colors.bg}`}
         >

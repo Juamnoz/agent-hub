@@ -182,7 +182,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
         <span className="text-sm text-muted-foreground">
           {agentProducts.length} {agentProducts.length === 1 ? "producto" : "productos"}
         </span>
-        <Button size="sm" onClick={openNew}>
+        <Button size="sm" onClick={openNew} className="rounded-full">
           <Plus className="h-4 w-4 mr-1" />
           {t.products.addProduct}
         </Button>

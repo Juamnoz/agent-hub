@@ -56,8 +56,8 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t.products.title}</h1>
-        <p className="text-sm text-gray-500">{t.products.catalogDescription}</p>
+        <h1 className="text-2xl font-bold text-foreground">{t.products.title}</h1>
+        <p className="text-sm text-muted-foreground">{t.products.catalogDescription}</p>
       </div>
 
       {/* Agent selector tabs */}

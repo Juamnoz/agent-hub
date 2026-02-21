@@ -27,7 +27,7 @@ export function AgentCard({ agent }: AgentCardProps) {
 
   return (
     <Link href={`/agents/${agent.id}`} className="group block">
-      <div className="rounded-2xl bg-white p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
+      <div className="rounded-2xl bg-card p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
         <div className="flex items-center gap-3.5">
           {/* Avatar */}
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
@@ -48,13 +48,13 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
 
         {/* Bottom stats row */}
-        <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-border">
           <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
             <MessageSquare className="h-3.5 w-3.5" />
             <span className="font-medium text-foreground">{agent.messageCount.toLocaleString()}</span>
             <span>{t.agents.msgs}</span>
           </div>
-          <div className="h-3 w-px bg-gray-200" />
+          <div className="h-3 w-px bg-border" />
           <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
             <HelpCircle className="h-3.5 w-3.5" />
             <span className="font-medium text-foreground">{agent.faqCount}</span>

@@ -12,24 +12,24 @@ interface StatsCardProps {
 
 const colorMap = {
   blue: {
-    bg: "bg-orange-50",
-    icon: "text-orange-600",
-    ring: "ring-orange-600/5",
+    bg: "bg-orange-50 dark:bg-orange-500/15",
+    icon: "text-orange-600 dark:text-orange-400",
+    ring: "ring-orange-600/5 dark:ring-orange-400/10",
   },
   emerald: {
-    bg: "bg-emerald-50",
-    icon: "text-emerald-600",
-    ring: "ring-emerald-600/5",
+    bg: "bg-emerald-50 dark:bg-emerald-500/15",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    ring: "ring-emerald-600/5 dark:ring-emerald-400/10",
   },
   violet: {
-    bg: "bg-orange-50",
-    icon: "text-orange-600",
-    ring: "ring-orange-600/5",
+    bg: "bg-orange-50 dark:bg-orange-500/15",
+    icon: "text-orange-600 dark:text-orange-400",
+    ring: "ring-orange-600/5 dark:ring-orange-400/10",
   },
   amber: {
-    bg: "bg-amber-50",
-    icon: "text-amber-600",
-    ring: "ring-amber-600/5",
+    bg: "bg-amber-50 dark:bg-amber-500/15",
+    icon: "text-amber-600 dark:text-amber-400",
+    ring: "ring-amber-600/5 dark:ring-amber-400/10",
   },
 };
 
@@ -46,7 +46,7 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white p-3 sm:p-4 ring-1 ring-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
+        "rounded-2xl bg-card p-3 sm:p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
         className
       )}
     >

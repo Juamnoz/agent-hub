@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Menu, Sun, Moon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { useLocaleStore } from "@/stores/locale-store";
+import { useState, useEffect } from "react";
 
 interface TopbarProps {
   title: string;
@@ -20,12 +21,24 @@ interface TopbarProps {
 
 export function Topbar({ title, onMenuClick }: TopbarProps) {
   const { t } = useLocaleStore();
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const dark = localStorage.getItem("lisa-theme") === "dark";
+    setIsDark(dark);
+    document.documentElement.classList.toggle("dark", dark);
+  }, []);
+  function toggleTheme() {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem("lisa-theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  }
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl px-4 lg:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6">
       <button
         onClick={onMenuClick}
-        className="lg:hidden flex h-8 w-8 items-center justify-center -ml-1 rounded-lg active:bg-gray-100 transition-colors"
+        className="lg:hidden flex h-8 w-8 items-center justify-center -ml-1 rounded-lg active:bg-accent transition-colors"
       >
         <Menu className="h-[18px] w-[18px]" />
       </button>
@@ -34,6 +47,13 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
 
       <div className="ml-auto flex items-center gap-1.5">
         <LocaleSwitcher />
+        <button
+          onClick={toggleTheme}
+          aria-label={isDark ? "Modo claro" : "Modo oscuro"}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring">

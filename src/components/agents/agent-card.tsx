@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, MessageSquare, HelpCircle, ChevronRight } from "lucide-react";
+import { Bot, Settings } from "lucide-react";
 import type { Agent } from "@/lib/mock-data";
 import { useLocaleStore } from "@/stores/locale-store";
+import { IconWhatsApp } from "@/components/icons/brand-icons";
+import { cn } from "@/lib/utils";
 
 const statusDot: Record<string, string> = {
   active: "bg-emerald-500",
@@ -11,62 +13,67 @@ const statusDot: Record<string, string> = {
   setup: "bg-amber-500",
 };
 
-const statusBadge: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700",
-  inactive: "bg-gray-100 text-gray-600",
-  setup: "bg-amber-50 text-amber-700",
-};
-
 interface AgentCardProps {
   agent: Agent;
+  className?: string;
 }
 
-export function AgentCard({ agent }: AgentCardProps) {
+export function AgentCard({ agent, className }: AgentCardProps) {
   const { t } = useLocaleStore();
-  const statusLabel = t.agents.status[agent.status] ?? agent.status;
 
   return (
-    <Link href={`/agents/${agent.id}`} className="group block">
-      <div className="rounded-2xl bg-card p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
-        <div className="flex items-center gap-3.5">
-          {/* Avatar */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
-            <Bot className="h-5 w-5 text-white" />
-          </div>
+    <div className={cn("relative group", className)}>
+      {/* Settings button — solo visible en hover, esquina superior derecha */}
+      <Link
+        href={`/agents/${agent.id}/settings`}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-3.5 right-3.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/90 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-sm ring-1 ring-border/60 backdrop-blur-sm"
+        aria-label="Configuración"
+      >
+        <Settings className="h-3.5 w-3.5" />
+      </Link>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
-              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
+      <Link href={`/agents/${agent.id}`} className="block">
+        <div className="rounded-2xl bg-card p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
+          {/* Top row: avatar + name + business + status dot */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
+              <Bot className="h-6 w-6 text-white" />
             </div>
-            <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
+                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
+              </div>
+              <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
+            </div>
           </div>
 
-          {/* Chevron */}
-          <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-400" />
-        </div>
-
-        {/* Bottom stats row */}
-        <div className="flex items-center gap-3 mt-3.5 pt-3 border-t border-border">
-          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-            <MessageSquare className="h-3.5 w-3.5" />
-            <span className="font-medium text-foreground">{agent.messageCount.toLocaleString()}</span>
-            <span>{t.agents.msgs}</span>
+          {/* Stats: 3 columns with dividers — Instagram profile style */}
+          <div className="grid grid-cols-3 divide-x divide-border mt-3 pt-3 border-t border-border">
+            <div className="flex flex-col items-center gap-0.5 px-1">
+              <span className="text-[20px] font-bold tabular-nums leading-tight">
+                {agent.messageCount.toLocaleString()}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{t.agents.msgs}</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5 px-1">
+              <span className="text-[20px] font-bold tabular-nums leading-tight">
+                {agent.faqCount}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{t.agents.faqs}</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5 px-1">
+              <IconWhatsApp
+                className={`h-6 w-6 ${
+                  agent.whatsappConnected ? "text-[#25D366]" : "text-muted-foreground/30"
+                }`}
+              />
+              <span className="text-[11px] text-muted-foreground">WhatsApp</span>
+            </div>
           </div>
-          <div className="h-3 w-px bg-border" />
-          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-            <HelpCircle className="h-3.5 w-3.5" />
-            <span className="font-medium text-foreground">{agent.faqCount}</span>
-            <span>{t.agents.faqs}</span>
-          </div>
-          <span
-            className={`ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadge[agent.status]}`}
-          >
-            {statusLabel}
-          </span>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

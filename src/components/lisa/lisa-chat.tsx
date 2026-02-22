@@ -41,38 +41,75 @@ const CREATION_RESPONSES: Record<string, string[]> = {
 };
 
 // ---------------------------------------------------------------------------
+// Copilot mode responses
+// ---------------------------------------------------------------------------
+
+const COPILOT_RESPONSES: Record<string, string> = {
+  metrics:
+    "Esta semana tus 2 agentes activos respondieron 187 mensajes en total (+22% vs semana pasada). Playa Azul lidera con 1,247 mensajes acumulados y tiempo de respuesta de 4.2s. Sierra Nevada tiene 834 mensajes. ¿Quieres detalles de alguno?",
+  improve:
+    "Encontré 2 oportunidades de mejora:\n\n1. Playa Azul tiene solo 8 FAQs — los agentes similares tienen 30+. Te recomiendo agregar preguntas sobre check-in, wifi y desayuno.\n\n2. Sierra Nevada no tiene WhatsApp conectado, lo que limita su alcance.\n\n¿Por cuál empezamos?",
+  create:
+    "¡Claro! Para crear un nuevo agente necesito saber ¿qué tipo de negocio es? Hotel, restaurante, tienda online, consultorio...",
+  status:
+    "Estado actual de tus agentes:\n\n🟢 Playa Azul Assistant — Activo, WhatsApp conectado, 8 FAQs\n🟢 Sierra Nevada Concierge — Activo, WhatsApp desconectado, 6 FAQs\n\nAmbos están respondiendo en menos de 5 segundos. El plan Pro te permite hasta 3 agentes.",
+  faqs:
+    "Para agregar FAQs efectivas a tu agente, te recomiendo incluir: preguntas de horario, precios, ubicación, proceso de compra/reserva y políticas de cancelación. ¿A qué agente le agregamos FAQs?",
+  default:
+    "Entendido. Soy tu copiloto de IA — puedo ayudarte con métricas de tus agentes, sugerirte mejoras, configurar integraciones o crear nuevos agentes. ¿Qué necesitas?",
+};
+
+function getCopilotResponse(input: string): string {
+  const lower = input.toLowerCase();
+  if (lower.includes("métrica") || lower.includes("estadística") || lower.includes("cómo van") || lower.includes("como van") || lower.includes("resultados") || lower.includes("semana")) {
+    return COPILOT_RESPONSES.metrics;
+  }
+  if (lower.includes("mejorar") || lower.includes("suger") || lower.includes("qué debo") || lower.includes("que debo") || lower.includes("oportunidad")) {
+    return COPILOT_RESPONSES.improve;
+  }
+  if (lower.includes("crear") || lower.includes("nuevo agente") || lower.includes("agregar agente")) {
+    return COPILOT_RESPONSES.create;
+  }
+  if (lower.includes("estado") || lower.includes("activo") || lower.includes("status") || lower.includes("mis agentes")) {
+    return COPILOT_RESPONSES.status;
+  }
+  if (lower.includes("faq") || lower.includes("pregunta") || lower.includes("respuesta")) {
+    return COPILOT_RESPONSES.faqs;
+  }
+  return COPILOT_RESPONSES.default;
+}
+
+// ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function CreationWelcomeState({ onSuggestion }: { onSuggestion: (text: string, key: string) => void }) {
-  const { t } = useLocaleStore();
-
-  const suggestions = [
-    { key: "hotel", label: t.lisa.suggestions.hotel },
-    { key: "restaurant", label: t.lisa.suggestions.restaurant },
-    { key: "ecommerce", label: t.lisa.suggestions.ecommerce },
-    { key: "appointment", label: t.lisa.suggestions.appointment },
+function CopilotWelcomeState({ onSuggestion }: { onSuggestion: (text: string, key: string) => void }) {
+  const chips = [
+    { key: "metrics", label: "¿Cómo van mis agentes?" },
+    { key: "improve", label: "¿Qué debo mejorar?" },
+    { key: "status", label: "Ver estado general" },
+    { key: "create", label: "Crear un agente" },
   ];
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg">
-        <Sparkles className="h-8 w-8 text-white" />
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
+      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg">
+        <Sparkles className="h-7 w-7 text-white" />
       </div>
-      <h2 className="text-lg font-bold text-gray-900">
-        {t.lisa.welcomeTitle}
+      <h2 className="text-[16px] font-bold text-foreground text-center">
+        ¿En qué te ayudo hoy?
       </h2>
-      <p className="mt-1.5 max-w-xs text-center text-[13px] text-muted-foreground leading-relaxed">
-        {t.lisa.welcomeSubtitle}
+      <p className="mt-1 max-w-[260px] text-center text-[13px] text-muted-foreground leading-relaxed">
+        Pregúntame por métricas, configuración o cómo mejorar tus agentes.
       </p>
-      <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-        {suggestions.map((s) => (
+      <div className="mt-5 flex flex-wrap justify-center gap-2">
+        {chips.map((c) => (
           <button
-            key={s.key}
-            onClick={() => onSuggestion(s.label, s.key)}
-            className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97]"
+            key={c.key}
+            onClick={() => onSuggestion(c.label, c.key)}
+            className="rounded-full border border-border bg-card px-4 py-2 text-[13px] font-medium text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.97]"
           >
-            {s.label}
+            {c.label}
           </button>
         ))}
       </div>
@@ -100,7 +137,7 @@ function TrainingWelcomeState({
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg">
         <Sparkles className="h-8 w-8 text-white" />
       </div>
-      <h2 className="text-lg font-bold text-gray-900">
+      <h2 className="text-lg font-bold text-foreground">
         {t.lisa.welcomeTrainingTitle.replace("{agentName}", agentName)}
       </h2>
       <p className="mt-1.5 max-w-xs text-center text-[13px] text-muted-foreground leading-relaxed">
@@ -111,7 +148,7 @@ function TrainingWelcomeState({
           <button
             key={s.toolType}
             onClick={() => onSuggestedAction(s.toolType)}
-            className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md active:scale-[0.97]"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.97]"
           >
             {s.icon}
             {s.label}
@@ -128,7 +165,7 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   if (message.role === "system") {
     return (
       <div className="flex justify-center py-1">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-medium text-emerald-700">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-3 py-1 text-[12px] font-medium text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="h-3.5 w-3.5" />
           {t.trainingChat.knowledgeSaved}
         </span>
@@ -139,14 +176,14 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   if (message.role === "user") {
     return (
       <div className="flex justify-end px-4 py-1">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-gray-100 px-4 py-2.5">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-muted px-4 py-2.5">
           {message.attachmentName && (
             <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-orange-600">
               <Paperclip className="h-3 w-3" />
               {message.attachmentName}
             </div>
           )}
-          <p className="text-[14px] text-gray-900 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
     );
@@ -161,12 +198,12 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
         <Sparkles className="h-3.5 w-3.5 text-white" />
       </div>
       <div className="max-w-[80%]">
-        <div className="rounded-2xl rounded-bl-md bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-2.5">
-          <p className="text-[14px] text-gray-900 leading-relaxed whitespace-pre-wrap">{content}</p>
+        <div className="rounded-2xl rounded-bl-md bg-orange-50 dark:bg-orange-500/10 px-4 py-2.5">
+          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
         {message.knowledgeSaved && content === message.content && (
           <div className="mt-1.5 flex justify-start">
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="h-3 w-3" />
               {t.trainingChat.knowledgeSaved}
             </span>
@@ -183,11 +220,11 @@ function TypingIndicator() {
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 mt-0.5">
         <Sparkles className="h-3.5 w-3.5 text-white" />
       </div>
-      <div className="rounded-2xl rounded-bl-md bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-3">
+      <div className="rounded-2xl rounded-bl-md bg-orange-50 dark:bg-orange-500/10 px-4 py-3">
         <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0ms]" />
-          <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:150ms]" />
-          <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:300ms]" />
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
         </div>
       </div>
     </div>
@@ -320,10 +357,16 @@ export function LisaChat({ agentId }: LisaChatProps) {
 
     // Simulate Lisa response after delay
     setTimeout(() => {
-      const responses = responseKey && CREATION_RESPONSES[responseKey]
-        ? CREATION_RESPONSES[responseKey]
-        : CREATION_RESPONSES.default;
-      const responseContent = responses[Math.floor(Math.random() * responses.length)];
+      // Copilot mode: use contextual responses
+      let responseContent: string;
+      if (responseKey && COPILOT_RESPONSES[responseKey]) {
+        responseContent = COPILOT_RESPONSES[responseKey];
+      } else if (responseKey && CREATION_RESPONSES[responseKey]) {
+        const responses = CREATION_RESPONSES[responseKey];
+        responseContent = responses[Math.floor(Math.random() * responses.length)];
+      } else {
+        responseContent = getCopilotResponse(content);
+      }
       const agentMsg: TrainingMessage & { displayContent?: string } = {
         id: `lisa-${++msgIdCounter.current}`,
         agentId: "lisa-creation",
@@ -331,7 +374,7 @@ export function LisaChat({ agentId }: LisaChatProps) {
         content: responseContent,
       };
       setCreationMessages((prev) => [...prev, agentMsg]);
-    }, 1000 + Math.random() * 500);
+    }, 800 + Math.random() * 400);
   }, []);
 
   const handleSend = useCallback(() => {
@@ -399,9 +442,9 @@ export function LisaChat({ agentId }: LisaChatProps) {
   const headerSubtitle = isCreationMode ? t.lisa.subtitle : t.trainingChat.subtitle;
 
   return (
-    <div className="flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+    <div className="flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
             <Sparkles className="h-4 w-4 text-white" />
@@ -414,7 +457,7 @@ export function LisaChat({ agentId }: LisaChatProps) {
         {messages.length > 0 && (
           <button
             onClick={handleClear}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Trash2 className="h-3.5 w-3.5" />
             {t.trainingChat.clearChat}
@@ -426,7 +469,7 @@ export function LisaChat({ agentId }: LisaChatProps) {
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
           isCreationMode ? (
-            <CreationWelcomeState onSuggestion={handleCreationSuggestion} />
+            <CopilotWelcomeState onSuggestion={handleCreationSuggestion} />
           ) : (
             <TrainingWelcomeState agentName={agent!.name} onSuggestedAction={handleToolClick} />
           )
@@ -442,16 +485,16 @@ export function LisaChat({ agentId }: LisaChatProps) {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-gray-100 bg-white">
+      <div className="border-t border-border bg-card">
         <div className="flex items-end gap-2 px-3 py-2.5">
           <textarea
             ref={textareaRef}
             value={input}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            placeholder={isCreationMode ? t.lisa.inputPlaceholder : t.trainingChat.inputPlaceholder}
+            placeholder={isCreationMode ? "Pregúntale algo a Lisa..." : t.trainingChat.inputPlaceholder}
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[14px] placeholder:text-gray-400 focus:border-orange-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
+            className="flex-1 resize-none rounded-xl border border-border bg-muted/50 px-3.5 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:border-orange-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
             style={{ maxHeight: 120 }}
           />
           <button
@@ -473,7 +516,7 @@ export function LisaChat({ agentId }: LisaChatProps) {
                 <button
                   key={chip.type}
                   onClick={() => handleToolClick(chip.type)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 transition-all hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97]"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-[0.97]"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {label}

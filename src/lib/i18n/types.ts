@@ -542,4 +542,23 @@ export interface Translations {
     agentCreated: string;
     fillRequired: string;
   };
+  setupWizard: {
+    step1Title: string;
+    step1Subtitle: string;
+    step2Title: string;
+    step2Subtitle: string;
+    step3Title: string;
+    step3Subtitle: string;
+    step4Title: string;
+    step4Subtitle: string;
+    continue: string;
+    addFaq: string;
+    question: string;
+    answer: string;
+    minOneFaq: string;
+    testOnWhatsapp: string;
+    viewAgent: string;
+    personalityPlaceholder: string;
+    of: string;
+  };
 }

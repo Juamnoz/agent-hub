@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 
@@ -41,7 +40,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
   const title = usePageTitle(pathname);
   const collapsed = useSidebarStore((s) => s.collapsed);
@@ -49,15 +47,13 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 
       <div className={`transition-all duration-200 ${collapsed ? "lg:pl-16" : "lg:pl-60"}`}>
-        <Topbar
-          title={title}
-          onMenuClick={() => setMobileNavOpen(true)}
-        />
-        <main className="p-4 lg:p-6">{children}</main>
+        <Topbar title={title} />
+        <main className="p-4 lg:p-6 pb-20 lg:pb-6">{children}</main>
       </div>
+
+      <BottomTabBar />
     </div>
   );
 }

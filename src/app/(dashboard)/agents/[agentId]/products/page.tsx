@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductsEditor } from "@/components/agents/products-editor";
 
@@ -15,7 +14,7 @@ export default function AgentProductsPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { agents, products } = useAgentStore();
+  const { agents } = useAgentStore();
   const { t } = useLocaleStore();
   const agent = agents.find((a) => a.id === agentId);
 
@@ -38,26 +37,14 @@ export default function AgentProductsPage({
     );
   }
 
-  const agentProductCount = products.filter((p) => p.agentId === agentId).length;
-
   return (
-    <div className="space-y-6">
-      <div>
-        <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href={`/agents/${agentId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t.common.back} {agent.name}
-          </Link>
-        </Button>
-
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">{t.products.title}</h1>
-          <Badge variant="secondary">{agentProductCount}</Badge>
-        </div>
-        <p className="text-sm text-gray-500">
-          {t.products.catalogDescription}
-        </p>
-      </div>
+    <div className="space-y-4">
+      <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
+        <Link href={`/agents/${agentId}`}>
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          {agent.name}
+        </Link>
+      </Button>
 
       <ProductsEditor agentId={agentId} />
     </div>

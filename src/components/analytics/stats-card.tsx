@@ -55,7 +55,7 @@ export function StatsCard({
           <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground leading-tight">
             {title}
           </p>
-          <p className="text-[22px] sm:text-[28px] font-bold tracking-tight leading-tight mt-0.5 sm:mt-1">
+          <p className="text-[28px] sm:text-[32px] font-bold tracking-tight leading-tight mt-0.5 sm:mt-1">
             {value}
           </p>
           {trend && (

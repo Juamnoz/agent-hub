@@ -236,14 +236,14 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                   onClick={() => setAlgorithmType(key)}
                   className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
-                      ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
-                      : "ring-black/[0.06] bg-white hover:shadow-md hover:ring-black/[0.1]"
+                      ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
+                      : "ring-border bg-card hover:bg-muted/60"
                   }`}
                 >
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-orange-100" : "bg-gray-100"}`}>
-                    <Icon className={`h-5 w-5 ${selected ? "text-orange-600" : "text-gray-500"}`} />
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-orange-100 dark:bg-orange-500/20" : "bg-muted"}`}>
+                    <Icon className={`h-5 w-5 ${selected ? "text-orange-500" : "text-muted-foreground"}`} />
                   </div>
-                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-orange-700" : "text-gray-700"}`}>
+                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-orange-500" : "text-foreground"}`}>
                     {t.personalityBuilder.algorithms[tKey].name}
                   </span>
                   <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
@@ -275,12 +275,12 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                     onClick={() => setRegion(key)}
                     className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                       selected
-                        ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
-                        : "ring-black/[0.06] bg-white hover:shadow-md"
+                        ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
+                        : "ring-border bg-card hover:bg-muted/60"
                     }`}
                   >
                     <span className="text-2xl">{REGION_FLAGS[key]}</span>
-                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-700" : "text-gray-700"}`}>
+                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
                       {t.personalityBuilder.regions[key]}
                     </span>
                     <span className="text-[11px] text-muted-foreground leading-tight italic">
@@ -304,11 +304,11 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                     onClick={() => setRegister(key)}
                     className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                       selected
-                        ? "ring-2 ring-orange-500 bg-orange-50/50 shadow-md"
-                        : "ring-black/[0.06] bg-white hover:shadow-md"
+                        ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
+                        : "ring-border bg-card hover:bg-muted/60"
                     }`}
                   >
-                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-700" : "text-gray-700"}`}>
+                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
                       {t.personalityBuilder.registers[key]}
                     </span>
                     <span className="text-[11px] text-muted-foreground leading-tight">
@@ -383,7 +383,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
             <div className="space-y-2">
               <Label className="text-[14px] font-semibold">{t.personalityBuilder.previewTitle}</Label>
               <p className="text-[12px] text-muted-foreground">{t.personalityBuilder.previewSubtitle}</p>
-              <div className="rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 p-4 ring-1 ring-orange-100">
+              <div className="rounded-2xl bg-orange-50 dark:bg-orange-500/10 p-4 ring-1 ring-orange-200 dark:ring-orange-500/20">
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500">
                     <Bot className="h-4 w-4 text-white" />

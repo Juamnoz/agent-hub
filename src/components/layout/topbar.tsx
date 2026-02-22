@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Sun, Moon } from "lucide-react";
+import { Sun, Moon, Settings } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -16,10 +16,9 @@ import { useState, useEffect } from "react";
 
 interface TopbarProps {
   title: string;
-  onMenuClick: () => void;
 }
 
-export function Topbar({ title, onMenuClick }: TopbarProps) {
+export function Topbar({ title }: TopbarProps) {
   const { t } = useLocaleStore();
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
@@ -36,17 +35,18 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6">
-      <button
-        onClick={onMenuClick}
-        className="lg:hidden flex h-8 w-8 items-center justify-center -ml-1 rounded-lg active:bg-accent transition-colors"
-      >
-        <Menu className="h-[18px] w-[18px]" />
-      </button>
-
       <h1 className="text-[17px] font-semibold tracking-tight">{title}</h1>
 
       <div className="ml-auto flex items-center gap-1.5">
         <LocaleSwitcher />
+        {/* Settings — solo en móvil, ya que desktop lo tiene en el sidebar */}
+        <Link
+          href="/settings"
+          className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          aria-label="Configuración"
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
         <button
           onClick={toggleTheme}
           aria-label={isDark ? "Modo claro" : "Modo oscuro"}

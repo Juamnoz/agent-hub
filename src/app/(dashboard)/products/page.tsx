@@ -54,13 +54,8 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t.products.title}</h1>
-        <p className="text-sm text-muted-foreground">{t.products.catalogDescription}</p>
-      </div>
-
-      {/* Agent selector tabs */}
+    <div className="space-y-4">
+      {/* Agent selector — solo si hay más de uno */}
       {eligibleAgents.length > 1 && (
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {eligibleAgents.map((agent) => (

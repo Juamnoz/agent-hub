@@ -1,25 +1,17 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
-  MessageSquare,
   HelpCircle,
-  Settings,
-  Smartphone,
   BarChart3,
-  Pencil,
   Globe,
   CheckCircle2,
-  Circle,
   Bot,
   Sparkles,
-  Phone,
-  TrendingUp,
-  Clock,
   Users,
   Trash2,
   CreditCard,
@@ -30,17 +22,17 @@ import {
   Calendar,
   Mail,
   ShoppingBag,
+  MessageSquare,
+  Settings,
 } from "lucide-react";
+import { IconWhatsApp } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
 import { type Integration, type Agent, PLAN_INTEGRATION_LIMITS, CURRENT_PLAN, ALGORITHM_RECOMMENDED_INTEGRATIONS } from "@/lib/mock-data";
 import type { Translations } from "@/lib/i18n/types";
 import { useLocaleStore } from "@/stores/locale-store";
+import { SetupWizard } from "@/components/agents/setup-wizard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import { toast } from "sonner";
 import { IntegrationConfigDialog } from "@/components/agents/integration-config-dialog";
 
@@ -62,7 +54,7 @@ export default function AgentDetailPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { agents, faqs, products, integrations, deleteAgent, loadIntegrations, loadProducts, toggleIntegration } = useAgentStore();
+  const { agents, faqs, products, integrations, deleteAgent, updateAgent, loadIntegrations, loadProducts, toggleIntegration } = useAgentStore();
   const { t } = useLocaleStore();
   const router = useRouter();
   const agent = agents.find((a) => a.id === agentId);
@@ -93,6 +85,21 @@ export default function AgentDetailPage({
     );
   }
 
+  // Show setup wizard for new agents
+  if (agent.status === "setup") {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
+          <Link href="/agents">
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            {t.agents.backToAgents}
+          </Link>
+        </Button>
+        <SetupWizard agentId={agentId} />
+      </div>
+    );
+  }
+
   const statusLabels: Record<string, string> = {
     active: t.agents.status.active,
     inactive: t.agents.status.inactive,
@@ -102,117 +109,89 @@ export default function AgentDetailPage({
   // Setup status
   const agentFaqs = faqs.filter((f) => f.agentId === agentId);
   const hasFaqs = agent.faqCount > 0 || agentFaqs.length > 0;
-  const hasPersonality = !!agent.personality?.trim();
   const hasWhatsapp = agent.whatsappConnected;
   const hasSocial =
     agent.socialLinks &&
     Object.values(agent.socialLinks).some((v) => v && v.trim());
-  const completedSteps = [hasFaqs, hasPersonality, hasWhatsapp, hasSocial].filter(Boolean).length;
 
-  const showProducts = ["whatsapp-store", "ecommerce", "restaurant"].includes(agent.algorithmType ?? "");
-  const hasProducts = agent.productCount > 0;
 
-  // Quick action cards (the main sections to configure)
-  const quickActions = [
+  // Stories bar — 7 secciones del agente
+  const storyItems = [
     {
-      title: t.agents.setupCards.faqsTitle,
+      id: "faqs",
+      label: t.agents.setupCards.faqsTitle,
       icon: HelpCircle,
       href: `/agents/${agentId}/faqs`,
       configured: hasFaqs,
-      stat: hasFaqs ? `${agent.faqCount}` : "0",
-      color: "blue" as const,
+      stat: `${agent.faqCount}`,
+      color: "amber",
     },
     {
-      title: t.trainingChat.quickActionTitle,
-      icon: Sparkles,
-      href: `/agents/${agentId}/train`,
-      configured: true,
-      stat: "",
-      color: "lisa" as const,
-    },
-    {
-      title: t.agents.setupCards.personalityTitle,
-      icon: Sparkles,
-      href: `/agents/${agentId}/settings`,
-      configured: hasPersonality,
-      stat: hasPersonality
-        ? t.agents.toneOptions[agent.tone as keyof typeof t.agents.toneOptions]
-        : "—",
-      color: "violet" as const,
-    },
-    {
-      title: t.contacts.title,
-      icon: Phone,
-      href: `/agents/${agentId}/contacts`,
-      configured: true,
-      stat: "",
-      color: "amber" as const,
-    },
-    ...(showProducts
-      ? [
-          {
-            title: t.products.catalogTitle,
-            icon: ShoppingBag,
-            href: `/agents/${agentId}/products`,
-            configured: hasProducts,
-            stat: hasProducts ? `${agent.productCount}` : "0",
-            color: "orange" as const,
-          },
-        ]
-      : []),
-    {
-      title: t.agents.setupCards.conversationsTitle,
+      id: "chat",
+      label: t.agents.setupCards.conversationsTitle,
       icon: MessageSquare,
       href: `/agents/${agentId}/conversations`,
       configured: true,
       stat: "",
-      color: "blue" as const,
+      color: "blue",
     },
     {
-      title: t.agents.setupCards.crmTitle,
+      id: "train",
+      label: t.trainingChat.quickActionTitle,
+      icon: Sparkles,
+      href: `/agents/${agentId}/train`,
+      configured: true,
+      stat: "",
+      color: "lisa",
+    },
+    {
+      id: "clientes",
+      label: t.agents.setupCards.crmTitle,
       icon: Users,
       href: `/agents/${agentId}/crm`,
       configured: true,
       stat: "",
-      color: "rose" as const,
+      color: "rose",
     },
     {
-      title: t.agents.setupCards.whatsappTitle,
-      icon: Smartphone,
+      id: "whatsapp",
+      label: "WhatsApp",
+      icon: null,
       href: `/agents/${agentId}/whatsapp`,
       configured: hasWhatsapp,
-      stat: hasWhatsapp ? t.agents.connected : "—",
-      color: "emerald" as const,
+      stat: hasWhatsapp ? t.agents.connected : t.agents.notConnected,
+      color: "emerald",
     },
     {
-      title: t.agents.setupCards.socialTitle,
+      id: "social",
+      label: t.agents.setupCards.socialTitle,
       icon: Globe,
       href: `/agents/${agentId}/social`,
       configured: !!hasSocial,
       stat: hasSocial
         ? `${Object.values(agent.socialLinks!).filter((v) => v && v.trim()).length}`
-        : "0",
-      color: "orange" as const,
+        : "",
+      color: "orange",
     },
     {
-      title: t.agents.setupCards.analyticsTitle,
+      id: "stats",
+      label: t.agents.setupCards.analyticsTitle,
       icon: BarChart3,
       href: `/agents/${agentId}/analytics`,
       configured: true,
       stat: "",
-      color: "gray" as const,
+      color: "gray",
     },
   ];
 
-  const colorMap: Record<string, { bg: string; icon: string }> = {
-    blue: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
-    violet: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
-    emerald: { bg: "bg-emerald-50 dark:bg-emerald-500/15", icon: "text-emerald-600 dark:text-emerald-400" },
-    amber: { bg: "bg-amber-50 dark:bg-amber-500/15", icon: "text-amber-600 dark:text-amber-400" },
-    orange: { bg: "bg-orange-50 dark:bg-orange-500/15", icon: "text-orange-600 dark:text-orange-400" },
-    rose: { bg: "bg-rose-50 dark:bg-rose-500/15", icon: "text-rose-600 dark:text-rose-400" },
-    gray: { bg: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
-    lisa: { bg: "bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm", icon: "text-white" },
+  const storyColorMap: Record<string, { circle: string; icon: string }> = {
+    amber: { circle: "bg-amber-100 dark:bg-amber-500/20", icon: "text-amber-600 dark:text-amber-400" },
+    blue: { circle: "bg-blue-100 dark:bg-blue-500/20", icon: "text-blue-600 dark:text-blue-400" },
+    lisa: { circle: "bg-gradient-to-br from-orange-400 to-orange-600", icon: "text-white" },
+    rose: { circle: "bg-rose-100 dark:bg-rose-500/20", icon: "text-rose-600 dark:text-rose-400" },
+    emerald: { circle: "bg-emerald-100 dark:bg-emerald-500/20", icon: "text-emerald-600 dark:text-emerald-400" },
+    orange: { circle: "bg-orange-100 dark:bg-orange-500/20", icon: "text-orange-600 dark:text-orange-400" },
+    gray: { circle: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
   };
 
   return (
@@ -225,202 +204,83 @@ export default function AgentDetailPage({
         </Link>
       </Button>
 
-      {/* Agent Hero Card - contains identity + metrics */}
+      {/* Agent Hero Card — 2 filas */}
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
-        {/* Agent Identity */}
-        <div className="p-4 pb-0 sm:p-5 sm:pb-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
-                <Bot className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-[19px] font-bold tracking-tight">{agent.name}</h1>
-                  <Badge
-                    variant="outline"
-                    className={`${statusColors[agent.status]} gap-1 text-[11px] font-medium px-1.5 py-0`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${statusDot[agent.status]}`} />
-                    {statusLabels[agent.status]}
-                  </Badge>
-                </div>
-                <p className="text-[13px] text-muted-foreground">{agent.hotelName}</p>
-              </div>
+        {/* Fila 1: identidad */}
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
+            <Bot className="h-6 w-6 text-white" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-[17px] font-bold tracking-tight truncate">{agent.name}</h1>
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
             </div>
-            <Button asChild size="sm" variant="ghost" className="shrink-0 h-8 w-8 p-0">
-              <Link href={`/agents/${agentId}/settings`}>
-                <Pencil className="h-4 w-4 text-muted-foreground" />
-              </Link>
-            </Button>
+            <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
           </div>
         </div>
-
-        {/* Inline Metrics - horizontal scroll on mobile like Apple Health */}
-        <div className="mt-4 -mx-px">
-          <div className="flex overflow-x-auto scrollbar-hide">
-            <Link
-              href={`/agents/${agentId}/analytics`}
-              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors group"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <MessageSquare className="h-3 w-3 text-orange-500" />
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                  {t.agents.messages}
-                </span>
-              </div>
-              <p className="text-[22px] font-bold tracking-tight leading-none">
-                {agent.messageCount.toLocaleString()}
-              </p>
-            </Link>
-
-            <Link
-              href={`/agents/${agentId}/faqs`}
-              className="flex-1 min-w-[80px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <HelpCircle className="h-3 w-3 text-violet-500" />
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                  FAQs
-                </span>
-              </div>
-              <p className="text-[22px] font-bold tracking-tight leading-none">
-                {agent.faqCount}
-              </p>
-            </Link>
-
-            <Link
-              href={`/agents/${agentId}/whatsapp`}
-              className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-r border-border last:border-r-0 hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <Smartphone className="h-3 w-3 text-emerald-500" />
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                  WhatsApp
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    agent.whatsappConnected ? "bg-emerald-500" : "bg-gray-300"
-                  }`}
-                />
-                <span className="text-[13px] font-semibold">
-                  {agent.whatsappConnected ? t.agents.connected : t.agents.notConnected}
-                </span>
-              </div>
-            </Link>
-
-            <div className="flex-1 min-w-[100px] shrink-0 px-4 sm:px-5 py-3.5 border-t border-border">
-              <div className="flex items-center gap-1.5 mb-1">
-                <TrendingUp className="h-3 w-3 text-amber-500" />
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                  Setup
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[22px] font-bold tracking-tight leading-none">
-                  {completedSteps}/4
-                </span>
-                <div className="flex gap-0.5 mt-0.5">
-                  {[hasFaqs, hasPersonality, hasWhatsapp, hasSocial].map((done, i) => (
-                    <div
-                      key={i}
-                      className={`h-1.5 w-3 rounded-full ${done ? "bg-orange-500" : "bg-muted-foreground/20"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+        {/* Fila 2: toggle activo/inactivo */}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-muted/30">
+          <div>
+            <p className="text-[13px] font-medium leading-tight">
+              {agent.status === "active" ? "Activo — respondiendo mensajes" : "Pausado — no responde"}
+            </p>
           </div>
+          <button
+            onClick={() => {
+              const next = agent.status === "active" ? "inactive" : "active";
+              updateAgent(agentId, { status: next });
+              toast.success(next === "active" ? "Agente activado" : "Agente pausado");
+            }}
+            className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200 ${
+              agent.status === "active" ? "bg-emerald-500" : "bg-muted-foreground/25"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                agent.status === "active" ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         </div>
       </div>
 
-      {/* Quick Actions Grid - iOS-style rounded icon grid */}
-      <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-4 sm:gap-3">
-        {quickActions.map((action) => {
-          const Icon = action.icon;
-          const colors = colorMap[action.color];
+      {/* Stories bar — 2 filas, 4 columnas */}
+      <div className="grid grid-cols-4 gap-x-1 gap-y-4">
+        {storyItems.map((item) => {
+          const storyColors = storyColorMap[item.color];
+          const circleStyle = item.configured ? storyColors.circle : "bg-muted";
+          const iconStyle = item.configured ? storyColors.icon : "text-muted-foreground";
+          const StoryIcon = item.icon;
           return (
             <Link
-              key={action.title}
-              href={action.href}
-              className="group block"
+              key={item.id}
+              href={item.href}
+              className="flex flex-col items-center gap-1.5 active:opacity-70 transition-opacity"
             >
-              <div className={`flex flex-col items-center gap-2 rounded-2xl p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.96] hover:shadow-md ${
-                  action.color === "lisa"
-                    ? "bg-gradient-to-br from-orange-400 to-orange-600 ring-1 ring-orange-500/30"
-                    : "bg-card ring-1 ring-border"
-                }`}>
-                <div className="relative">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                      action.color === "lisa" ? "bg-white/20" : colors.bg
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${action.color === "lisa" ? "text-white" : colors.icon}`} />
-                  </div>
-                  {action.configured && action.color !== "gray" && action.color !== "lisa" ? (
-                    <CheckCircle2 className="absolute -top-1 -right-1 h-4 w-4 text-emerald-500 bg-card rounded-full" />
-                  ) : !action.configured ? (
-                    <Circle className="absolute -top-1 -right-1 h-4 w-4 text-gray-300 bg-card rounded-full" />
-                  ) : null}
-                </div>
-                <span className={`text-[12px] font-medium text-center leading-tight line-clamp-2 ${
-                  action.color === "lisa" ? "text-white" : ""
-                }`}>
-                  {action.title.split(" ").slice(0, 2).join(" ")}
+              <div
+                className={`h-14 w-14 rounded-full flex items-center justify-center ${circleStyle}`}
+              >
+                {item.id === "whatsapp" ? (
+                  <IconWhatsApp className={`h-7 w-7 ${iconStyle}`} />
+                ) : StoryIcon ? (
+                  <StoryIcon className={`h-6 w-6 ${iconStyle}`} />
+                ) : null}
+              </div>
+              <div className="flex flex-col items-center max-w-[64px]">
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                  {item.label}
                 </span>
+                {item.stat && (
+                  <span className="text-[10px] font-semibold text-foreground text-center leading-tight">
+                    {item.stat}
+                  </span>
+                )}
               </div>
             </Link>
           );
         })}
       </div>
-
-      {/* Detailed Setup Cards - only unconfigured items shown prominently */}
-      {completedSteps < 4 && (
-        <div className="space-y-2.5">
-          <h2 className="text-[15px] font-semibold text-muted-foreground px-0.5">
-            {t.agents.setupCards.pending}
-          </h2>
-          {!hasFaqs && (
-            <SetupCard
-              title={t.agents.setupCards.faqsTitle}
-              description={t.agents.setupCards.faqsDescription}
-              icon={HelpCircle}
-              href={`/agents/${agentId}/faqs`}
-              color="blue"
-            />
-          )}
-          {!hasPersonality && (
-            <SetupCard
-              title={t.agents.setupCards.personalityTitle}
-              description={t.agents.setupCards.personalityDescription}
-              icon={Sparkles}
-              href={`/agents/${agentId}/settings`}
-              color="violet"
-            />
-          )}
-          {!hasWhatsapp && (
-            <SetupCard
-              title={t.agents.setupCards.whatsappTitle}
-              description={t.agents.setupCards.whatsappDescription}
-              icon={Smartphone}
-              href={`/agents/${agentId}/whatsapp`}
-              color="emerald"
-            />
-          )}
-          {!hasSocial && (
-            <SetupCard
-              title={t.agents.setupCards.socialTitle}
-              description={t.agents.setupCards.socialDescription}
-              icon={Globe}
-              href={`/agents/${agentId}/social`}
-              color="orange"
-            />
-          )}
-        </div>
-      )}
 
       {/* Integrations Section */}
       <IntegrationsSection
@@ -589,9 +449,9 @@ function IntegrationsSection({
                   <div
                     key={integration.id}
                     className={`flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all ${
-                      locked ? "opacity-60 cursor-pointer" : !locked && integration.enabled ? "cursor-pointer hover:shadow-md" : ""
+                      locked ? "opacity-60 cursor-pointer" : ""
                     }`}
-                    onClick={locked ? () => router.push("/billing") : !locked && integration.enabled ? () => onConfigure(integration) : undefined}
+                    onClick={locked ? () => router.push("/billing") : undefined}
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
@@ -628,25 +488,41 @@ function IntegrationsSection({
                       </p>
                     </div>
                     {!locked && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!integration.enabled && activeCount >= limit) {
-                            toast(t.integrations.limitReached);
-                            return;
-                          }
-                          onToggle(integration.id);
-                        }}
-                        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${
-                          integration.enabled ? "bg-emerald-500" : "bg-muted-foreground/20"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                            integration.enabled ? "translate-x-6" : "translate-x-1"
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Gear — solo si está activa */}
+                        {integration.enabled && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onConfigure(integration);
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                            title="Configurar"
+                          >
+                            <Settings className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {/* Toggle */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!integration.enabled && activeCount >= limit) {
+                              toast(t.integrations.limitReached);
+                              return;
+                            }
+                            onToggle(integration.id);
+                          }}
+                          className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${
+                            integration.enabled ? "bg-emerald-500" : "bg-muted-foreground/20"
                           }`}
-                        />
-                      </button>
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                              integration.enabled ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
                     )}
                     {locked && (
                       <Lock className="h-4 w-4 shrink-0 text-gray-300" />

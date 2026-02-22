@@ -1,37 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import {
+  Trash2,
+  User,
+  Bell,
+  CreditCard,
+  ChevronRight,
+  Globe,
+  Check,
+} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useLocaleStore } from "@/stores/locale-store";
 import { toast } from "sonner";
+
+const CURRENCIES = [
+  { value: "COP", label: "COP — Peso colombiano" },
+  { value: "MXN", label: "MXN — Peso mexicano" },
+  { value: "ARS", label: "ARS — Peso argentino" },
+  { value: "USD", label: "USD — US Dollar" },
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "BRL", label: "BRL — Real brasileiro" },
+  { value: "PEN", label: "PEN — Sol peruano" },
+  { value: "CLP", label: "CLP — Peso chileno" },
+];
 
 export default function SettingsPage() {
   const { t } = useLocaleStore();
@@ -41,192 +34,145 @@ export default function SettingsPage() {
   const [weeklyReports, setWeeklyReports] = useState(true);
   const [agentAlerts, setAgentAlerts] = useState(false);
   const [currency, setCurrency] = useState("COP");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<0 | 1>(0);
 
-  const handleSave = () => {
-    toast.success(t.settingsPage.saved);
-  };
-
-  const handleDeleteAccount = () => {
-    toast.error(t.settingsPage.deleteAccountWarning);
-    setDeleteDialogOpen(false);
-  };
+  const handleSave = () => toast.success(t.settingsPage.saved);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t.settingsPage.title}</h1>
-        <p className="text-sm text-gray-500">
-          {t.settingsPage.profileDescription}
-        </p>
-      </div>
+    <div className="space-y-5 pb-4">
 
-      {/* Profile */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.settingsPage.profile}</CardTitle>
-          <CardDescription>{t.settingsPage.profileDescription}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t.settingsPage.name}</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">{t.settingsPage.email}</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Perfil */}
+      <Section label={t.settingsPage.profile}>
+        <FieldRow label={t.settingsPage.name}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={handleSave}
+            className="bg-transparent text-[14px] text-right text-muted-foreground outline-none w-full max-w-[180px] text-ellipsis"
+          />
+        </FieldRow>
+        <Divider />
+        <FieldRow label={t.settingsPage.email}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={handleSave}
+            className="bg-transparent text-[14px] text-right text-muted-foreground outline-none w-full max-w-[200px] text-ellipsis"
+          />
+        </FieldRow>
+      </Section>
 
-      {/* Business Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.settingsPage.businessPreferences}</CardTitle>
-          <CardDescription>{t.settingsPage.businessPreferencesDescription}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="currency">{t.settingsPage.currency}</Label>
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger id="currency" className="w-full sm:w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="COP">COP - Peso colombiano ($)</SelectItem>
-                <SelectItem value="MXN">MXN - Peso mexicano ($)</SelectItem>
-                <SelectItem value="ARS">ARS - Peso argentino ($)</SelectItem>
-                <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
-                <SelectItem value="EUR">EUR - Euro (&euro;)</SelectItem>
-                <SelectItem value="BRL">BRL - Real brasileiro (R$)</SelectItem>
-                <SelectItem value="PEN">PEN - Sol peruano (S/)</SelectItem>
-                <SelectItem value="CLP">CLP - Peso chileno ($)</SelectItem>
-                <SelectItem value="UYU">UYU - Peso uruguayo ($)</SelectItem>
-                <SelectItem value="BOB">BOB - Boliviano (Bs)</SelectItem>
-                <SelectItem value="PYG">PYG - Guaraní (₲)</SelectItem>
-                <SelectItem value="DOP">DOP - Peso dominicano (RD$)</SelectItem>
-                <SelectItem value="GTQ">GTQ - Quetzal (Q)</SelectItem>
-                <SelectItem value="CRC">CRC - Colón costarricense (₡)</SelectItem>
-                <SelectItem value="PAB">PAB - Balboa (B/.)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {t.settingsPage.currencyDescription}
-            </p>
+      {/* Moneda */}
+      <Section label="Preferencias">
+        <button
+          onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
+          className="flex w-full items-center gap-3 px-4 py-3.5"
+        >
+          <Globe className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <span className="flex-1 text-[14px] font-medium text-left">{t.settingsPage.currency}</span>
+          <span className="text-[13px] text-muted-foreground mr-1">{currency}</span>
+          <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showCurrencyPicker ? "rotate-90" : ""}`} />
+        </button>
+        {showCurrencyPicker && (
+          <div className="border-t border-border/60 bg-muted/20">
+            {CURRENCIES.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => { setCurrency(c.value); setShowCurrencyPicker(false); handleSave(); }}
+                className="flex w-full items-center gap-3 px-4 py-3 text-[13px]"
+              >
+                <span className="flex-1 text-left">{c.label}</span>
+                {currency === c.value && <Check className="h-4 w-4 text-orange-500" />}
+              </button>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </Section>
 
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.settingsPage.notifications}</CardTitle>
-          <CardDescription>
-            {t.settingsPage.emailNotificationsDesc}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {t.settingsPage.emailNotifications}
-              </p>
-              <p className="text-xs text-gray-500">
-                {t.settingsPage.emailNotificationsDesc}
-              </p>
-            </div>
-            <Switch
-              checked={emailNotifications}
-              onCheckedChange={setEmailNotifications}
-            />
+      {/* Planes y facturación — link a /billing */}
+      <Section label="Suscripción">
+        <Link href="/billing" className="flex items-center gap-3 px-4 py-3.5">
+          <CreditCard className="h-5 w-5 shrink-0 text-orange-500" />
+          <div className="flex-1">
+            <p className="text-[14px] font-medium">Planes y facturación</p>
+            <p className="text-[12px] text-muted-foreground">Plan Pro · $80/mes</p>
           </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {t.settingsPage.weeklyReports}
-              </p>
-              <p className="text-xs text-gray-500">
-                {t.settingsPage.weeklyReportsDesc}
-              </p>
-            </div>
-            <Switch
-              checked={weeklyReports}
-              onCheckedChange={setWeeklyReports}
-            />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+      </Section>
+
+      {/* Notificaciones */}
+      <Section label={t.settingsPage.notifications}>
+        <FieldRow label={t.settingsPage.emailNotifications}>
+          <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+        </FieldRow>
+        <Divider />
+        <FieldRow label={t.settingsPage.weeklyReports}>
+          <Switch checked={weeklyReports} onCheckedChange={setWeeklyReports} />
+        </FieldRow>
+        <Divider />
+        <FieldRow label={t.settingsPage.agentAlerts}>
+          <Switch checked={agentAlerts} onCheckedChange={setAgentAlerts} />
+        </FieldRow>
+      </Section>
+
+      {/* Eliminar cuenta */}
+      {deleteStep === 0 && (
+        <button
+          onClick={() => setDeleteStep(1)}
+          className="w-full rounded-2xl bg-card px-4 py-3.5 text-[15px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98]"
+        >
+          {t.settingsPage.deleteAccount}
+        </button>
+      )}
+
+      {deleteStep === 1 && (
+        <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="px-5 py-4 text-center border-b border-border">
+            <Trash2 className="h-5 w-5 text-red-500 mx-auto mb-2" />
+            <p className="text-[15px] font-semibold">{t.settingsPage.deleteAccount}</p>
+            <p className="text-[13px] text-muted-foreground mt-1">{t.settingsPage.deleteAccountConfirm}</p>
           </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {t.settingsPage.agentAlerts}
-              </p>
-              <p className="text-xs text-gray-500">
-                {t.settingsPage.agentAlertsDesc}
-              </p>
-            </div>
-            <Switch
-              checked={agentAlerts}
-              onCheckedChange={setAgentAlerts}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Save */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave}>{t.common.save} {t.settingsPage.title}</Button>
-      </div>
-
-      <Separator />
-
-      {/* Danger Zone */}
-      <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="text-red-600">{t.settingsPage.dangerZone}</CardTitle>
-          <CardDescription>
-            {t.settingsPage.deleteAccountDescription}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t.settingsPage.deleteAccount}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t.settingsPage.deleteAccount}</DialogTitle>
-                <DialogDescription>
-                  {t.settingsPage.deleteAccountConfirm}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setDeleteDialogOpen(false)}
-                >
-                  {t.common.cancel}
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteAccount}>
-                  {t.settingsPage.deleteAccount}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardContent>
-      </Card>
+          <button
+            onClick={() => { toast.error(t.settingsPage.deleteAccountWarning); setDeleteStep(0); }}
+            className="w-full px-4 py-3 text-[15px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
+          >
+            {t.settingsPage.deleteAccount}
+          </button>
+          <button
+            onClick={() => setDeleteStep(0)}
+            className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
     </div>
   );
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-0">
+      <p className="text-[13px] font-medium text-muted-foreground px-0.5 mb-1.5">{label}</p>
+      <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3.5">
+      <span className="flex-1 text-[14px] font-medium">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function Divider() {
+  return <div className="h-px bg-border/60 mx-4" />;
 }

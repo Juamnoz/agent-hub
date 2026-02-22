@@ -53,7 +53,7 @@ interface AgentStore {
       Agent,
       "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "faqCount" | "productCount"
     >
-  ) => void;
+  ) => string;
   updateAgent: (id: string, updates: Partial<Agent>) => void;
   deleteAgent: (id: string) => void;
 
@@ -146,6 +146,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     };
     set((state) => ({ agents: [...state.agents, newAgent] }));
     sendWebhook("agent.created", { agent: newAgent });
+    return newAgent.id;
   },
 
   updateAgent: (id, updates) => {

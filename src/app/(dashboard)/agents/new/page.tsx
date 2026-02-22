@@ -21,6 +21,7 @@ import {
   Check,
   Briefcase,
   Zap,
+  Home,
 } from "lucide-react";
 import {
   IconInstagram,
@@ -58,6 +59,7 @@ type BusinessTypeConfig = {
   Icon: React.ComponentType<{ className?: string }>;
   circleBg: string;
   iconColor: string;
+  comingSoon?: boolean;
 };
 
 const BUSINESS_TYPES: BusinessTypeConfig[] = [
@@ -100,6 +102,15 @@ const BUSINESS_TYPES: BusinessTypeConfig[] = [
     Icon: UtensilsCrossed,
     circleBg: "bg-red-100 dark:bg-red-500/15",
     iconColor: "text-red-600 dark:text-red-400",
+  },
+  {
+    key: "restaurant" as AlgorithmType, // placeholder key, no seleccionable
+    name: "Inmobiliaria",
+    description: "Captación de clientes y gestión de propiedades",
+    Icon: Home,
+    circleBg: "bg-teal-100 dark:bg-teal-500/15",
+    iconColor: "text-teal-600 dark:text-teal-400",
+    comingSoon: true,
   },
 ];
 
@@ -517,19 +528,27 @@ export default function NewAgentPage() {
         {/* ── Step 0 — Tipo de negocio ────────────────────────── */}
         {step === 0 && (
           <div className="grid grid-cols-2 gap-2">
-            {BUSINESS_TYPES.map((bt) => {
-              const selected = algorithmType === bt.key;
+            {BUSINESS_TYPES.map((bt, i) => {
+              const selected = !bt.comingSoon && algorithmType === bt.key;
               return (
                 <button
-                  key={bt.key}
-                  onClick={() => setAlgorithmType(bt.key)}
+                  key={`${bt.key}-${i}`}
+                  onClick={() => !bt.comingSoon && setAlgorithmType(bt.key)}
+                  disabled={bt.comingSoon}
                   className={`relative flex flex-col items-start gap-2 rounded-2xl p-3 text-left ring-1 transition-all duration-200 active:scale-[0.97] ${
-                    selected
+                    bt.comingSoon
+                      ? "ring-border bg-card opacity-50 cursor-default"
+                      : selected
                       ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
                       : "ring-border bg-card hover:bg-muted/60"
                   }`}
                 >
-                  {selected && (
+                  {bt.comingSoon && (
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Pronto
+                    </span>
+                  )}
+                  {selected && !bt.comingSoon && (
                     <span className="absolute top-2.5 right-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500">
                       <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                     </span>

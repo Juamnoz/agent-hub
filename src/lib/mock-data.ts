@@ -73,7 +73,7 @@ export interface SocialLinks {
 
 export type WhatsAppProvider = "meta" | "wati" | "coexistence";
 
-export type AlgorithmType = "ecommerce" | "appointments" | "whatsapp-store" | "hotel" | "restaurant";
+export type AlgorithmType = "ecommerce" | "appointments" | "whatsapp-store" | "hotel" | "restaurant" | "inmobiliaria";
 
 export type CommunicationRegion = "neutral" | "colombian" | "mexican" | "argentinian";
 export type CommunicationRegister = "corporate" | "professional" | "relaxed" | "genz";
@@ -111,6 +111,7 @@ export const ALGORITHM_RECOMMENDED_INTEGRATIONS: Record<AlgorithmType, string[]>
   "whatsapp-store": ["google-sheets", "gmail"],
   hotel: ["google-sheets", "google-calendar", "gmail"],
   restaurant: ["google-calendar", "google-sheets"],
+  inmobiliaria: ["google-calendar", "gmail", "google-sheets"],
 };
 
 export interface ProductVariant {

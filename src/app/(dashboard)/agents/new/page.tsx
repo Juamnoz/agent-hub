@@ -104,7 +104,7 @@ const BUSINESS_TYPES: BusinessTypeConfig[] = [
     iconColor: "text-red-600 dark:text-red-400",
   },
   {
-    key: "restaurant" as AlgorithmType, // placeholder key, no seleccionable
+    key: "inmobiliaria",
     name: "Inmobiliaria",
     description: "Captación de clientes y gestión de propiedades",
     Icon: Home,

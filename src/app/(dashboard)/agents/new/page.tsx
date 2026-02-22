@@ -475,18 +475,18 @@ export default function NewAgentPage() {
 
       {/* ══ Scrollable content — ocupa todo el espacio libre ════ */}
       <div className="flex-1 overflow-y-auto">
-      <div className="px-4 max-w-lg mx-auto py-5 space-y-6">
+      <div className="px-4 max-w-lg mx-auto py-3 space-y-4">
 
         {/* Step 0 — header */}
         {step === 0 && (
-          <div className="pt-2 space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Tipo de negocio
             </p>
-            <h1 className="text-[28px] font-bold tracking-tight leading-[1.15]">
+            <h1 className="text-[22px] font-bold tracking-tight leading-tight">
               ¿Cuál es tu tipo de negocio?
             </h1>
-            <p className="text-[15px] text-muted-foreground leading-snug">
+            <p className="text-[13px] text-muted-foreground leading-snug">
               Elige el tipo para pre-configurar tu agente inteligente
             </p>
           </div>
@@ -516,38 +516,38 @@ export default function NewAgentPage() {
 
         {/* ── Step 0 — Tipo de negocio ────────────────────────── */}
         {step === 0 && (
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             {BUSINESS_TYPES.map((bt) => {
               const selected = algorithmType === bt.key;
               return (
                 <button
                   key={bt.key}
                   onClick={() => setAlgorithmType(bt.key)}
-                  className={`relative flex flex-col items-start gap-3 rounded-2xl p-4 text-left ring-1 transition-all duration-200 active:scale-[0.97] ${
+                  className={`relative flex flex-col items-start gap-2 rounded-2xl p-3 text-left ring-1 transition-all duration-200 active:scale-[0.97] ${
                     selected
                       ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
                       : "ring-border bg-card hover:bg-muted/60"
                   }`}
                 >
                   {selected && (
-                    <span className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500">
-                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    <span className="absolute top-2.5 right-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500">
+                      <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                     </span>
                   )}
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${bt.circleBg}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${bt.circleBg}`}
                   >
-                    <bt.Icon className={`h-6 w-6 ${bt.iconColor}`} />
+                    <bt.Icon className={`h-5 w-5 ${bt.iconColor}`} />
                   </div>
                   <div>
                     <p
-                      className={`text-[14px] font-semibold leading-tight ${
+                      className={`text-[13px] font-semibold leading-tight ${
                         selected ? "text-orange-500" : "text-foreground"
                       }`}
                     >
                       {bt.name}
                     </p>
-                    <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
                       {bt.description}
                     </p>
                   </div>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronRight,
   HelpCircle,
   BarChart3,
   Globe,
@@ -115,6 +116,42 @@ export default function AgentDetailPage({
     Object.values(agent.socialLinks).some((v) => v && v.trim());
 
 
+  // Deployment steps — pasos para desplegar el algoritmo
+  const deploySteps = [
+    {
+      id: "personality",
+      title: "Algoritmo y personalidad",
+      description: agent.algorithmType ? "Tipo de agente configurado" : "Define el tipo y tono del agente",
+      done: !!agent.algorithmType,
+      href: `/agents/${agentId}/settings`,
+    },
+    {
+      id: "faqs",
+      title: "Preguntas frecuentes",
+      description: agent.faqCount >= 10
+        ? `${agent.faqCount} FAQs cargadas`
+        : `${agent.faqCount} FAQs — se recomiendan 10+`,
+      done: agent.faqCount >= 10,
+      href: `/agents/${agentId}/faqs`,
+    },
+    {
+      id: "whatsapp",
+      title: "WhatsApp Business",
+      description: hasWhatsapp ? "Canal conectado" : "Conecta tu número de WhatsApp",
+      done: hasWhatsapp,
+      href: `/agents/${agentId}/whatsapp`,
+    },
+    {
+      id: "social",
+      title: "Web y redes sociales",
+      description: hasSocial ? "Contexto de negocio añadido" : "Agrega tu sitio o perfiles",
+      done: !!hasSocial,
+      href: `/agents/${agentId}/social`,
+    },
+  ];
+  const completedDeployCount = deploySteps.filter((s) => s.done).length;
+  const allDeployed = completedDeployCount === deploySteps.length;
+
   // Stories bar — 7 secciones del agente
   const storyItems = [
     {
@@ -182,6 +219,15 @@ export default function AgentDetailPage({
       stat: "",
       color: "gray",
     },
+    {
+      id: "settings",
+      label: "Configuración",
+      icon: Settings,
+      href: `/agents/${agentId}/settings`,
+      configured: true,
+      stat: "",
+      color: "slate",
+    },
   ];
 
   const storyColorMap: Record<string, { circle: string; icon: string }> = {
@@ -192,6 +238,7 @@ export default function AgentDetailPage({
     emerald: { circle: "bg-emerald-100 dark:bg-emerald-500/20", icon: "text-emerald-600 dark:text-emerald-400" },
     orange: { circle: "bg-orange-100 dark:bg-orange-500/20", icon: "text-orange-600 dark:text-orange-400" },
     gray: { circle: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
+    slate: { circle: "bg-slate-100 dark:bg-slate-500/20", icon: "text-slate-600 dark:text-slate-400" },
   };
 
   return (
@@ -244,6 +291,62 @@ export default function AgentDetailPage({
           </button>
         </div>
       </div>
+
+      {/* Deployment steps — pasos pendientes para desplegar el algoritmo */}
+      {!allDeployed && (
+        <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+            <div>
+              <p className="text-[13px] font-semibold leading-tight">Para desplegar el algoritmo</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {completedDeployCount} de {deploySteps.length} pasos completados
+              </p>
+            </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-500/15">
+              <span className="text-[13px] font-bold text-orange-500">
+                {Math.round((completedDeployCount / deploySteps.length) * 100)}%
+              </span>
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className="mx-4 mb-3 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-500"
+              style={{ width: `${(completedDeployCount / deploySteps.length) * 100}%` }}
+            />
+          </div>
+          {/* Steps */}
+          <div className="border-t border-border/60 divide-y divide-border/60">
+            {deploySteps.map((step) => (
+              <Link
+                key={step.id}
+                href={step.href}
+                className="flex items-center gap-3 px-4 py-3 active:bg-muted/40 transition-colors"
+              >
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+                  {step.done ? (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  ) : (
+                    <div className="h-5 w-5 rounded-full ring-1 ring-border bg-muted/50" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-muted-foreground" : "text-foreground"}`}>
+                    {step.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{step.description}</p>
+                </div>
+                {step.done ? (
+                  <span className="text-[10px] font-semibold text-emerald-500 shrink-0">Listo</span>
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stories bar — 2 filas, 4 columnas */}
       <div className="grid grid-cols-4 gap-x-1 gap-y-4">

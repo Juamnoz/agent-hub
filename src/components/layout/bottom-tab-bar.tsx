@@ -22,6 +22,9 @@ function isTabActive(href: string, pathname: string): boolean {
 export function BottomTabBar() {
   const pathname = usePathname();
 
+  // Ocultar durante flujos de creación/wizard para no interferir
+  if (pathname === "/agents/new" || pathname.startsWith("/agents/new/")) return null;
+
   return (
     <div
       className="lg:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur border-t border-border"

@@ -34,42 +34,42 @@ export function AgentCard({ agent, className }: AgentCardProps) {
       </Link>
 
       <Link href={`/agents/${agent.id}`} className="block">
-        <div className="rounded-2xl bg-card p-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
+        <div className="rounded-2xl bg-card p-3 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
           {/* Top row: avatar + name + business + status dot */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
-              <Bot className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
+              <Bot className="h-4.5 w-4.5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
+                <h3 className="text-[13px] font-semibold truncate">{agent.name}</h3>
                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
               </div>
-              <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{agent.hotelName}</p>
             </div>
           </div>
 
-          {/* Stats: 3 columns with dividers — Instagram profile style */}
-          <div className="grid grid-cols-3 divide-x divide-border mt-3 pt-3 border-t border-border">
-            <div className="flex flex-col items-center gap-0.5 px-1">
-              <span className="text-[20px] font-bold tabular-nums leading-tight">
+          {/* Stats: 3 columns with dividers */}
+          <div className="grid grid-cols-3 divide-x divide-border mt-2 pt-2 border-t border-border">
+            <div className="flex flex-col items-center gap-0 px-1">
+              <span className="text-[15px] font-bold tabular-nums leading-tight">
                 {agent.messageCount.toLocaleString()}
               </span>
-              <span className="text-[11px] text-muted-foreground">{t.agents.msgs}</span>
+              <span className="text-[10px] text-muted-foreground">{t.agents.msgs}</span>
             </div>
-            <div className="flex flex-col items-center gap-0.5 px-1">
-              <span className="text-[20px] font-bold tabular-nums leading-tight">
+            <div className="flex flex-col items-center gap-0 px-1">
+              <span className="text-[15px] font-bold tabular-nums leading-tight">
                 {agent.faqCount}
               </span>
-              <span className="text-[11px] text-muted-foreground">{t.agents.faqs}</span>
+              <span className="text-[10px] text-muted-foreground">{t.agents.faqs}</span>
             </div>
-            <div className="flex flex-col items-center gap-0.5 px-1">
+            <div className="flex flex-col items-center gap-0 px-1">
               <IconWhatsApp
-                className={`h-6 w-6 ${
+                className={`h-5 w-5 ${
                   agent.whatsappConnected ? "text-[#25D366]" : "text-muted-foreground/30"
                 }`}
               />
-              <span className="text-[11px] text-muted-foreground">WhatsApp</span>
+              <span className="text-[10px] text-muted-foreground">WhatsApp</span>
             </div>
           </div>
         </div>

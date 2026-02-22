@@ -42,9 +42,10 @@ const ALGORITHM_ICONS: Record<AlgorithmType, React.ComponentType<{ className?: s
   "whatsapp-store": MessageCircle,
   hotel: Building2,
   restaurant: UtensilsCrossed,
+  inmobiliaria: Building2,
 };
 
-const ALGORITHM_KEYS: AlgorithmType[] = ["ecommerce", "appointments", "whatsapp-store", "hotel", "restaurant"];
+const ALGORITHM_KEYS: AlgorithmType[] = ["ecommerce", "appointments", "whatsapp-store", "hotel", "restaurant", "inmobiliaria"];
 const REGION_KEYS: CommunicationRegion[] = ["neutral", "colombian", "mexican", "argentinian"];
 const REGISTER_KEYS: CommunicationRegister[] = ["corporate", "professional", "relaxed", "genz"];
 
@@ -62,6 +63,7 @@ const BASE_TEMPLATES: Record<AlgorithmType, string> = {
   "whatsapp-store": "Eres {agentName}, el asistente virtual de {hotelName}. Tu rol es atender pedidos por WhatsApp, mostrar el catalogo disponible y guiar al cliente desde la consulta hasta la confirmacion del pedido.",
   hotel: "Eres {agentName}, el asistente virtual de {hotelName}. Tu rol es atender huespedes como un conserje local autentico, ayudar con reservaciones, informar sobre servicios del hotel y recomendar experiencias locales.",
   restaurant: "Eres {agentName}, el asistente virtual de {hotelName}. Tu rol es atender comensales, compartir el menu, gestionar reservaciones de mesa y tomar pedidos a domicilio con calidez y eficiencia.",
+  inmobiliaria: "Eres {agentName}, el asistente virtual de {hotelName}. Tu rol es captar clientes interesados en comprar o rentar propiedades, responder consultas sobre inmuebles disponibles y agendar visitas con los asesores.",
 };
 
 const REGION_OVERLAYS: Record<CommunicationRegion, string> = {
@@ -108,6 +110,12 @@ const PREVIEW_TEMPLATES: Record<AlgorithmType, Record<CommunicationRegion, strin
     colombian: "Quiubo parce! Bienvenido a {hotelName}. Mira el catalogo y pide lo que quieras. En que te ayudo?",
     mexican: "Que onda! Bienvenido a {hotelName}. Checate el catalogo y pidelo que se te antoje. En que te echo la mano?",
     argentinian: "Che, bienvenido a {hotelName}! Fijate el catalogo y pedí lo que quieras. En que te ayudo?",
+  },
+  inmobiliaria: {
+    neutral: "Hola! Bienvenido a {hotelName}. Puedo ayudarte a encontrar la propiedad ideal segun tu presupuesto y necesidades. Que tipo de inmueble estas buscando?",
+    colombian: "Quiubo parce! Bienvenido a {hotelName}. Te ayudo a encontrar la propiedad que necesitas. Que andas buscando?",
+    mexican: "Que onda! Bienvenido a {hotelName}. Con gusto te ayudo a encontrar la propiedad ideal. Que tipo de inmueble te late?",
+    argentinian: "Che, bienvenido a {hotelName}! Dale, te ayudo a encontrar la propiedad ideal. Que tipo de inmueble estas buscando?",
   },
 };
 
@@ -156,6 +164,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
     "whatsapp-store": "whatsappStore",
     hotel: "hotel",
     restaurant: "restaurant",
+    inmobiliaria: "hotel", // fallback hasta que se agregue traducción propia
   };
 
   async function handleGenerate() {

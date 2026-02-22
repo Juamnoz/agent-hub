@@ -441,11 +441,14 @@ export default function NewAgentPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
 
-      {/* ══ Sticky progress header ══════════════════════════════ */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between pt-4 pb-2">
+      {/* ══ Progress header — fijo arriba ═══════════════════════ */}
+      <div
+        className="shrink-0 bg-background/95 backdrop-blur-sm px-4 border-b border-border/40"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
+      >
+        <div className="flex items-center justify-between pb-2 max-w-lg mx-auto">
           <button
             onClick={handleBack}
             className="flex items-center gap-0.5 text-[15px] font-medium text-orange-500 active:opacity-60 transition-opacity"
@@ -458,7 +461,7 @@ export default function NewAgentPage() {
           </span>
         </div>
         {/* Segmented progress — Apple style */}
-        <div className="flex gap-1 pb-4">
+        <div className="flex gap-1 pb-3 max-w-lg mx-auto">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
@@ -470,8 +473,9 @@ export default function NewAgentPage() {
         </div>
       </div>
 
-      {/* ══ Scrollable content ══════════════════════════════════ */}
-      <div className="pb-28 space-y-6">
+      {/* ══ Scrollable content — ocupa todo el espacio libre ════ */}
+      <div className="flex-1 overflow-y-auto">
+      <div className="px-4 max-w-lg mx-auto py-5 space-y-6">
 
         {/* Step 0 — header */}
         {step === 0 && (
@@ -858,43 +862,49 @@ export default function NewAgentPage() {
           </div>
         )}
       </div>
+      </div>
 
-      {/* ══ Sticky bottom CTA ═══════════════════════════════════ */}
-      <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm pt-3 pb-6 space-y-2.5">
-        {step === 6 ? (
-          <>
-            <Button
-              onClick={handleDeploy}
-              className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
-            >
-              Activar agente
-            </Button>
-            <button
-              onClick={handleDeploy}
-              className="w-full py-2.5 text-[15px] font-medium text-orange-500 active:opacity-60 transition-opacity"
-            >
-              Configurar mas tarde
-            </button>
-          </>
-        ) : (
-          <>
-            <Button
-              onClick={handleContinue}
-              disabled={!canContinue}
-              className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
-            >
-              {STEP_CTA[step]}
-            </Button>
-            {step === 5 && (
-              <button
-                onClick={handleSkipWhatsapp}
-                className="w-full py-2.5 text-[15px] font-medium text-muted-foreground active:opacity-60 transition-opacity"
+      {/* ══ CTA fijo en el inferior — siempre visible ═══════════ */}
+      <div
+        className="shrink-0 bg-background/95 backdrop-blur-sm px-4 pt-3 border-t border-border/40 space-y-2.5"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
+      >
+        <div className="max-w-lg mx-auto space-y-2.5">
+          {step === 6 ? (
+            <>
+              <Button
+                onClick={handleDeploy}
+                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
               >
-                Conectar WhatsApp despues
+                Activar agente
+              </Button>
+              <button
+                onClick={handleDeploy}
+                className="w-full py-2.5 text-[15px] font-medium text-orange-500 active:opacity-60 transition-opacity"
+              >
+                Configurar más tarde
               </button>
-            )}
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinue}
+                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
+              >
+                {STEP_CTA[step]}
+              </Button>
+              {step === 5 && (
+                <button
+                  onClick={handleSkipWhatsapp}
+                  className="w-full py-2.5 text-[15px] font-medium text-muted-foreground active:opacity-60 transition-opacity"
+                >
+                  Conectar WhatsApp después
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

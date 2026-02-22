@@ -30,6 +30,7 @@ import {
   IconTikTok,
   IconTripAdvisor,
   IconGoogleMaps,
+  IconWhatsApp,
 } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -900,9 +901,13 @@ export default function NewAgentPage() {
               >✦</span>
 
               {/* Rocket */}
-              <div style={{ animation: "rocketFloat 3s ease-in-out infinite" }}>
+              <div className="relative" style={{ animation: "rocketFloat 3s ease-in-out infinite" }}>
                 <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_12px_40px_rgba(249,115,22,0.45)]">
                   <Rocket className="h-12 w-12 text-white" strokeWidth={1.5} />
+                </div>
+                {/* WhatsApp badge — destino del cohete */}
+                <div className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] shadow-[0_4px_12px_rgba(37,211,102,0.5)] ring-2 ring-background">
+                  <IconWhatsApp className="h-5 w-5 text-white" />
                 </div>
               </div>
 
@@ -925,10 +930,10 @@ export default function NewAgentPage() {
               style={{ animation: "fadeUp .6s ease-out .2s both" }}
             >
               <h1 className="text-[26px] font-bold tracking-tight leading-tight">
-                Ya tu agente contesta<br />tu WhatsApp
+                Activa tu agente
               </h1>
               <p className="text-[14px] text-muted-foreground leading-snug max-w-[260px] mx-auto">
-                {agent?.name ?? "Tu agente"} está listo. Pruébalo ahora y ve cómo responde a tus clientes.
+                Al activarlo, <span className="font-medium text-[#25D366]">WhatsApp</span> empezará a responder mensajes de tus clientes automáticamente.
               </p>
             </div>
           </div>

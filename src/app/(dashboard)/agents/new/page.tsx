@@ -505,20 +505,20 @@ export default function NewAgentPage() {
 
         {/* Standard hero (steps 1–5) */}
         {hero && (
-          <div className="pt-2 space-y-4">
+          <div className="flex items-center gap-3">
             <div
-              className={`flex h-14 w-14 items-center justify-center rounded-2xl ${hero.circleBg}`}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${hero.circleBg}`}
             >
-              <hero.Icon className={`h-7 w-7 ${hero.iconColor}`} />
+              <hero.Icon className={`h-5 w-5 ${hero.iconColor}`} />
             </div>
-            <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground leading-tight">
                 {hero.sectionLabel}
               </p>
-              <h1 className="text-[28px] font-bold tracking-tight leading-[1.15]">
+              <h1 className="text-[20px] font-bold tracking-tight leading-tight">
                 {hero.title}
               </h1>
-              <p className="text-[15px] text-muted-foreground leading-snug">
+              <p className="text-[12px] text-muted-foreground leading-snug">
                 {hero.subtitle}
               </p>
             </div>

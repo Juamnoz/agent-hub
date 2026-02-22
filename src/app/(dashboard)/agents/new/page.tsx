@@ -22,6 +22,7 @@ import {
   Briefcase,
   Zap,
   Home,
+  Rocket,
 } from "lucide-react";
 import {
   IconInstagram,
@@ -838,45 +839,97 @@ export default function NewAgentPage() {
           </div>
         )}
 
-        {/* ── Step 6 — Launch ─────────────────────────────────── */}
+        {/* ── Step 6 — Launch 🚀 ──────────────────────────────── */}
         {step === 6 && agentId && (
-          <div className="space-y-5 pt-2">
-            {/* Success state */}
-            <div className="flex flex-col items-center text-center gap-4 py-4">
-              <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-500/15">
-                  <CheckCircle2 className="h-10 w-10 text-orange-500" />
+          <div className="flex flex-col items-center text-center">
+            <style>{`
+              @keyframes rocketFloat {
+                0%,100% { transform: translateY(0px); }
+                50%      { transform: translateY(-10px); }
+              }
+              @keyframes exhaustPulse {
+                0%,100% { opacity:.5; transform:scaleX(1); }
+                50%      { opacity:.9; transform:scaleX(1.15); }
+              }
+              @keyframes orbitStar {
+                from { transform: rotate(0deg) translateX(52px); }
+                to   { transform: rotate(360deg) translateX(52px); }
+              }
+              @keyframes starTwinkle {
+                0%,100% { opacity:1; transform:scale(1); }
+                50%      { opacity:.3; transform:scale(.6); }
+              }
+              @keyframes fadeUp {
+                from { opacity:0; transform:translateY(18px); }
+                to   { opacity:1; transform:translateY(0); }
+              }
+              @keyframes glowPulse {
+                0%,100% { opacity:.25; transform:scale(1); }
+                50%      { opacity:.5; transform:scale(1.08); }
+              }
+            `}</style>
+
+            {/* ── Rocket scene ── */}
+            <div className="relative flex flex-col items-center mt-6 mb-8">
+
+              {/* Glow orb */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 h-36 w-36 rounded-full bg-orange-400/30 blur-3xl"
+                style={{ animation: "glowPulse 3s ease-in-out infinite" }}
+              />
+
+              {/* Orbiting star */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-0 w-0">
+                <div style={{ animation: "orbitStar 6s linear infinite", transformOrigin: "0 0" }}>
+                  <span className="text-[10px] text-orange-300">✦</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Listo para activar
-                </p>
-                <h1 className="text-[26px] font-bold tracking-tight leading-tight">
-                  {agent?.name ?? "Tu agente"} está configurado
-                </h1>
-                <p className="text-[15px] text-muted-foreground">
-                  Revisa la configuración y activa tu agente
-                </p>
+
+              {/* Static stars */}
+              <span
+                className="absolute top-0 right-6 text-[8px] text-orange-400"
+                style={{ animation: "starTwinkle 2s ease-in-out 0.3s infinite" }}
+              >✦</span>
+              <span
+                className="absolute top-6 left-2 text-[6px] text-orange-300/70"
+                style={{ animation: "starTwinkle 2.5s ease-in-out 0.7s infinite" }}
+              >✦</span>
+              <span
+                className="absolute bottom-8 right-2 text-[7px] text-orange-400/60"
+                style={{ animation: "starTwinkle 1.8s ease-in-out 1.1s infinite" }}
+              >✦</span>
+
+              {/* Rocket */}
+              <div style={{ animation: "rocketFloat 3s ease-in-out infinite" }}>
+                <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_12px_40px_rgba(249,115,22,0.45)]">
+                  <Rocket className="h-12 w-12 text-white" strokeWidth={1.5} />
+                </div>
+              </div>
+
+              {/* Exhaust trail */}
+              <div className="flex flex-col items-center gap-1 mt-2">
+                <div
+                  className="w-3 h-8 rounded-full bg-gradient-to-b from-orange-400/70 to-transparent"
+                  style={{ animation: "exhaustPulse 1.2s ease-in-out infinite" }}
+                />
+                <div
+                  className="w-1.5 h-4 rounded-full bg-gradient-to-b from-orange-300/40 to-transparent"
+                  style={{ animation: "exhaustPulse 1.2s ease-in-out 0.2s infinite" }}
+                />
               </div>
             </div>
 
-            {/* Configuration summary */}
-            <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden divide-y divide-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              {summaryItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-3.5 px-4 h-[52px]"
-                >
-                  <item.Icon className="h-[18px] w-[18px] text-muted-foreground shrink-0" />
-                  <span className="flex-1 text-[15px]">{item.label}</span>
-                  {item.done ? (
-                    <CheckCircle2 className="h-[18px] w-[18px] text-emerald-500 shrink-0" />
-                  ) : (
-                    <Circle className="h-[18px] w-[18px] text-border shrink-0" />
-                  )}
-                </div>
-              ))}
+            {/* ── Text ── */}
+            <div
+              className="space-y-2 px-2"
+              style={{ animation: "fadeUp .6s ease-out .2s both" }}
+            >
+              <h1 className="text-[26px] font-bold tracking-tight leading-tight">
+                Ya tu agente contesta<br />tu WhatsApp
+              </h1>
+              <p className="text-[14px] text-muted-foreground leading-snug max-w-[260px] mx-auto">
+                {agent?.name ?? "Tu agente"} está listo. Pruébalo ahora y ve cómo responde a tus clientes.
+              </p>
             </div>
           </div>
         )}

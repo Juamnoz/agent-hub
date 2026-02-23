@@ -458,28 +458,28 @@ export default function NewAgentPage() {
 
       {/* ══ Progress header — fijo arriba ═══════════════════════ */}
       <div
-        className="shrink-0 bg-background/95 backdrop-blur-sm px-4 border-b border-border/40"
+        className="shrink-0 bg-[#1a1a1a] dark:bg-[#111] px-4 border-b border-white/8"
         style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
       >
         <div className="flex items-center justify-between pb-2 max-w-lg mx-auto">
           <button
             onClick={handleBack}
-            className="flex items-center gap-0.5 text-[15px] font-medium text-orange-500 active:opacity-60 transition-opacity"
+            className="flex items-center gap-0.5 text-[15px] font-medium text-white/70 active:opacity-60 transition-opacity"
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
             {step === 0 ? "Cancelar" : "Atrás"}
           </button>
-          <span className="text-[13px] font-medium text-muted-foreground tabular-nums">
+          <span className="text-[13px] font-medium text-white/40 tabular-nums">
             {step + 1} / {TOTAL_STEPS}
           </span>
         </div>
-        {/* Segmented progress — Apple style */}
+        {/* Segmented progress — Apple style: white translucent on dark */}
         <div className="flex gap-1 pb-3 max-w-lg mx-auto">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
               className={`flex-1 h-[3px] rounded-full transition-all duration-300 ${
-                i <= step ? "bg-orange-500" : "bg-muted"
+                i <= step ? "bg-white/80" : "bg-white/15"
               }`}
             />
           ))}
@@ -943,7 +943,7 @@ export default function NewAgentPage() {
 
       {/* ══ CTA fijo en el inferior — siempre visible ═══════════ */}
       <div
-        className="shrink-0 bg-background/95 backdrop-blur-sm px-4 pt-3 border-t border-border/40 space-y-2.5"
+        className="shrink-0 bg-[#1a1a1a] dark:bg-[#111] px-4 pt-3 border-t border-white/8 space-y-2.5"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
       >
         <div className="max-w-lg mx-auto space-y-2.5">
@@ -957,7 +957,7 @@ export default function NewAgentPage() {
               </Button>
               <button
                 onClick={handleDeploy}
-                className="w-full py-2.5 text-[15px] font-medium text-orange-500 active:opacity-60 transition-opacity"
+                className="w-full py-2.5 text-[15px] font-medium text-white/50 active:opacity-60 transition-opacity"
               >
                 Configurar más tarde
               </button>
@@ -974,7 +974,7 @@ export default function NewAgentPage() {
               {step === 5 && (
                 <button
                   onClick={handleSkipWhatsapp}
-                  className="w-full py-2.5 text-[15px] font-medium text-muted-foreground active:opacity-60 transition-opacity"
+                  className="w-full py-2.5 text-[15px] font-medium text-white/50 active:opacity-60 transition-opacity"
                 >
                   Conectar WhatsApp después
                 </button>

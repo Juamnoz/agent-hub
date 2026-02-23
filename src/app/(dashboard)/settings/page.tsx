@@ -40,7 +40,7 @@ export default function SettingsPage() {
   const handleSave = () => toast.success(t.settingsPage.saved);
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-5 pb-4 lg:max-w-[640px] lg:mx-auto">
 
       {/* Perfil */}
       <Section label={t.settingsPage.profile}>

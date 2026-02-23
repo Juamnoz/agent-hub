@@ -5,17 +5,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Bot,
+  BrainCircuit, Bot,
   ShoppingBag,
   CreditCard,
   Settings,
   LogOut,
-  Sparkles,
   PanelLeftClose,
   PanelLeft,
   ChevronRight,
   Check,
   Plus,
+  MessageSquare,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -47,9 +48,14 @@ export function Sidebar() {
   const agents = useAgentStore((s) => s.agents);
   const [lisaOpen, setLisaOpen] = useState(false);
 
-  const navItems = [
+  // Main nav — mirrors mobile bottom tab bar: Panel | Agentes | Lisa
+  const mainNavItems = [
     { label: "Panel", href: "/panel", icon: LayoutDashboard },
-    { label: t.nav.agents, href: "/agents", icon: Bot },
+    { label: t.nav.agents, href: "/agents", icon: BrainCircuit },
+  ];
+
+  // Secondary nav — lives at the bottom of the sidebar
+  const secondaryNavItems = [
     { label: t.nav.billing, href: "/billing", icon: CreditCard },
     { label: t.nav.settings, href: "/settings", icon: Settings },
   ];
@@ -77,7 +83,8 @@ export function Sidebar() {
     const trigger = (
       <PopoverTrigger asChild>
         <button className={triggerClasses}>
-          <Sparkles className="h-4 w-4 shrink-0" />
+          {/* Lisa isologo naranja transparente */}
+          <img src="/lisa-isologo-orange.png" alt="" className="shrink-0 h-4 w-4 object-contain" />
           {!collapsed && (
             <>
               <span className="flex-1 text-left">Lisa</span>
@@ -109,75 +116,78 @@ export function Sidebar() {
           side="right"
           align="start"
           sideOffset={collapsed ? 8 : 12}
-          className="w-72 p-0 overflow-hidden"
+          className="w-[280px] p-0 overflow-hidden"
         >
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-semibold">Lisa</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t.lisa.subtitle}
-            </p>
-          </div>
-          {/* New agent button */}
-          <div className="px-3 pt-3 pb-1">
+          {/* ── Nueva conversación ── */}
+          <div className="p-2.5">
             <Link
               href="/lisa"
               onClick={() => setLisaOpen(false)}
-              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 dark:text-orange-400 transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-[13px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/15 dark:hover:bg-orange-500/25 dark:text-orange-400 transition-colors"
             >
-              <Sparkles className="h-4 w-4" />
-              {t.lisa.newAgent}
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shrink-0">
+                <Plus className="h-3.5 w-3.5 text-white" />
+              </div>
+              Nueva conversación
             </Link>
           </div>
-          {agents.length === 0 ? (
-            <div className="px-4 py-4 text-center">
-              <p className="text-xs text-muted-foreground">
-                {t.agents.noAgentsDescription}
+
+          {/* ── Recientes (mock) ── */}
+          <div className="border-t border-border">
+            <p className="px-4 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+              Recientes
+            </p>
+            {[
+              { title: "¿Cómo van mis agentes?", time: "12m", href: "/lisa" },
+              { title: "Mejoras para Playa Azul", time: "2h", href: "/lisa" },
+              { title: "Nueva FAQ: check-in", time: "Ayer", href: "/lisa" },
+              { title: "Métricas de la semana", time: "3d", href: "/lisa" },
+            ].map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                onClick={() => setLisaOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 hover:bg-accent/50 transition-colors group"
+              >
+                <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground" />
+                <span className="flex-1 text-[12px] text-foreground/80 truncate">{item.title}</span>
+                <span className="text-[11px] text-muted-foreground/40 shrink-0">{item.time}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* ── Entrenar agente ── */}
+          {agents.length > 0 && (
+            <div className="border-t border-border pb-2">
+              <p className="px-4 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Entrenar agente
               </p>
+              {agents.map((agent) => {
+                const isSelected = currentLisaAgentId === agent.id;
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => handleSelectAgent(agent.id)}
+                    className={cn(
+                      "flex items-center gap-2.5 w-full px-4 py-2 text-left transition-colors",
+                      isSelected ? "bg-accent" : "hover:bg-accent/50"
+                    )}
+                  >
+                    <div className="relative shrink-0">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted">
+                        <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                      <span className={cn("absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-popover", statusColors[agent.status] ?? "bg-gray-400")} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-medium truncate">{agent.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{agent.hotelName}</p>
+                    </div>
+                    {isSelected && <Check className="h-3.5 w-3.5 text-orange-500 shrink-0" />}
+                  </button>
+                );
+              })}
             </div>
-          ) : (
-            <>
-              <div className="mx-4 my-2 border-t border-border" />
-              <div className="py-1 pb-2 max-h-64 overflow-y-auto">
-                {agents.map((agent) => {
-                  const isSelected = currentLisaAgentId === agent.id;
-                  return (
-                    <button
-                      key={agent.id}
-                      onClick={() => handleSelectAgent(agent.id)}
-                      className={cn(
-                        "flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors",
-                        isSelected
-                          ? "bg-accent"
-                          : "hover:bg-accent/50"
-                      )}
-                    >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 shrink-0">
-                        <Bot className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">
-                            {agent.name}
-                          </span>
-                          <span
-                            className={cn(
-                              "h-1.5 w-1.5 rounded-full shrink-0",
-                              statusColors[agent.status] ?? "bg-gray-400"
-                            )}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {agent.hotelName}
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <Check className="h-4 w-4 text-orange-600 shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
           )}
         </PopoverContent>
       </Popover>
@@ -213,15 +223,21 @@ export function Sidebar() {
           ) : (
             <>
               <Link href="/panel" className="flex items-center gap-2">
-                <img src="/logo.png" alt="Lisa" className="h-6 w-6 shrink-0" />
-                <div className="flex flex-col leading-none">
-                  <span className="text-lg font-semibold tracking-tight leading-tight">
-                    Lisa
-                  </span>
-                  <span className="text-[9px] font-medium text-muted-foreground tracking-wide">
-                    by Aic studio
-                  </span>
-                </div>
+                {/* Lisa wordmark — light mode */}
+                <img
+                  src="/lisa-logo-orange.png"
+                  alt="Lisa"
+                  className="h-8 object-contain dark:hidden"
+                />
+                {/* Lisa wordmark — dark mode (white on transparent bg) */}
+                <img
+                  src="/lisa-logo-white.png"
+                  alt="Lisa"
+                  className="h-8 object-contain hidden dark:block"
+                />
+                <span className="text-[9px] font-medium text-muted-foreground tracking-wide mt-auto mb-0.5">
+                  by Aic studio
+                </span>
               </Link>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -238,8 +254,9 @@ export function Sidebar() {
           )}
         </div>
 
+        {/* ── Main nav (mirrors mobile tabs: Panel | Agentes | Lisa) ── */}
         <nav className="flex-1 flex flex-col gap-1 p-3">
-          {navItems.slice(0, 2).map((item) => {
+          {mainNavItems.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -268,14 +285,16 @@ export function Sidebar() {
                 </Tooltip>
               );
             }
-
             return link;
           })}
 
-          {/* Lisa item with agent selector popover */}
+          {/* Lisa — prominent, like the center tab on mobile */}
           {renderLisaItem()}
+        </nav>
 
-          {navItems.slice(2).map((item) => {
+        {/* ── Secondary nav + logout ── */}
+        <div className="border-t border-border p-3 flex flex-col gap-1">
+          {secondaryNavItems.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -304,12 +323,10 @@ export function Sidebar() {
                 </Tooltip>
               );
             }
-
             return link;
           })}
-        </nav>
 
-        <div className="border-t border-border p-3">
+          {/* Logout */}
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>

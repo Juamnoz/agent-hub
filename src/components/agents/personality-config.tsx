@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -140,6 +140,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
 
   const [name, setName] = useState(agent.name);
   const [hotelName, setHotelName] = useState(agent.hotelName);
+  const [avatar, setAvatar] = useState(agent.avatar ?? "");
   const [personality, setPersonality] = useState(agent.personality);
   const [tone, setTone] = useState(agent.tone);
   const [language, setLanguage] = useState(agent.language);
@@ -194,6 +195,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
     updateAgent(agent.id, {
       name: name.trim(),
       hotelName: hotelName.trim(),
+      avatar: avatar.trim() || undefined,
       personality: personality.trim(),
       tone,
       language,
@@ -214,6 +216,53 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
           <CardDescription>{t.agentSettings.basicInfoDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Avatar */}
+          <div className="space-y-2">
+            <Label>Foto de perfil</Label>
+            <div className="flex items-center gap-3">
+              {/* Preview */}
+              <button
+                type="button"
+                onClick={() => document.getElementById("avatar-file-input")?.click()}
+                className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-neutral-700 dark:bg-neutral-600 group"
+                title="Subir foto"
+              >
+                {avatar ? (
+                  <img src={avatar} alt={name} className="h-full w-full object-cover" />
+                ) : (
+                  <Bot className="h-6 w-6 text-neutral-400" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-[10px] font-semibold">Subir</span>
+                </div>
+              </button>
+              {/* URL input */}
+              <Input
+                id="agent-avatar"
+                placeholder="https://... URL de la imagen"
+                value={avatar}
+                onChange={(e) => setAvatar(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+            {/* File input oculto — abre galería en móvil */}
+            <input
+              id="avatar-file-input"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => setAvatar(ev.target?.result as string);
+                reader.readAsDataURL(file);
+              }}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Toca el avatar para subir desde tu dispositivo, o pega una URL.
+            </p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="agent-name">{t.agents.agentName}</Label>
             <Input id="agent-name" value={name} onChange={(e) => setName(e.target.value)} />

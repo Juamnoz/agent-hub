@@ -37,8 +37,14 @@ export function AgentCard({ agent, className }: AgentCardProps) {
         <div className="rounded-2xl bg-card p-3 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 active:scale-[0.98] hover:shadow-md">
           {/* Top row: avatar + name + business + status dot */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
-              <Bot className="h-4.5 w-4.5 text-white" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-sm">
+              {agent.avatar ? (
+                <img src={agent.avatar} alt={agent.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-neutral-700 dark:bg-neutral-600">
+                  <Bot className="h-[18px] w-[18px] text-neutral-400" />
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
@@ -49,32 +55,39 @@ export function AgentCard({ agent, className }: AgentCardProps) {
             </div>
           </div>
 
-          {/* Stats: 3 columns with dividers */}
+          {/* Stats: 3 columns */}
           <div className="grid grid-cols-3 divide-x divide-border mt-2 pt-2 border-t border-border">
-            {/* Mensajes — tappable → va a conversaciones */}
+
+            {/* Mensajes — clickable, azul estilo iOS link */}
             <Link
               href={`/agents/${agent.id}/conversations`}
               onClick={(e) => e.stopPropagation()}
-              className="flex flex-col items-center gap-0 px-1 rounded-lg active:bg-blue-50/60 dark:active:bg-blue-500/10 transition-colors"
+              className="flex flex-col items-center gap-0.5 px-1 py-0.5 rounded-lg active:bg-blue-50/60 dark:active:bg-blue-500/10 transition-colors group/msgs"
             >
               <span className="text-[15px] font-bold tabular-nums leading-tight text-blue-500">
                 {agent.messageCount.toLocaleString()}
               </span>
-              <span className="text-[10px] text-muted-foreground">{t.agents.msgs}</span>
+              <span className="text-[10px] font-medium text-blue-500 underline underline-offset-2 decoration-blue-300/70">
+                Mensajes
+              </span>
             </Link>
-            <div className="flex flex-col items-center gap-0 px-1">
-              <span className="text-[15px] font-bold tabular-nums leading-tight">
+
+            {/* FAQs — estático, secundario */}
+            <div className="flex flex-col items-center gap-0.5 px-1 py-0.5">
+              <span className="text-[15px] font-semibold tabular-nums leading-tight text-foreground/70">
                 {agent.faqCount}
               </span>
-              <span className="text-[10px] text-muted-foreground">{t.agents.faqs}</span>
+              <span className="text-[10px] text-muted-foreground/60">{t.agents.faqs}</span>
             </div>
-            <div className="flex flex-col items-center gap-0 px-1">
+
+            {/* WhatsApp — estático, secundario */}
+            <div className="flex flex-col items-center gap-0.5 px-1 py-0.5">
               <IconWhatsApp
-                className={`h-5 w-5 ${
-                  agent.whatsappConnected ? "text-[#25D366]" : "text-muted-foreground/30"
+                className={`h-[18px] w-[18px] ${
+                  agent.whatsappConnected ? "text-[#25D366]" : "text-muted-foreground/25"
                 }`}
               />
-              <span className="text-[10px] text-muted-foreground">WhatsApp</span>
+              <span className="text-[10px] text-muted-foreground/60">WhatsApp</span>
             </div>
           </div>
         </div>

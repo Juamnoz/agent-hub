@@ -13,7 +13,7 @@ export default function AgentsPage() {
   const { t } = useLocaleStore();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:max-w-[900px] lg:mx-auto">
       {agents.length > 0 ? (
         <>
           <div className="flex items-center justify-end">

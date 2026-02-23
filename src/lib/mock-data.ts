@@ -88,6 +88,7 @@ export interface Agent {
   userId: string;
   name: string;
   hotelName: string;
+  avatar?: string;
   status: AgentStatus;
   personality: string;
   tone: "formal" | "friendly" | "casual";

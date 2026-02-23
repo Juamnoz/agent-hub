@@ -133,7 +133,7 @@ export default function PanelPage() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
 
       {/* ── Greeting ── */}
       <motion.div {...fadeUp(0)} className="flex items-center justify-between">
@@ -254,16 +254,16 @@ export default function PanelPage() {
       <motion.div {...fadeUp(0.3)}>
       <Link
         href="/lisa"
-        className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3.5 shadow-[0_2px_8px_rgba(249,115,22,0.3)] transition-all active:scale-[0.99]"
+        className="flex items-center gap-3 rounded-2xl bg-card ring-1 ring-orange-400/30 dark:ring-orange-500/20 px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all active:scale-[0.99] hover:ring-orange-400/60"
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
-          <Sparkles className="h-5 w-5 text-white" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/10 dark:bg-orange-500/15">
+          <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-5 w-5 object-contain" />
         </div>
         <div className="flex-1">
-          <p className="text-[14px] font-semibold text-white leading-tight">Pregúntale a Lisa</p>
-          <p className="text-[11px] text-white/70">Tu copiloto de IA</p>
+          <p className="text-[14px] font-semibold text-foreground leading-tight">Pregúntale a Lisa</p>
+          <p className="text-[11px] text-muted-foreground">Tu copiloto de IA</p>
         </div>
-        <ChevronRight className="h-4 w-4 text-white/60 shrink-0" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
       </Link>
       </motion.div>
     </div>
@@ -359,11 +359,7 @@ function AlertCard({ alert }: { alert: AgentAlert }) {
         <p className="text-[13px] font-medium leading-tight">{alert.text}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <span
-          className={`text-[12px] font-semibold ${
-            isWarning ? "text-amber-600 dark:text-amber-400" : "text-blue-600 dark:text-blue-400"
-          }`}
-        >
+        <span className="text-[12px] font-medium text-muted-foreground">
           {alert.action}
         </span>
         <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />

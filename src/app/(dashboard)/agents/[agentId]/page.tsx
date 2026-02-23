@@ -258,7 +258,7 @@ export default function AgentDetailPage({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
       {/* Back */}
       <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
         <Link href="/agents">
@@ -269,19 +269,27 @@ export default function AgentDetailPage({
 
       {/* Agent Hero Card — 2 filas */}
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
-        {/* Fila 1: identidad */}
-        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm">
-            <Bot className="h-6 w-6 text-white" />
+        {/* Fila 1: identidad — tappable → settings */}
+        <Link
+          href={`/agents/${agentId}/settings`}
+          className="flex items-center gap-3 px-4 pt-4 pb-3 active:bg-muted/40 transition-colors"
+        >
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl overflow-hidden shadow-sm bg-neutral-700 dark:bg-neutral-600">
+            {agent.avatar ? (
+              <img src={agent.avatar} alt={agent.name} className="h-full w-full object-cover" />
+            ) : (
+              <Bot className="h-6 w-6 text-neutral-400" />
+            )}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <h1 className="text-[17px] font-bold tracking-tight truncate">{agent.name}</h1>
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
             </div>
             <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
           </div>
-        </div>
+          <Settings className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+        </Link>
         {/* Fila 2: toggle activo/inactivo */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-muted/30">
           <div>
@@ -310,53 +318,55 @@ export default function AgentDetailPage({
 
       {/* Deployment steps — pasos pendientes para desplegar el algoritmo */}
       {!allDeployed && (
-        <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-white/8 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+          <div className="flex items-center justify-between px-4 pt-3.5 pb-3">
             <div>
-              <p className="text-[13px] font-semibold leading-tight">Para desplegar el algoritmo</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-[13px] font-semibold leading-tight text-white">Para desplegar el algoritmo</p>
+              <p className="text-[11px] text-white/40 mt-0.5">
                 {completedDeployCount} de {deploySteps.length} pasos completados
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-500/15">
-              <span className="text-[13px] font-bold text-orange-500">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+              <span className="text-[13px] font-bold text-white/80">
                 {Math.round((completedDeployCount / deploySteps.length) * 100)}%
               </span>
             </div>
           </div>
-          {/* Progress bar */}
-          <div className="mx-4 mb-3 h-1.5 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-500"
-              style={{ width: `${(completedDeployCount / deploySteps.length) * 100}%` }}
-            />
+          {/* Progress bar — Apple style (white on dark) */}
+          <div className="mx-4 mb-3.5 flex items-center gap-3">
+            <div className="flex-1 h-[3px] rounded-full bg-white/15 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-white/70 transition-all duration-500"
+                style={{ width: `${(completedDeployCount / deploySteps.length) * 100}%` }}
+              />
+            </div>
           </div>
           {/* Steps */}
-          <div className="border-t border-border/60 divide-y divide-border/60">
+          <div className="border-t border-white/8 divide-y divide-white/6">
             {deploySteps.map((step) => (
               <Link
                 key={step.id}
                 href={step.href}
-                className="flex items-center gap-3 px-4 py-3 active:bg-muted/40 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-colors"
               >
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                   {step.done ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                   ) : (
-                    <div className="h-5 w-5 rounded-full ring-1 ring-border bg-muted/50" />
+                    <div className="h-5 w-5 rounded-full ring-1 ring-white/20 bg-white/8" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-muted-foreground" : "text-foreground"}`}>
+                  <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-white/40" : "text-white/90"}`}>
                     {step.title}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{step.description}</p>
+                  <p className="text-[11px] text-white/35 mt-0.5">{step.description}</p>
                 </div>
                 {step.done ? (
-                  <span className="text-[10px] font-semibold text-emerald-500 shrink-0">Listo</span>
+                  <span className="text-[10px] font-semibold text-emerald-400 shrink-0">Listo</span>
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                  <ChevronRight className="h-4 w-4 text-white/25 shrink-0" />
                 )}
               </Link>
             ))}

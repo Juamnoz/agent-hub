@@ -2,20 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, ShoppingBag, Sparkles } from "lucide-react";
+import { Bot, LayoutDashboard, Sparkles } from "lucide-react";
 
 type TabItem = { label: string; icon: typeof Bot; href: string; isCenter?: boolean };
 
 const tabs: TabItem[] = [
   { label: "Agentes", icon: Bot, href: "/agents" },
   { label: "Lisa", icon: Sparkles, href: "/lisa", isCenter: true },
-  { label: "Productos", icon: ShoppingBag, href: "/products" },
+  { label: "Panel", icon: LayoutDashboard, href: "/panel" },
 ];
 
 function isTabActive(href: string, pathname: string): boolean {
   if (href === "/agents") return pathname.startsWith("/agents");
-  if (href === "/lisa") return pathname === "/lisa" || pathname.startsWith("/lisa/") || pathname === "/dashboard";
-  if (href === "/products") return pathname === "/products";
+  if (href === "/lisa") return pathname === "/lisa" || pathname.startsWith("/lisa/");
+  if (href === "/panel") return pathname === "/panel" || pathname === "/dashboard";
   return false;
 }
 
@@ -24,6 +24,8 @@ export function BottomTabBar() {
 
   // Ocultar durante flujos de creación/wizard para no interferir
   if (pathname === "/agents/new" || pathname.startsWith("/agents/new/")) return null;
+  // En desktop el sidebar lo reemplaza
+
 
   return (
     <div

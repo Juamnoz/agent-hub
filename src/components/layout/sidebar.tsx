@@ -48,9 +48,8 @@ export function Sidebar() {
   const [lisaOpen, setLisaOpen] = useState(false);
 
   const navItems = [
-    { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard },
+    { label: "Panel", href: "/panel", icon: LayoutDashboard },
     { label: t.nav.agents, href: "/agents", icon: Bot },
-    { label: t.nav.products, href: "/products", icon: ShoppingBag },
     { label: t.nav.billing, href: "/billing", icon: CreditCard },
     { label: t.nav.settings, href: "/settings", icon: Settings },
   ];
@@ -213,7 +212,7 @@ export function Sidebar() {
             </Tooltip>
           ) : (
             <>
-              <Link href="/dashboard" className="flex items-center gap-2">
+              <Link href="/panel" className="flex items-center gap-2">
                 <img src="/logo.png" alt="Lisa" className="h-6 w-6 shrink-0" />
                 <div className="flex flex-col leading-none">
                   <span className="text-lg font-semibold tracking-tight leading-tight">
@@ -240,7 +239,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 p-3">
-          {navItems.slice(0, 3).map((item) => {
+          {navItems.slice(0, 2).map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -276,7 +275,7 @@ export function Sidebar() {
           {/* Lisa item with agent selector popover */}
           {renderLisaItem()}
 
-          {navItems.slice(3).map((item) => {
+          {navItems.slice(2).map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
 

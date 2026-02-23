@@ -12,6 +12,7 @@ function usePageTitle(pathname: string): string {
 
   const titles: Record<string, string> = {
     "/dashboard": t.nav.dashboard,
+    "/panel": "Panel",
     "/agents": t.nav.agents,
     "/agents/new": t.agents.createTitle,
     "/products": t.products.title,

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { use, useState, useEffect } from "react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -55,7 +56,7 @@ export default function AgentDetailPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { agents, faqs, products, integrations, deleteAgent, updateAgent, loadIntegrations, loadProducts, toggleIntegration } = useAgentStore();
+  const { agents, faqs, products, integrations, conversations, deleteAgent, updateAgent, loadIntegrations, loadProducts, loadConversations, toggleIntegration } = useAgentStore();
   const { t } = useLocaleStore();
   const router = useRouter();
   const agent = agents.find((a) => a.id === agentId);
@@ -65,7 +66,8 @@ export default function AgentDetailPage({
   useEffect(() => {
     loadIntegrations(agentId);
     loadProducts(agentId);
-  }, [agentId, loadIntegrations, loadProducts]);
+    loadConversations(agentId);
+  }, [agentId, loadIntegrations, loadProducts, loadConversations]);
 
   if (!agent) {
     return (
@@ -152,7 +154,13 @@ export default function AgentDetailPage({
   const completedDeployCount = deploySteps.filter((s) => s.done).length;
   const allDeployed = completedDeployCount === deploySteps.length;
 
-  // Stories bar — 7 secciones del agente
+  // Stories bar — 9 secciones del agente (3×3)
+  const agentProducts = products.filter((p) => p.agentId === agentId);
+  const hasProducts = agentProducts.length > 0;
+  const pendingHuman = conversations.filter(
+    (c) => c.agentId === agentId && c.status === "human_handling"
+  ).length;
+
   const storyItems = [
     {
       id: "faqs",
@@ -160,35 +168,17 @@ export default function AgentDetailPage({
       icon: HelpCircle,
       href: `/agents/${agentId}/faqs`,
       configured: hasFaqs,
-      stat: `${agent.faqCount}`,
+      stat: agent.faqCount > 0 ? `${agent.faqCount}` : "",
       color: "amber",
     },
     {
-      id: "chat",
-      label: t.agents.setupCards.conversationsTitle,
-      icon: MessageSquare,
-      href: `/agents/${agentId}/conversations`,
-      configured: true,
-      stat: "",
-      color: "blue",
-    },
-    {
-      id: "train",
-      label: t.trainingChat.quickActionTitle,
-      icon: Sparkles,
-      href: `/agents/${agentId}/train`,
-      configured: true,
-      stat: "",
-      color: "lisa",
-    },
-    {
-      id: "clientes",
-      label: t.agents.setupCards.crmTitle,
-      icon: Users,
-      href: `/agents/${agentId}/crm`,
-      configured: true,
-      stat: "",
-      color: "rose",
+      id: "products",
+      label: "Catálogo",
+      icon: ShoppingBag,
+      href: `/agents/${agentId}/products`,
+      configured: hasProducts,
+      stat: hasProducts ? `${agentProducts.length}` : "",
+      color: "violet",
     },
     {
       id: "whatsapp",
@@ -200,15 +190,31 @@ export default function AgentDetailPage({
       color: "emerald",
     },
     {
-      id: "social",
-      label: t.agents.setupCards.socialTitle,
-      icon: Globe,
-      href: `/agents/${agentId}/social`,
-      configured: !!hasSocial,
-      stat: hasSocial
-        ? `${Object.values(agent.socialLinks!).filter((v) => v && v.trim()).length}`
-        : "",
-      color: "orange",
+      id: "chat",
+      label: t.agents.setupCards.conversationsTitle,
+      icon: MessageSquare,
+      href: `/agents/${agentId}/conversations`,
+      configured: true,
+      stat: pendingHuman > 0 ? `${pendingHuman}` : "",
+      color: pendingHuman > 0 ? "amber" : "blue",
+    },
+    {
+      id: "clientes",
+      label: t.agents.setupCards.crmTitle,
+      icon: Users,
+      href: `/agents/${agentId}/crm`,
+      configured: true,
+      stat: "",
+      color: "rose",
+    },
+    {
+      id: "train",
+      label: t.trainingChat.quickActionTitle,
+      icon: Sparkles,
+      href: `/agents/${agentId}/train`,
+      configured: true,
+      stat: "",
+      color: "lisa",
     },
     {
       id: "stats",
@@ -218,6 +224,15 @@ export default function AgentDetailPage({
       configured: true,
       stat: "",
       color: "gray",
+    },
+    {
+      id: "social",
+      label: t.agents.setupCards.socialTitle,
+      icon: Globe,
+      href: `/agents/${agentId}/social`,
+      configured: !!hasSocial,
+      stat: "",
+      color: "orange",
     },
     {
       id: "settings",
@@ -237,6 +252,7 @@ export default function AgentDetailPage({
     rose: { circle: "bg-rose-100 dark:bg-rose-500/20", icon: "text-rose-600 dark:text-rose-400" },
     emerald: { circle: "bg-emerald-100 dark:bg-emerald-500/20", icon: "text-emerald-600 dark:text-emerald-400" },
     orange: { circle: "bg-orange-100 dark:bg-orange-500/20", icon: "text-orange-600 dark:text-orange-400" },
+    violet: { circle: "bg-violet-100 dark:bg-violet-500/20", icon: "text-violet-600 dark:text-violet-400" },
     gray: { circle: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
     slate: { circle: "bg-slate-100 dark:bg-slate-500/20", icon: "text-slate-600 dark:text-slate-400" },
   };
@@ -348,39 +364,54 @@ export default function AgentDetailPage({
         </div>
       )}
 
-      {/* Stories bar — 2 filas, 4 columnas */}
-      <div className="grid grid-cols-4 gap-x-1 gap-y-4">
-        {storyItems.map((item) => {
+      {/* Stories bar — 3 filas, 3 columnas */}
+      <div className="grid grid-cols-3 gap-x-2 gap-y-4">
+        {storyItems.map((item, index) => {
           const storyColors = storyColorMap[item.color];
           const circleStyle = item.configured ? storyColors.circle : "bg-muted";
           const iconStyle = item.configured ? storyColors.icon : "text-muted-foreground";
           const StoryIcon = item.icon;
+          const isNumericStat = item.stat !== "" && !isNaN(Number(item.stat));
+          const isWhatsapp = item.id === "whatsapp";
           return (
-            <Link
+            <motion.div
               key={item.id}
+              initial={{ opacity: 0, scale: 0.82, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 420, damping: 30, delay: index * 0.045 }}
+            >
+            <Link
               href={item.href}
               className="flex flex-col items-center gap-1.5 active:opacity-70 transition-opacity"
             >
-              <div
-                className={`h-14 w-14 rounded-full flex items-center justify-center ${circleStyle}`}
-              >
-                {item.id === "whatsapp" ? (
-                  <IconWhatsApp className={`h-7 w-7 ${iconStyle}`} />
-                ) : StoryIcon ? (
-                  <StoryIcon className={`h-6 w-6 ${iconStyle}`} />
-                ) : null}
-              </div>
-              <div className="flex flex-col items-center max-w-[64px]">
-                <span className="text-[10px] text-muted-foreground text-center leading-tight">
-                  {item.label}
-                </span>
-                {item.stat && (
-                  <span className="text-[10px] font-semibold text-foreground text-center leading-tight">
+              <div className="relative">
+                <div
+                  className={`h-14 w-14 rounded-full flex items-center justify-center ${circleStyle}`}
+                >
+                  {isWhatsapp ? (
+                    <IconWhatsApp className={`h-7 w-7 ${iconStyle}`} />
+                  ) : StoryIcon ? (
+                    <StoryIcon className={`h-6 w-6 ${iconStyle}`} />
+                  ) : null}
+                </div>
+                {isNumericStat && (
+                  <span className={`absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums ring-2 ring-background ${
+                    item.id === "chat" ? "bg-amber-500 text-white" : "bg-foreground text-background"
+                  }`}>
                     {item.stat}
                   </span>
                 )}
+                {isWhatsapp && hasWhatsapp && (
+                  <span className="absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[9px] font-bold text-white ring-2 ring-background whitespace-nowrap">
+                    Conectado
+                  </span>
+                )}
               </div>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight max-w-[72px]">
+                {item.label}
+              </span>
             </Link>
+            </motion.div>
           );
         })}
       </div>
@@ -592,19 +623,16 @@ function IntegrationsSection({
                     </div>
                     {!locked && (
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Gear — solo si está activa */}
-                        {integration.enabled && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onConfigure(integration);
-                            }}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                            title="Configurar"
-                          >
-                            <Settings className="h-3.5 w-3.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onConfigure(integration);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                          title="Configurar"
+                        >
+                          <Settings className="h-3.5 w-3.5" />
+                        </button>
                         {/* Toggle */}
                         <button
                           onClick={(e) => {

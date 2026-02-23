@@ -116,41 +116,73 @@ export function ConversationList({ agentId }: { agentId: string }) {
     { key: "resolved", label: t.conversations.filterResolved },
   ];
 
+  const humanCount = conversations.filter((c) => c.status === "human_handling").length;
+
+  const countFor = (key: StatusFilter) => {
+    if (key === "all") return conversations.length;
+    return conversations.filter((c) => c.status === key).length;
+  };
+
   return (
-    <div className="flex h-[calc(100vh-10rem)] overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+    <div className="flex h-[calc(100vh-10rem)] overflow-hidden rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       {/* Conversation list */}
       <div
-        className={`w-full flex-shrink-0 flex flex-col border-r border-black/[0.06] md:w-[340px] ${
+        className={`w-full flex-shrink-0 flex flex-col border-r border-border md:w-[340px] ${
           selectedId ? "hidden md:flex" : "flex"
         }`}
       >
+        {/* Needs attention banner */}
+        {humanCount > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shrink-0">
+              {humanCount}
+            </span>
+            <p className="text-[12px] font-medium text-amber-700 dark:text-amber-400">
+              {humanCount === 1 ? "1 conversación necesita tu atención" : `${humanCount} conversaciones necesitan tu atención`}
+            </p>
+          </div>
+        )}
+
         {/* Search */}
-        <div className="p-3 border-b border-black/[0.06] space-y-2">
+        <div className="p-3 border-b border-border space-y-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder={t.conversations.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-orange-500/20 transition-all"
+              className="w-full rounded-xl bg-muted/60 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-muted-foreground focus:bg-muted focus:ring-2 focus:ring-orange-500/20 transition-all text-foreground"
             />
           </div>
           {/* Status filter tabs */}
           <div className="flex gap-1">
-            {filterButtons.map((fb) => (
-              <button
-                key={fb.key}
-                onClick={() => setStatusFilter(fb.key)}
-                className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-medium transition-colors ${
-                  statusFilter === fb.key
-                    ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-              >
-                {fb.label}
-              </button>
-            ))}
+            {filterButtons.map((fb) => {
+              const count = countFor(fb.key);
+              const isHumanTab = fb.key === "human_handling";
+              return (
+                <button
+                  key={fb.key}
+                  onClick={() => setStatusFilter(fb.key)}
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-[11px] font-medium transition-colors ${
+                    statusFilter === fb.key
+                      ? isHumanTab && humanCount > 0
+                        ? "bg-amber-500 text-white"
+                        : "bg-orange-500 text-white"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  <span>{fb.label}</span>
+                  {count > 0 && (
+                    <span className={`rounded-full px-1 text-[9px] font-bold leading-none py-0.5 ${
+                      statusFilter === fb.key ? "bg-white/25 text-white" : isHumanTab && humanCount > 0 ? "bg-amber-500 text-white" : "bg-muted-foreground/20 text-muted-foreground"
+                    }`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -158,8 +190,8 @@ export function ConversationList({ agentId }: { agentId: string }) {
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <MessageSquare className="h-10 w-10 text-gray-200 mb-3" />
-              <p className="text-[14px] text-gray-400">{t.conversations.noConversations}</p>
+              <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-3" />
+              <p className="text-[14px] text-muted-foreground">{t.conversations.noConversations}</p>
             </div>
           ) : (
             filtered.map((conv) => (
@@ -215,11 +247,12 @@ function ConversationRow({
   tags: import("@/lib/mock-data").ConversationTag[];
   t: ReturnType<typeof useLocaleStore.getState>["t"];
 }) {
+  const isNeedsHuman = conversation.status === "human_handling";
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-gray-100 ${
-        isSelected ? "bg-orange-50/60" : "hover:bg-gray-50"
+      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+        isSelected ? "bg-orange-50/60 dark:bg-orange-500/10" : isNeedsHuman ? "bg-amber-50/60 dark:bg-amber-500/5 hover:bg-amber-50 dark:hover:bg-amber-500/10" : "hover:bg-muted/50"
       }`}
     >
       <div
@@ -234,14 +267,14 @@ function ConversationRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[15px] font-semibold truncate">{conversation.contactName}</span>
+            <span className="text-[15px] font-semibold truncate text-foreground">{conversation.contactName}</span>
             <StatusBadge status={conversation.status} t={t} />
           </div>
-          <span className="text-[11px] text-gray-400 shrink-0">
+          <span className="text-[11px] text-muted-foreground shrink-0">
             {formatTime(conversation.lastMessageAt, t.conversations)}
           </span>
         </div>
-        <p className="text-[13px] text-gray-500 truncate mt-0.5">{conversation.lastMessage || "..."}</p>
+        <p className="text-[13px] text-muted-foreground truncate mt-0.5">{conversation.lastMessage || "..."}</p>
         {conversation.tags.length > 0 && (
           <div className="flex gap-1 mt-1 flex-wrap">
             {conversation.tags.map((tagName) => {
@@ -293,7 +326,7 @@ function ChatView({
   return (
     <>
       {/* Chat header */}
-      <div className="px-4 py-3 border-b border-black/[0.06] bg-white/80 backdrop-blur-sm space-y-2">
+      <div className="px-4 py-3 border-b border-border bg-card/80 backdrop-blur-sm space-y-2">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -399,7 +432,7 @@ function ChatView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50/50">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-muted/20">
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} t={t} />
         ))}
@@ -539,7 +572,7 @@ function MessageInput({
   };
 
   return (
-    <div className="border-t border-black/[0.06] bg-white px-4 py-3">
+    <div className="border-t border-border bg-card px-4 py-3">
       <div className="flex items-center gap-2">
         <input
           type="text"

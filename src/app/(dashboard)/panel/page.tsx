@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -10,10 +12,41 @@ import {
   Bot,
   Sparkles,
   Plus,
+  Inbox,
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { AgentCard } from "@/components/agents/agent-card";
-import type { Agent } from "@/lib/mock-data";
+import type { Agent, Conversation } from "@/lib/mock-data";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatRelativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "ahora";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}d`;
+}
+
+function getInitials(name: string) {
+  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
+
+const initialsColors = [
+  "from-orange-400 to-orange-500",
+  "from-violet-400 to-violet-500",
+  "from-emerald-400 to-emerald-500",
+  "from-amber-400 to-amber-500",
+  "from-rose-400 to-rose-500",
+];
+
+function getColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return initialsColors[Math.abs(hash) % initialsColors.length];
+}
 
 // ── Alert generation ──────────────────────────────────────────────────────────
 
@@ -66,21 +99,44 @@ function buildAlerts(agents: Agent[]): AgentAlert[] {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PanelPage() {
-  const { agents } = useAgentStore();
+  const { agents, conversations, loadConversations } = useAgentStore();
+
+  // Cargar conversaciones de todos los agentes
+  useEffect(() => {
+    agents.forEach((agent) => loadConversations(agent.id));
+  }, [agents, loadConversations]);
 
   const activeAgents = agents.filter((a) => a.status === "active");
   const totalMessages = agents.reduce((sum, a) => sum + a.messageCount, 0);
   const alerts = buildAlerts(agents);
 
+  // Bandeja: escaladas primero, luego recientes, máx 5
+  const inboxConvs = useMemo(() => {
+    const sorted = [...conversations].sort((a, b) => {
+      if (a.status === "human_handling" && b.status !== "human_handling") return -1;
+      if (b.status === "human_handling" && a.status !== "human_handling") return 1;
+      return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+    });
+    return sorted.filter((c) => c.status !== "resolved").slice(0, 5);
+  }, [conversations]);
+
+  const pendingHumanCount = conversations.filter((c) => c.status === "human_handling").length;
+
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
+
+  const fadeUp = (delay: number) => ({
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+  });
 
   return (
     <div className="space-y-5">
 
       {/* ── Greeting ── */}
-      <div className="flex items-center justify-between">
+      <motion.div {...fadeUp(0)} className="flex items-center justify-between">
         <div>
           <p className="text-[13px] text-muted-foreground">{greeting}</p>
           <h1 className="text-[20px] font-bold leading-tight">Panel de control</h1>
@@ -88,10 +144,10 @@ export default function PanelPage() {
         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_2px_8px_rgba(249,115,22,0.3)]">
           <TrendingUp className="h-5 w-5 text-white" />
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Stats row ── */}
-      <div className="flex justify-around px-2">
+      <motion.div {...fadeUp(0.06)} className="flex justify-around px-2">
         <StatPill
           icon={<Bot className="h-3.5 w-3.5" />}
           label="Activos"
@@ -110,11 +166,54 @@ export default function PanelPage() {
           value="+22%"
           color="text-orange-500"
         />
-      </div>
+      </motion.div>
+
+      {/* ── Bandeja de entrada ── */}
+      {inboxConvs.length > 0 && (
+        <motion.div {...fadeUp(0.12)} className="space-y-2">
+          <div className="flex items-center justify-between px-0.5">
+            <div className="flex items-center gap-2">
+              <p className="text-[13px] font-semibold">Bandeja de entrada</p>
+              {pendingHumanCount > 0 && (
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
+                  {pendingHumanCount}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-border/60">
+            {inboxConvs.map((conv) => {
+              const agent = agents.find((a) => a.id === conv.agentId);
+              return (
+                <InboxRow
+                  key={conv.id}
+                  conv={conv}
+                  agentName={agent?.name ?? "Agente"}
+                />
+              );
+            })}
+            <Link
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                // Navegar al primer agente con conversaciones
+                const firstAgent = inboxConvs[0]
+                  ? `/agents/${inboxConvs[0].agentId}/conversations`
+                  : "/agents";
+                window.location.href = firstAgent;
+              }}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-[12px] font-medium text-orange-500 transition-colors hover:bg-orange-50/50 dark:hover:bg-orange-500/5"
+            >
+              Ver todas las conversaciones
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Agentes ── */}
       {agents.length > 0 && (
-        <div className="space-y-2">
+        <motion.div {...fadeUp(0.18)} className="space-y-2">
           <div className="flex items-center justify-between px-0.5">
             <p className="text-[13px] font-semibold">Tus agentes</p>
             <Link
@@ -134,12 +233,12 @@ export default function PanelPage() {
               />
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Smart alerts ── */}
       {alerts.length > 0 && (
-        <div className="space-y-2">
+        <motion.div {...fadeUp(0.24)} className="space-y-2">
           <p className="text-[12px] font-medium text-muted-foreground px-0.5">
             Lisa sugiere
           </p>
@@ -148,10 +247,11 @@ export default function PanelPage() {
               <AlertCard key={i} alert={alert} />
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Acceso rápido a Lisa chat ── */}
+      <motion.div {...fadeUp(0.3)}>
       <Link
         href="/lisa"
         className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3.5 shadow-[0_2px_8px_rgba(249,115,22,0.3)] transition-all active:scale-[0.99]"
@@ -165,11 +265,52 @@ export default function PanelPage() {
         </div>
         <ChevronRight className="h-4 w-4 text-white/60 shrink-0" />
       </Link>
+      </motion.div>
     </div>
   );
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
+
+function InboxRow({ conv, agentName }: { conv: Conversation; agentName: string }) {
+  const isHuman = conv.status === "human_handling";
+  return (
+    <Link
+      href={`/agents/${conv.agentId}/conversations`}
+      className={`flex items-center gap-3 px-4 py-3 transition-colors active:bg-muted/50 ${
+        isHuman ? "bg-amber-50/50 dark:bg-amber-500/5 hover:bg-amber-50 dark:hover:bg-amber-500/10" : "hover:bg-muted/30"
+      }`}
+    >
+      {/* Avatar */}
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${getColor(conv.contactName)} shadow-sm`}
+      >
+        <span className="text-[11px] font-bold text-white">{getInitials(conv.contactName)}</span>
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[13px] font-semibold truncate text-foreground">{conv.contactName}</span>
+          {isHuman && (
+            <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-400">
+              HUMANO
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] text-muted-foreground truncate">{conv.lastMessage || "..."}</span>
+        </div>
+      </div>
+
+      {/* Right */}
+      <div className="flex flex-col items-end gap-1 shrink-0">
+        <span className="text-[11px] text-muted-foreground">{formatRelativeTime(conv.lastMessageAt)}</span>
+        <span className="text-[10px] text-muted-foreground/60 truncate max-w-[60px] text-right">{agentName}</span>
+      </div>
+    </Link>
+  );
+}
 
 function StatPill({
   icon,

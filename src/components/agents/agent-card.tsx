@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, Settings } from "lucide-react";
+import { Bot, Settings, MessageSquare } from "lucide-react";
 import type { Agent } from "@/lib/mock-data";
 import { useLocaleStore } from "@/stores/locale-store";
 import { IconWhatsApp } from "@/components/icons/brand-icons";
@@ -51,12 +51,17 @@ export function AgentCard({ agent, className }: AgentCardProps) {
 
           {/* Stats: 3 columns with dividers */}
           <div className="grid grid-cols-3 divide-x divide-border mt-2 pt-2 border-t border-border">
-            <div className="flex flex-col items-center gap-0 px-1">
-              <span className="text-[15px] font-bold tabular-nums leading-tight">
+            {/* Mensajes — tappable → va a conversaciones */}
+            <Link
+              href={`/agents/${agent.id}/conversations`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex flex-col items-center gap-0 px-1 rounded-lg active:bg-blue-50/60 dark:active:bg-blue-500/10 transition-colors"
+            >
+              <span className="text-[15px] font-bold tabular-nums leading-tight text-blue-500">
                 {agent.messageCount.toLocaleString()}
               </span>
               <span className="text-[10px] text-muted-foreground">{t.agents.msgs}</span>
-            </div>
+            </Link>
             <div className="flex flex-col items-center gap-0 px-1">
               <span className="text-[15px] font-bold tabular-nums leading-tight">
                 {agent.faqCount}

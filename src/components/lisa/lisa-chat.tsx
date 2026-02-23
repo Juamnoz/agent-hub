@@ -254,9 +254,10 @@ const TOOL_CHIPS: {
 
 interface LisaChatProps {
   agentId?: string;
+  className?: string;
 }
 
-export function LisaChat({ agentId }: LisaChatProps) {
+export function LisaChat({ agentId, className }: LisaChatProps) {
   const { agents, trainingMessages, addTrainingMessage, clearTrainingMessages } = useAgentStore();
   const { t } = useLocaleStore();
   const agent = agentId ? agents.find((a) => a.id === agentId) : null;
@@ -442,17 +443,14 @@ export function LisaChat({ agentId }: LisaChatProps) {
   const headerSubtitle = isCreationMode ? t.lisa.subtitle : t.trainingChat.subtitle;
 
   return (
-    <div className="flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+    <div className={className ?? "flex h-[calc(100dvh-16rem)] flex-col rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
-          <div>
-            <h2 className="text-[14px] font-semibold leading-tight">{headerTitle}</h2>
-            <p className="text-[11px] text-muted-foreground">{headerSubtitle}</p>
-          </div>
+          <p className="text-[13px] font-medium text-muted-foreground">{headerSubtitle}</p>
         </div>
         {messages.length > 0 && (
           <button

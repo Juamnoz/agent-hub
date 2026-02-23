@@ -1,24 +1,17 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { motion } from "motion/react";
 import { LisaChat } from "@/components/lisa/lisa-chat";
 
 export default function LisaPage() {
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_2px_8px_rgba(249,115,22,0.3)]">
-          <Sparkles className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-[17px] font-bold leading-tight">Lisa</h1>
-          <p className="text-[12px] text-muted-foreground">Tu copiloto de IA</p>
-        </div>
-      </div>
-
-      {/* Chat */}
-      <LisaChat />
-    </div>
+    <motion.div
+      className="-mx-4 -mt-4 -mb-20 lg:-mx-6 lg:-mt-6 lg:-mb-6 flex flex-col h-[calc(100dvh-7.5rem)] lg:h-[calc(100dvh-3.5rem)]"
+      initial={{ y: 28, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
+    >
+      <LisaChat className="flex h-full flex-col bg-card overflow-hidden" />
+    </motion.div>
   );
 }

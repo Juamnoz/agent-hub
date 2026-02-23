@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, MessageSquare, Users, Zap, Clock } from "lucide-react";
+import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { mockConversations } from "@/lib/mock-data";
@@ -17,6 +18,12 @@ import {
 } from "@/components/ui/card";
 import { StatsCard } from "@/components/analytics/stats-card";
 import { MessageChart } from "@/components/analytics/message-chart";
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+});
 
 export default function AgentAnalyticsPage({
   params,
@@ -51,9 +58,16 @@ export default function AgentAnalyticsPage({
     (c: Conversation) => c.agentId === agentId
   );
 
+  const statsItems = [
+    { title: t.analytics.totalMessages, value: agent.messageCount, icon: MessageSquare },
+    { title: t.analytics.conversations, value: agentConversations.length, icon: Users },
+    { title: t.analytics.avgConfidence, value: "91%", icon: Zap },
+    { title: t.analytics.responseTime, value: "4.2s", icon: Clock },
+  ];
+
   return (
     <div className="space-y-6">
-      <div>
+      <motion.div {...fadeUp(0)}>
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link href={`/agents/${agentId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -65,85 +79,79 @@ export default function AgentAnalyticsPage({
         <p className="text-sm text-gray-500">
           {t.analytics.performanceMetrics} - {agent.name}
         </p>
-      </div>
+      </motion.div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title={t.analytics.totalMessages}
-          value={agent.messageCount}
-          icon={MessageSquare}
-        />
-        <StatsCard
-          title={t.analytics.conversations}
-          value={agentConversations.length}
-          icon={Users}
-        />
-        <StatsCard
-          title={t.analytics.avgConfidence}
-          value="91%"
-          icon={Zap}
-        />
-        <StatsCard
-          title={t.analytics.responseTime}
-          value="4.2s"
-          icon={Clock}
-        />
+        {statsItems.map((item, i) => (
+          <motion.div
+            key={item.title}
+            initial={{ opacity: 0, y: 14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.08 + i * 0.06 }}
+          >
+            <StatsCard title={item.title} value={item.value} icon={item.icon} />
+          </motion.div>
+        ))}
       </div>
 
       {/* Message Chart */}
-      <MessageChart data={weeklyMessages} />
+      <motion.div {...fadeUp(0.34)}>
+        <MessageChart data={weeklyMessages} />
+      </motion.div>
 
       {/* Recent Conversations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.analytics.recentConversations}</CardTitle>
-          <CardDescription>
-            {t.analytics.latestInteractions} - {agent.name}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {agentConversations.length > 0 ? (
-            <div className="space-y-4">
-              {agentConversations.map((conv: Conversation) => (
-                <div
-                  key={conv.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
-                      {conv.contactName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+      <motion.div {...fadeUp(0.42)}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.analytics.recentConversations}</CardTitle>
+            <CardDescription>
+              {t.analytics.latestInteractions} - {agent.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {agentConversations.length > 0 ? (
+              <div className="space-y-4">
+                {agentConversations.map((conv: Conversation) => (
+                  <div
+                    key={conv.id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
+                        {conv.contactName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {conv.contactName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {conv.contactPhone}
+                        </p>
+                      </div>
                     </div>
-                    <div>
+                    <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
-                        {conv.contactName}
+                        {conv.messageCount} {t.analytics.messagesCount}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {conv.contactPhone}
+                        {new Date(conv.lastMessageAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {conv.messageCount} {t.analytics.messagesCount}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(conv.lastMessageAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm text-gray-500">
-              {t.analytics.noConversations}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="py-8 text-center text-sm text-gray-500">
+                {t.analytics.noConversations}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

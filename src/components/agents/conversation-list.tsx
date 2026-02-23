@@ -152,7 +152,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
               placeholder={t.conversations.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl bg-muted/60 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-muted-foreground focus:bg-muted focus:ring-2 focus:ring-orange-500/20 transition-all text-foreground"
+              className="w-full rounded-xl bg-muted/60 py-2 pl-9 pr-3 text-base outline-none placeholder:text-muted-foreground focus:bg-muted focus:ring-2 focus:ring-orange-500/20 transition-all text-foreground"
             />
           </div>
           {/* Status filter tabs */}
@@ -187,7 +187,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="chat-messages-bg flex-1 overflow-y-auto relative">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-3" />
@@ -432,7 +432,62 @@ function ChatView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-muted/20">
+      <div className="chat-messages-bg flex-1 overflow-y-auto px-4 py-4 space-y-3 relative">
+        {/* Fondo con mini-iconos sutiles — igual que Lisa chat */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.045] dark:opacity-[0.035] select-none">
+          {[
+            { top: "4%",  left: "8%",  size: 28, rotate: 15,  icon: "bot" },
+            { top: "4%",  left: "55%", size: 22, rotate: -8,  icon: "brain" },
+            { top: "4%",  left: "82%", size: 26, rotate: 20,  icon: "bot" },
+            { top: "13%", left: "28%", size: 20, rotate: -12, icon: "brain" },
+            { top: "13%", left: "70%", size: 24, rotate: 5,   icon: "bot" },
+            { top: "22%", left: "5%",  size: 24, rotate: -5,  icon: "brain" },
+            { top: "22%", left: "45%", size: 26, rotate: 18,  icon: "bot" },
+            { top: "22%", left: "88%", size: 20, rotate: -15, icon: "brain" },
+            { top: "31%", left: "18%", size: 22, rotate: 10,  icon: "bot" },
+            { top: "31%", left: "62%", size: 28, rotate: -20, icon: "brain" },
+            { top: "40%", left: "35%", size: 24, rotate: 8,   icon: "bot" },
+            { top: "40%", left: "78%", size: 22, rotate: -6,  icon: "brain" },
+            { top: "49%", left: "12%", size: 26, rotate: -14, icon: "brain" },
+            { top: "49%", left: "52%", size: 20, rotate: 12,  icon: "bot" },
+            { top: "49%", left: "90%", size: 24, rotate: 3,   icon: "bot" },
+            { top: "58%", left: "25%", size: 22, rotate: -9,  icon: "brain" },
+            { top: "58%", left: "68%", size: 26, rotate: 16,  icon: "bot" },
+            { top: "67%", left: "5%",  size: 20, rotate: 7,   icon: "bot" },
+            { top: "67%", left: "42%", size: 24, rotate: -18, icon: "brain" },
+            { top: "67%", left: "82%", size: 22, rotate: 11,  icon: "bot" },
+            { top: "76%", left: "18%", size: 26, rotate: -4,  icon: "brain" },
+            { top: "76%", left: "60%", size: 20, rotate: 14,  icon: "bot" },
+            { top: "85%", left: "32%", size: 24, rotate: -11, icon: "brain" },
+            { top: "85%", left: "75%", size: 22, rotate: 6,   icon: "bot" },
+            { top: "93%", left: "10%", size: 20, rotate: -16, icon: "brain" },
+            { top: "93%", left: "50%", size: 26, rotate: 9,   icon: "brain" },
+            { top: "93%", left: "88%", size: 22, rotate: -3,  icon: "bot" },
+          ].map((item, i) =>
+            item.icon === "bot" ? (
+              <svg key={i} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute text-foreground"
+                style={{ top: item.top, left: item.left, width: item.size, height: item.size, transform: `rotate(${item.rotate}deg)` }}>
+                <path d="M12 8V4H8" /><path d="M12 8V4h4" />
+                <rect x="3" y="8" width="18" height="12" rx="2" />
+                <circle cx="9" cy="13" r="1.5" /><circle cx="15" cy="13" r="1.5" />
+                <path d="M6 17h4" /><path d="M14 17h4" />
+              </svg>
+            ) : (
+              <svg key={i} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute text-foreground"
+                style={{ top: item.top, left: item.left, width: item.size, height: item.size, transform: `rotate(${item.rotate}deg)` }}>
+                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
+                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
+                <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
+                <path d="M17.599 6.5a3 3 0 0 0 .399-1.375" />
+                <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5" />
+                <path d="M3.477 10.896a4 4 0 0 1 .585-.396" />
+                <path d="M19.938 10.5a4 4 0 0 1 .585.396" />
+                <path d="M6 18a4 4 0 0 1-1.967-.516" />
+                <path d="M19.967 17.484A4 4 0 0 1 18 18" />
+              </svg>
+            )
+          )}
+        </div>
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} t={t} />
         ))}
@@ -585,7 +640,7 @@ function MessageInput({
             }
           }}
           placeholder={t.conversations.writeMessage}
-          className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-[14px] outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 transition-all"
+          className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-base outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 transition-all"
         />
         <button
           onClick={handleSend}

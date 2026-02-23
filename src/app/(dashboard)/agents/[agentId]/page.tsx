@@ -275,18 +275,26 @@ export default function AgentDetailPage({
     slate: { circle: "bg-slate-100 dark:bg-slate-500/20", icon: "text-slate-600 dark:text-slate-400" },
   };
 
+  const fadeUp = (delay: number) => ({
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+  });
+
   return (
     <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
       {/* Back */}
+      <motion.div {...fadeUp(0)}>
       <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
         <Link href="/agents">
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t.agents.backToAgents}
         </Link>
       </Button>
+      </motion.div>
 
       {/* Agent Hero Card — 2 filas */}
-      <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+      <motion.div {...fadeUp(0.06)} className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
         {/* Fila 1: identidad — tappable → settings */}
         <Link
           href={`/agents/${agentId}/settings`}
@@ -343,10 +351,10 @@ export default function AgentDetailPage({
             />
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Calidad + Pasos — tarjeta unificada */}
-      <div className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-white/8 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">
+      <motion.div {...fadeUp(0.12)} className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-white/8 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">
         {/* Header: score + nivel */}
         <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
           <div>
@@ -424,7 +432,7 @@ export default function AgentDetailPage({
               : "Completa los pasos para activar"}
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stories bar — 3 filas, 3 columnas */}
       <div className="grid grid-cols-3 gap-x-2 gap-y-4">
@@ -488,6 +496,7 @@ export default function AgentDetailPage({
       </div>
 
       {/* Integrations Section */}
+      <motion.div {...fadeUp(0.28)}>
       <IntegrationsSection
         integrations={integrations}
         onToggle={toggleIntegration}
@@ -495,6 +504,7 @@ export default function AgentDetailPage({
         t={t}
         agent={agent}
       />
+      </motion.div>
 
       {/* Integration Config Dialog */}
       <IntegrationConfigDialog
@@ -504,7 +514,7 @@ export default function AgentDetailPage({
       />
 
       {/* Delete Agent - iOS action sheet style */}
-      <div className="pt-4">
+      <motion.div {...fadeUp(0.34)} className="pt-4">
         {deleteStep === 0 && (
           <button
             onClick={() => setDeleteStep(1)}
@@ -566,7 +576,7 @@ export default function AgentDetailPage({
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -646,13 +656,16 @@ function IntegrationsSection({
               {cat.label}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {items.map((integration) => {
+              {items.map((integration, idx) => {
                 const locked = isLocked(integration);
                 const Icon = INTEGRATION_ICONS[integration.icon] ?? CreditCard;
                 const itemT = t.integrations.items[integration.name as keyof typeof t.integrations.items];
                 return (
-                  <div
+                  <motion.div
                     key={integration.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30, delay: idx * 0.05 }}
                     className={`flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all ${
                       locked ? "opacity-60 cursor-pointer" : ""
                     }`}
@@ -729,7 +742,7 @@ function IntegrationsSection({
                     {locked && (
                       <Lock className="h-4 w-4 shrink-0 text-gray-300" />
                     )}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

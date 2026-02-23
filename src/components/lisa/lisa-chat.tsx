@@ -501,7 +501,7 @@ function InputCard({
           onKeyDown={handleKeyDown}
           placeholder={placeholder ?? "¿En qué puedo ayudarte hoy?"}
           rows={1}
-          className="block w-full resize-none bg-transparent px-4 pt-4 pb-2 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+          className="block w-full resize-none bg-transparent px-4 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
           style={{ maxHeight: 120 }}
         />
 
@@ -878,17 +878,43 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
         ) : (
           /* Messages */
           <div className="py-4 space-y-1">
-            {displayedMessages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-            {isTyping && <TypingIndicator />}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {displayedMessages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 440, damping: 28, mass: 0.7 }}
+                >
+                  <MessageBubble message={msg} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <AnimatePresence>
+              {isTyping && (
+                <motion.div
+                  key="typing"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ type: "spring", stiffness: 440, damping: 28 }}
+                >
+                  <TypingIndicator />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
       {/* Input card — always visible at bottom */}
-      <div className="shrink-0">
+      <motion.div
+        className="shrink-0"
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.12 }}
+      >
         <InputCard
           input={input}
           onChange={setInput}
@@ -905,7 +931,7 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
               : "¿En qué puedo ayudarte hoy?"
           }
         />
-      </div>
+      </motion.div>
     </div>
   );
 }

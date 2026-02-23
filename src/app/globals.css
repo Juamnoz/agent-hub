@@ -137,6 +137,14 @@
   animation: gradient-shift 3s ease infinite;
 }
 
+/* Chat messages background — same as Lisa chat but +5% brightness */
+.chat-messages-bg {
+  background: oklch(1 0.007 55); /* light: slightly above page bg */
+}
+.dark .chat-messages-bg {
+  background: oklch(0.21 0.005 50); /* dark: page bg (0.16) + 5% brightness */
+}
+
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;

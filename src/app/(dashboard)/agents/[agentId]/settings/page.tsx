@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot } from "lucide-react";
+import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+});
 
 export default function AgentSettingsPage({
   params,
@@ -63,7 +70,7 @@ export default function AgentSettingsPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-10">
-      <div>
+      <motion.div {...fadeUp(0)}>
         <Link
           href={`/agents/${agentId}`}
           className="inline-flex items-center gap-1.5 mb-4 -ml-2 px-2 py-1 text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-foreground transition-colors"
@@ -77,10 +84,10 @@ export default function AgentSettingsPage({
         <p className="text-sm text-muted-foreground mt-1">
           {t.agentSettings.configure} {agent.name}
         </p>
-      </div>
+      </motion.div>
 
       {/* Identity */}
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
+      <motion.div {...fadeUp(0.08)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div>
           <h2 className="text-[15px] font-semibold">{t.agentSettings.basicInfo}</h2>
           <p className="text-[13px] text-muted-foreground">
@@ -149,10 +156,10 @@ export default function AgentSettingsPage({
             onChange={(e) => setHotelName(e.target.value)}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Language & tone */}
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
+      <motion.div {...fadeUp(0.14)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div>
           <h2 className="text-[15px] font-semibold">
             {t.agentSettings.personalityTone}
@@ -195,11 +202,13 @@ export default function AgentSettingsPage({
             </Select>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <Button onClick={handleSave} className="w-full">
-        {t.common.save}
-      </Button>
+      <motion.div {...fadeUp(0.2)}>
+        <Button onClick={handleSave} className="w-full">
+          {t.common.save}
+        </Button>
+      </motion.div>
     </div>
   );
 }

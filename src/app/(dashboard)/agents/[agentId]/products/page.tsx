@@ -3,10 +3,17 @@
 import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { Button } from "@/components/ui/button";
 import { ProductsEditor } from "@/components/agents/products-editor";
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+});
 
 export default function AgentProductsPage({
   params,
@@ -39,14 +46,18 @@ export default function AgentProductsPage({
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
-        <Link href={`/agents/${agentId}`}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          {agent.name}
-        </Link>
-      </Button>
+      <motion.div {...fadeUp(0)}>
+        <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
+          <Link href={`/agents/${agentId}`}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            {agent.name}
+          </Link>
+        </Button>
+      </motion.div>
 
-      <ProductsEditor agentId={agentId} />
+      <motion.div {...fadeUp(0.08)}>
+        <ProductsEditor agentId={agentId} />
+      </motion.div>
     </div>
   );
 }

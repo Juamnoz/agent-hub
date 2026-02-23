@@ -3,6 +3,7 @@
 import { use, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Sparkles, Loader2, Bot, Lock, CheckCircle2 } from "lucide-react";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,12 @@ import {
   getPreview,
 } from "@/lib/agent-training";
 import { toast } from "sonner";
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+});
 
 export default function TrainPage({
   params,
@@ -131,7 +138,7 @@ export default function TrainPage({
   return (
     <div className="space-y-6 pb-10">
       {/* Header */}
-      <div>
+      <motion.div {...fadeUp(0)}>
         <Link
           href={`/agents/${agentId}`}
           className="inline-flex items-center gap-1.5 mb-4 -ml-2 px-2 py-1 text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-foreground transition-colors"
@@ -145,10 +152,10 @@ export default function TrainPage({
         <p className="text-sm text-muted-foreground mt-1">
           Define cómo piensa y habla tu agente
         </p>
-      </div>
+      </motion.div>
 
       {/* Section 1: Algorithm type */}
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
+      <motion.div {...fadeUp(0.08)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-[15px] font-semibold">
@@ -168,19 +175,22 @@ export default function TrainPage({
           )}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {ALGORITHM_KEYS.map((key) => {
+          {ALGORITHM_KEYS.map((key, i) => {
             const Icon = ALGORITHM_ICONS[key];
             const tKey = algorithmTranslationKeys[key];
             const selected = algorithmType === key;
             const isLocked = !!agent.algorithmType;
             return (
-              <button
+              <motion.button
                 key={key}
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: isLocked && !selected ? 0.4 : 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.12 + i * 0.05 }}
                 onClick={() => !isLocked && setAlgorithmType(key)}
                 disabled={isLocked && !selected}
                 className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all duration-200 ring-1 ${
                   isLocked && !selected
-                    ? "ring-border bg-muted/30 opacity-40 cursor-not-allowed"
+                    ? "ring-border bg-muted/30 cursor-not-allowed"
                     : selected
                     ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
                     : "ring-border bg-card hover:bg-muted/60 active:scale-[0.97]"
@@ -188,15 +198,11 @@ export default function TrainPage({
               >
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                    selected
-                      ? "bg-orange-100 dark:bg-orange-500/20"
-                      : "bg-muted"
+                    selected ? "bg-orange-100 dark:bg-orange-500/20" : "bg-muted"
                   }`}
                 >
                   <Icon
-                    className={`h-5 w-5 ${
-                      selected ? "text-orange-500" : "text-muted-foreground"
-                    }`}
+                    className={`h-5 w-5 ${selected ? "text-orange-500" : "text-muted-foreground"}`}
                   />
                 </div>
                 <span
@@ -212,7 +218,7 @@ export default function TrainPage({
                 {selected && isLocked && (
                   <CheckCircle2 className="h-4 w-4 text-orange-500" />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -221,10 +227,10 @@ export default function TrainPage({
             El tipo de negocio define el núcleo del algoritmo y no puede modificarse, igual que el objetivo de una campaña publicitaria.
           </p>
         )}
-      </div>
+      </motion.div>
 
       {/* Section 2: Communication style */}
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-5">
+      <motion.div {...fadeUp(0.16)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-5">
         <div>
           <h2 className="text-[15px] font-semibold">
             {t.personalityBuilder.title}
@@ -240,11 +246,14 @@ export default function TrainPage({
             {t.personalityBuilder.regionTitle}
           </Label>
           <div className="grid grid-cols-2 gap-2">
-            {REGION_KEYS.map((key) => {
+            {REGION_KEYS.map((key, i) => {
               const selected = region === key;
               return (
-                <button
+                <motion.button
                   key={key}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.2 + i * 0.05 }}
                   onClick={() => setRegion(key)}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
@@ -263,7 +272,7 @@ export default function TrainPage({
                   <span className="text-[11px] text-muted-foreground leading-tight italic">
                     &ldquo;{t.personalityBuilder.regionDescriptions[key]}&rdquo;
                   </span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -275,11 +284,14 @@ export default function TrainPage({
             {t.personalityBuilder.registerTitle}
           </Label>
           <div className="grid grid-cols-2 gap-2">
-            {REGISTER_KEYS.map((key) => {
+            {REGISTER_KEYS.map((key, i) => {
               const selected = register === key;
               return (
-                <button
+                <motion.button
                   key={key}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.24 + i * 0.05 }}
                   onClick={() => setRegister(key)}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
@@ -297,15 +309,15 @@ export default function TrainPage({
                   <span className="text-[11px] text-muted-foreground leading-tight">
                     {t.personalityBuilder.registerDescriptions[key]}
                   </span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Section 3: System prompt */}
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
+      <motion.div {...fadeUp(0.24)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[15px] font-semibold">
@@ -387,10 +399,10 @@ export default function TrainPage({
             {t.personalityBuilder.advancedMode}
           </Label>
         </div>
-      </div>
+      </motion.div>
 
       {/* Section 4: Test before saving */}
-      <div className="space-y-3">
+      <motion.div {...fadeUp(0.32)} className="space-y-3">
         <div className="relative flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
           <span className="text-[12px] font-semibold text-foreground whitespace-nowrap">
@@ -402,12 +414,14 @@ export default function TrainPage({
           Último paso obligatorio — prueba el algoritmo con mensajes reales y ajusta el prompt si algo no responde como esperas.
         </p>
         <TrainingChat agentId={agentId} />
-      </div>
+      </motion.div>
 
       {/* Save button */}
-      <Button onClick={handleSave} className="w-full">
-        {t.common.save}
-      </Button>
+      <motion.div {...fadeUp(0.4)}>
+        <Button onClick={handleSave} className="w-full">
+          {t.common.save}
+        </Button>
+      </motion.div>
     </div>
   );
 }

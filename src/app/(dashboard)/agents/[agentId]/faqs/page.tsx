@@ -3,11 +3,18 @@
 import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FaqEditor } from "@/components/agents/faq-editor";
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+});
 
 export default function AgentFaqsPage({
   params,
@@ -42,7 +49,7 @@ export default function AgentFaqsPage({
 
   return (
     <div className="space-y-6">
-      <div>
+      <motion.div {...fadeUp(0)}>
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link href={`/agents/${agentId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -57,9 +64,11 @@ export default function AgentFaqsPage({
         <p className="text-sm text-gray-500">
           {t.faqEditor.noFaqsDescription}
         </p>
-      </div>
+      </motion.div>
 
-      <FaqEditor agentId={agentId} />
+      <motion.div {...fadeUp(0.1)}>
+        <FaqEditor agentId={agentId} />
+      </motion.div>
     </div>
   );
 }

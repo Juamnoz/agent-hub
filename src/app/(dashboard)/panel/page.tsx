@@ -135,37 +135,29 @@ export default function PanelPage() {
   return (
     <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
 
-      {/* ── Greeting ── */}
+      {/* ── Greeting + Stats ── */}
       <motion.div {...fadeUp(0)} className="flex items-center justify-between">
         <div>
           <p className="text-[13px] text-muted-foreground">{greeting}</p>
           <h1 className="text-[20px] font-bold leading-tight">Panel de control</h1>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_2px_8px_rgba(249,115,22,0.3)]">
-          <TrendingUp className="h-5 w-5 text-white" />
+        <div className="flex items-center gap-4">
+          <StatPill
+            icon={<Bot className="h-3 w-3" />}
+            label="Activos"
+            value={`${activeAgents.length}/${agents.length}`}
+          />
+          <StatPill
+            icon={<MessageSquare className="h-3 w-3" />}
+            label="Mensajes"
+            value={totalMessages.toLocaleString()}
+          />
+          <StatPill
+            icon={<TrendingUp className="h-3 w-3" />}
+            label="Semana"
+            value="+22%"
+          />
         </div>
-      </motion.div>
-
-      {/* ── Stats row ── */}
-      <motion.div {...fadeUp(0.06)} className="flex justify-around px-2">
-        <StatPill
-          icon={<Bot className="h-3.5 w-3.5" />}
-          label="Activos"
-          value={`${activeAgents.length}/${agents.length}`}
-          color="text-emerald-500"
-        />
-        <StatPill
-          icon={<MessageSquare className="h-3.5 w-3.5" />}
-          label="Mensajes"
-          value={totalMessages.toLocaleString()}
-          color="text-blue-500"
-        />
-        <StatPill
-          icon={<TrendingUp className="h-3.5 w-3.5" />}
-          label="Esta semana"
-          value="+22%"
-          color="text-orange-500"
-        />
       </motion.div>
 
       {/* ── Bandeja de entrada ── */}
@@ -256,8 +248,8 @@ export default function PanelPage() {
         href="/lisa"
         className="flex items-center gap-3 rounded-2xl bg-card ring-1 ring-orange-400/30 dark:ring-orange-500/20 px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all active:scale-[0.99] hover:ring-orange-400/60"
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/10 dark:bg-orange-500/15">
-          <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-5 w-5 object-contain" />
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/15 dark:bg-orange-500/20">
+          <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-8 w-8 object-contain" />
         </div>
         <div className="flex-1">
           <p className="text-[14px] font-semibold text-foreground leading-tight">Pregúntale a Lisa</p>
@@ -316,18 +308,18 @@ function StatPill({
   icon,
   label,
   value,
-  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  color: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <div className={`${color} mb-0.5`}>{icon}</div>
-      <p className="text-[17px] font-bold leading-tight">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <div className="flex items-center gap-1 text-foreground/50">
+        {icon}
+        <p className="text-[13px] font-semibold tabular-nums leading-tight text-foreground">{value}</p>
+      </div>
+      <p className="text-[10px] text-muted-foreground">{label}</p>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   Globe,
   CheckCircle2,
   Bot,
-  Sparkles,
+  BrainCircuit,
   Users,
   Trash2,
   CreditCard,
@@ -109,7 +109,24 @@ export default function AgentDetailPage({
     setup: t.agents.status.setup,
   };
 
+  // Quality score
+  function getQualityScore(a: Agent) {
+    let score = 0;
+    score += Math.min(a.faqCount / 20, 1) * 40;
+    if (a.whatsappConnected) score += 25;
+    if (a.productCount > 0) score += Math.min(a.productCount / 10, 1) * 20;
+    const links = a.socialLinks;
+    if (links && Object.values(links).some(Boolean)) score += 15;
+    return Math.round(score);
+  }
+  const qualityScore = getQualityScore(agent);
+  const qualityLabel = qualityScore >= 80 ? "Alta" : qualityScore >= 50 ? "Media" : "Baja";
+  const qualityColor = qualityScore >= 80 ? "text-emerald-500" : qualityScore >= 50 ? "text-amber-500" : "text-rose-400";
+  const qualityBarColor = qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-400" : "bg-rose-400";
+
+
   // Setup status
+  const isTrainConfigured = !!agent.algorithmType && !!agent.personality && !!agent.communicationStyle;
   const agentFaqs = faqs.filter((f) => f.agentId === agentId);
   const hasFaqs = agent.faqCount > 0 || agentFaqs.length > 0;
   const hasWhatsapp = agent.whatsappConnected;
@@ -125,7 +142,7 @@ export default function AgentDetailPage({
       title: "Algoritmo y personalidad",
       description: agent.algorithmType ? "Tipo de agente configurado" : "Define el tipo y tono del agente",
       done: !!agent.algorithmType,
-      href: `/agents/${agentId}/settings`,
+      href: `/agents/${agentId}/train`,
     },
     {
       id: "faqs",
@@ -210,11 +227,11 @@ export default function AgentDetailPage({
     {
       id: "train",
       label: t.trainingChat.quickActionTitle,
-      icon: Sparkles,
+      icon: BrainCircuit,
       href: `/agents/${agentId}/train`,
       configured: true,
       stat: "",
-      color: "lisa",
+      color: "whatsapp",
     },
     {
       id: "stats",
@@ -249,6 +266,7 @@ export default function AgentDetailPage({
     amber: { circle: "bg-amber-100 dark:bg-amber-500/20", icon: "text-amber-600 dark:text-amber-400" },
     blue: { circle: "bg-blue-100 dark:bg-blue-500/20", icon: "text-blue-600 dark:text-blue-400" },
     lisa: { circle: "bg-gradient-to-br from-orange-400 to-orange-600", icon: "text-white" },
+    whatsapp: { circle: "bg-[#25D366]", icon: "text-white" },
     rose: { circle: "bg-rose-100 dark:bg-rose-500/20", icon: "text-rose-600 dark:text-rose-400" },
     emerald: { circle: "bg-emerald-100 dark:bg-emerald-500/20", icon: "text-emerald-600 dark:text-emerald-400" },
     orange: { circle: "bg-orange-100 dark:bg-orange-500/20", icon: "text-orange-600 dark:text-orange-400" },
@@ -296,15 +314,26 @@ export default function AgentDetailPage({
             <p className="text-[13px] font-medium leading-tight">
               {agent.status === "active" ? "Activo — respondiendo mensajes" : "Pausado — no responde"}
             </p>
+            {!allDeployed && agent.status !== "active" && (
+              <p className="text-[10px] text-amber-500 mt-0.5">Completa los pasos para activar</p>
+            )}
           </div>
           <button
             onClick={() => {
+              if (agent.status !== "active" && !allDeployed) {
+                toast.error("Completa todos los pasos primero");
+                return;
+              }
               const next = agent.status === "active" ? "inactive" : "active";
               updateAgent(agentId, { status: next });
               toast.success(next === "active" ? "Agente activado" : "Agente pausado");
             }}
             className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200 ${
-              agent.status === "active" ? "bg-emerald-500" : "bg-muted-foreground/25"
+              agent.status === "active"
+                ? "bg-emerald-500"
+                : allDeployed
+                ? "bg-muted-foreground/25"
+                : "bg-muted-foreground/15 cursor-not-allowed"
             }`}
           >
             <span
@@ -316,63 +345,86 @@ export default function AgentDetailPage({
         </div>
       </div>
 
-      {/* Deployment steps — pasos pendientes para desplegar el algoritmo */}
-      {!allDeployed && (
-        <div className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-white/8 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-3.5 pb-3">
-            <div>
-              <p className="text-[13px] font-semibold leading-tight text-white">Para desplegar el algoritmo</p>
-              <p className="text-[11px] text-white/40 mt-0.5">
-                {completedDeployCount} de {deploySteps.length} pasos completados
-              </p>
-            </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-              <span className="text-[13px] font-bold text-white/80">
-                {Math.round((completedDeployCount / deploySteps.length) * 100)}%
-              </span>
-            </div>
+      {/* Calidad + Pasos — tarjeta unificada */}
+      <div className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-white/8 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">
+        {/* Header: score + nivel */}
+        <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
+          <div>
+            <p className="text-[13px] font-semibold text-white leading-tight">Calidad del agente</p>
+            <p className="text-[11px] text-white/40 mt-0.5">
+              {completedDeployCount} de {deploySteps.length} pasos completados
+            </p>
           </div>
-          {/* Progress bar — Apple style (white on dark) */}
-          <div className="mx-4 mb-3.5 flex items-center gap-3">
-            <div className="flex-1 h-[3px] rounded-full bg-white/15 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-white/70 transition-all duration-500"
-                style={{ width: `${(completedDeployCount / deploySteps.length) * 100}%` }}
-              />
-            </div>
-          </div>
-          {/* Steps */}
-          <div className="border-t border-white/8 divide-y divide-white/6">
-            {deploySteps.map((step) => (
-              <Link
-                key={step.id}
-                href={step.href}
-                className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-colors"
-              >
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                  {step.done ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full ring-1 ring-white/20 bg-white/8" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-white/40" : "text-white/90"}`}>
-                    {step.title}
-                  </p>
-                  <p className="text-[11px] text-white/35 mt-0.5">{step.description}</p>
-                </div>
-                {step.done ? (
-                  <span className="text-[10px] font-semibold text-emerald-400 shrink-0">Listo</span>
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-white/25 shrink-0" />
-                )}
-              </Link>
-            ))}
+          <div className="flex items-end gap-0.5">
+            <span className={`text-[28px] font-bold tabular-nums leading-none ${qualityColor}`}>{qualityScore}</span>
+            <span className="text-[12px] text-white/35 mb-1">/ 100</span>
           </div>
         </div>
-      )}
+        {/* Barra de calidad */}
+        <div className="mx-4 mb-3.5">
+          <div className="h-[3px] rounded-full bg-white/15 overflow-hidden">
+            <div
+              className={`h-full rounded-full ${qualityBarColor} transition-all duration-700`}
+              style={{ width: `${qualityScore}%` }}
+            />
+          </div>
+          <p className={`text-[11px] font-semibold mt-1 ${qualityColor}`}>{qualityLabel}</p>
+        </div>
+        {/* Pasos */}
+        <div className="border-t border-white/8 divide-y divide-white/6">
+          {deploySteps.map((step) => (
+            <Link
+              key={step.id}
+              href={step.href}
+              className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-colors"
+            >
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+                {step.done ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <div className="h-5 w-5 rounded-full ring-1 ring-white/20 bg-white/8" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-white/40" : "text-white/90"}`}>
+                  {step.title}
+                </p>
+                <p className="text-[11px] text-white/35 mt-0.5">{step.description}</p>
+              </div>
+              {step.done ? (
+                <span className="text-[10px] font-semibold text-emerald-400 shrink-0">Listo</span>
+              ) : (
+                <ChevronRight className="h-4 w-4 text-white/25 shrink-0" />
+              )}
+            </Link>
+          ))}
+        </div>
+        {/* Botón activar — bloqueado hasta completar todos los pasos */}
+        <div className="px-4 py-3 border-t border-white/8">
+          <button
+            disabled={!allDeployed && agent.status !== "active"}
+            onClick={() => {
+              if (!allDeployed && agent.status !== "active") return;
+              const next = agent.status === "active" ? "inactive" : "active";
+              updateAgent(agentId, { status: next });
+              toast.success(next === "active" ? "Agente activado" : "Agente pausado");
+            }}
+            className={`w-full rounded-xl py-3 text-[14px] font-semibold transition-all ${
+              allDeployed || agent.status === "active"
+                ? agent.status === "active"
+                  ? "bg-white/10 text-white/70 active:bg-white/15"
+                  : "bg-emerald-500 text-white active:bg-emerald-600 shadow-sm"
+                : "bg-white/6 text-white/25 cursor-not-allowed"
+            }`}
+          >
+            {agent.status === "active"
+              ? "Pausar agente"
+              : allDeployed
+              ? "Activar agente"
+              : "Completa los pasos para activar"}
+          </button>
+        </div>
+      </div>
 
       {/* Stories bar — 3 filas, 3 columnas */}
       <div className="grid grid-cols-3 gap-x-2 gap-y-4">
@@ -414,6 +466,15 @@ export default function AgentDetailPage({
                 {isWhatsapp && hasWhatsapp && (
                   <span className="absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[9px] font-bold text-white ring-2 ring-background whitespace-nowrap">
                     Conectado
+                  </span>
+                )}
+                {item.id === "train" && (
+                  <span className={`absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full px-1.5 text-[9px] font-bold ring-2 ring-background whitespace-nowrap ${
+                    isTrainConfigured
+                      ? "bg-emerald-500 text-white"
+                      : "bg-amber-500 text-white"
+                  }`}>
+                    {isTrainConfigured ? "Listo" : "Pendiente"}
                   </span>
                 )}
               </div>

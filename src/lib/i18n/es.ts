@@ -566,13 +566,13 @@ export const es: Translations = {
       hotel: { name: "Hoteles", description: "Atencion a huespedes, reservaciones y servicios del hotel" },
       restaurant: { name: "Restaurantes", description: "Menu, reservaciones de mesa y pedidos a domicilio" },
     },
-    regions: { neutral: "Neutro", colombian: "Colombiano", mexican: "Mexicano", argentinian: "Argentino" },
+    regions: { neutral: "Neutro", paisa: "Paisa", rolo: "Rolo", costeno: "Costeño" },
     registers: { corporate: "Corporativo", professional: "Profesional cercano", relaxed: "Casual relajado", genz: "Juvenil / Gen-Z" },
     regionDescriptions: {
       neutral: "Hola, con gusto le ayudo",
-      colombian: "Quiubo parce, con todo el gusto",
-      mexican: "Que onda, con mucho gusto",
-      argentinian: "Che, dale, te ayudo",
+      paisa: "Quiubo parce, con todo el gusto",
+      rolo: "Hola, ¿qué más? Pilas, le ayudo",
+      costeno: "¡Eche mano, con gusto te ayudo!",
     },
     registerDescriptions: {
       corporate: "Lenguaje formal, usted, sin coloquialismos",

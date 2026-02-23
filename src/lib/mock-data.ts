@@ -75,7 +75,7 @@ export type WhatsAppProvider = "meta" | "wati" | "coexistence";
 
 export type AlgorithmType = "ecommerce" | "appointments" | "whatsapp-store" | "hotel" | "restaurant" | "inmobiliaria";
 
-export type CommunicationRegion = "neutral" | "colombian" | "mexican" | "argentinian";
+export type CommunicationRegion = "neutral" | "paisa" | "rolo" | "costeno";
 export type CommunicationRegister = "corporate" | "professional" | "relaxed" | "genz";
 
 export interface CommunicationStyle {
@@ -265,7 +265,7 @@ export const mockAgents: Agent[] = [
       googleMaps: "https://maps.google.com/?cid=123456789",
     },
     algorithmType: "hotel",
-    communicationStyle: { region: "colombian", register: "professional" },
+    communicationStyle: { region: "paisa", register: "professional" },
     messageCount: 1247,
     faqCount: 8,
     productCount: 0,
@@ -304,7 +304,7 @@ export const mockAgents: Agent[] = [
     language: "es",
     whatsappConnected: false,
     algorithmType: "restaurant",
-    communicationStyle: { region: "mexican", register: "relaxed" },
+    communicationStyle: { region: "costeno", register: "relaxed" },
     messageCount: 0,
     faqCount: 0,
     productCount: 3,

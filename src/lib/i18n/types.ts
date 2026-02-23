@@ -428,9 +428,9 @@ export interface Translations {
       hotel: { name: string; description: string };
       restaurant: { name: string; description: string };
     };
-    regions: { neutral: string; colombian: string; mexican: string; argentinian: string };
+    regions: { neutral: string; paisa: string; rolo: string; costeno: string };
     registers: { corporate: string; professional: string; relaxed: string; genz: string };
-    regionDescriptions: { neutral: string; colombian: string; mexican: string; argentinian: string };
+    regionDescriptions: { neutral: string; paisa: string; rolo: string; costeno: string };
     registerDescriptions: { corporate: string; professional: string; relaxed: string; genz: string };
     recommended: string;
     hotelNameLabels: { ecommerce: string; appointments: string; whatsappStore: string; hotel: string; restaurant: string };

@@ -566,13 +566,13 @@ export const en: Translations = {
       hotel: { name: "Hotels", description: "Guest support, reservations and hotel services" },
       restaurant: { name: "Restaurants", description: "Menu, table reservations and delivery orders" },
     },
-    regions: { neutral: "Neutral", colombian: "Colombian", mexican: "Mexican", argentinian: "Argentinian" },
+    regions: { neutral: "Neutral", paisa: "Paisa", rolo: "Rolo", costeno: "Costeño" },
     registers: { corporate: "Corporate", professional: "Friendly professional", relaxed: "Casual relaxed", genz: "Youth / Gen-Z" },
     regionDescriptions: {
       neutral: "Hello, happy to help you",
-      colombian: "Hey parce, happy to help",
-      mexican: "Que onda, happy to help",
-      argentinian: "Che, dale, I'll help you",
+      paisa: "Quiubo parce, happy to help",
+      rolo: "Hola, ¿qué más? Happy to help",
+      costeno: "¡Eche mano, happy to help!",
     },
     registerDescriptions: {
       corporate: "Formal language, no colloquialisms",

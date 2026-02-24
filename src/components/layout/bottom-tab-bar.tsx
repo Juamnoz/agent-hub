@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bot, LayoutDashboard } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { motion, AnimatePresence } from "motion/react";
 
 function isTabActive(href: string, pathname: string): boolean {
@@ -16,6 +17,7 @@ function isTabActive(href: string, pathname: string): boolean {
 export function BottomTabBar() {
   const pathname = usePathname();
   const conversations = useAgentStore((s) => s.conversations);
+  const mobileOpen = useSidebarStore((s) => s.mobileOpen);
   const pendingHuman = conversations.filter((c) => c.status === "human_handling").length;
 
   if (pathname === "/agents/new" || pathname.startsWith("/agents/new/")) return null;
@@ -25,9 +27,15 @@ export function BottomTabBar() {
   const panelActive = isTabActive("/panel", pathname);
 
   return (
-    <div
+    <AnimatePresence>
+      {!mobileOpen && (
+    <motion.div
       className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-end justify-center px-3"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}
+      initial={{ y: 0, opacity: 1 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      transition={{ type: "spring", stiffness: 400, damping: 36, mass: 0.8 }}
     >
       {/* ── Single floating glass dock pill ──────────────────── */}
       <div
@@ -235,6 +243,8 @@ export function BottomTabBar() {
           </div>
         </Link>
       </div>
-    </div>
+    </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

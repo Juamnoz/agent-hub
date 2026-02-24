@@ -321,7 +321,7 @@ function WelcomeScreen({
         <img
           src="/lisa-logo-orange.png"
           alt="Lisa"
-          className="h-40 w-auto object-contain drop-shadow-[0_4px_24px_rgba(249,115,22,0.35)]"
+          className="h-20 lg:h-40 w-auto object-contain drop-shadow-[0_4px_24px_rgba(249,115,22,0.35)]"
         />
       </motion.div>
 

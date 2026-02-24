@@ -2,8 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
+import { PanelLeft, Plus } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
@@ -45,7 +46,8 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const title = usePageTitle(pathname);
-  const collapsed = useSidebarStore((s) => s.collapsed);
+  const { collapsed, setMobileOpen } = useSidebarStore();
+  const isLisa = pathname === "/lisa" || pathname.startsWith("/lisa/");
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,7 +56,30 @@ export default function DashboardLayout({
       </Suspense>
 
       <div className={`transition-all duration-200 ${collapsed ? "lg:pl-16" : "lg:pl-60"}`}>
-        <Topbar title={title} />
+        {/* ── Mobile header (hamburger only — replaces topbar + bottom tab bar) ── */}
+        <header className="lg:hidden sticky top-0 z-40 flex h-14 items-center gap-3 bg-background/80 backdrop-blur-xl px-4">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            aria-label="Abrir menú"
+          >
+            <PanelLeft className="h-5 w-5" />
+          </button>
+
+          <h1 className="flex-1 text-[17px] font-semibold tracking-tight">{title}</h1>
+
+          {/* New chat button — only on Lisa page */}
+          {isLisa && (
+            <Link
+              href="/lisa"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="Nueva conversación"
+            >
+              <Plus className="h-5 w-5" />
+            </Link>
+          )}
+        </header>
+
         <main className="p-4 lg:p-6 pb-20 lg:pb-6">{children}</main>
       </div>
 

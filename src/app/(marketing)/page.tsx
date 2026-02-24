@@ -50,7 +50,7 @@ export default function LandingPage() {
             <img src="/logo.png" alt="Lisa" className="h-7 w-7" />
             <div className="flex flex-col leading-none">
               <span className="text-lg font-semibold tracking-tight leading-tight">Lisa</span>
-              <span className="text-[8px] font-medium text-muted-foreground tracking-wide">by Aic studio</span>
+              <span className="text-[10px] font-medium text-muted-foreground tracking-wide">by Aic studio</span>
             </div>
           </Link>
           <div className="flex items-center gap-3">

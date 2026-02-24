@@ -24,6 +24,7 @@ interface IntegrationConfigDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const MERCADOPAGO_FIELDS = ["publicKey", "accessToken"] as const;
 const WOMPI_FIELDS = ["publicKey", "privateKey", "eventsKey"] as const;
 const BOLD_FIELDS = ["apiKey", "secretKey"] as const;
 const GOOGLE_SHEETS_FIELDS = ["apiKey", "spreadsheetId", "sheetName"] as const;
@@ -33,6 +34,7 @@ const WOOCOMMERCE_FIELDS = ["siteUrl", "consumerKey", "consumerSecret"] as const
 const SHOPIFY_FIELDS = ["storeUrl", "accessToken"] as const;
 
 function getFieldsForIntegration(name: string) {
+  if (name === "mercadopago") return MERCADOPAGO_FIELDS;
   if (name === "wompi") return WOMPI_FIELDS;
   if (name === "bold") return BOLD_FIELDS;
   if (name === "google-sheets") return GOOGLE_SHEETS_FIELDS;
@@ -122,7 +124,7 @@ export function IntegrationConfigDialog({
             {isPayment && (
               <Badge
                 variant="outline"
-                className={`text-[10px] px-1.5 py-0 ${
+                className={`text-[12px] px-1.5 py-0 ${
                   environment === "production"
                     ? "bg-red-50 text-red-700 border-red-200"
                     : "bg-amber-50 text-amber-700 border-amber-200"
@@ -138,13 +140,13 @@ export function IntegrationConfigDialog({
           {/* Environment toggle - only for payment integrations */}
           {isPayment && (
           <div className="space-y-2">
-            <Label className="text-[13px] font-medium text-muted-foreground">
+            <Label className="text-[15px] font-medium text-muted-foreground">
               {t.integrations.environment}
             </Label>
             <div className="flex rounded-xl bg-gray-100 p-1">
               <button
                 onClick={() => setEnvironment("sandbox")}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[15px] font-medium transition-all ${
                   environment === "sandbox"
                     ? "bg-white shadow-sm text-amber-700"
                     : "text-muted-foreground hover:text-foreground"
@@ -155,7 +157,7 @@ export function IntegrationConfigDialog({
               </button>
               <button
                 onClick={() => setEnvironment("production")}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[15px] font-medium transition-all ${
                   environment === "production"
                     ? "bg-white shadow-sm text-red-700"
                     : "text-muted-foreground hover:text-foreground"
@@ -165,7 +167,7 @@ export function IntegrationConfigDialog({
                 {t.integrations.production}
               </button>
             </div>
-            <p className="text-[12px] text-muted-foreground">
+            <p className="text-[14px] text-muted-foreground">
               {environment === "sandbox"
                 ? t.integrations.sandboxDescription
                 : t.integrations.productionDescription}
@@ -177,7 +179,7 @@ export function IntegrationConfigDialog({
           <div className="space-y-3">
             {fields.map((field) => (
               <div key={field} className="space-y-1.5">
-                <Label htmlFor={field} className="text-[13px]">
+                <Label htmlFor={field} className="text-[15px]">
                   {fieldLabels[field] ?? field}
                 </Label>
                 <Input
@@ -195,12 +197,12 @@ export function IntegrationConfigDialog({
 
           {/* Webhook URL */}
           <div className="space-y-1.5">
-            <Label className="text-[13px]">{t.integrations.webhookUrl}</Label>
+            <Label className="text-[15px]">{t.integrations.webhookUrl}</Label>
             <div className="flex items-center gap-2">
               <Input
                 readOnly
                 value={webhookUrl}
-                className="text-[12px] text-muted-foreground bg-gray-50"
+                className="text-[14px] text-muted-foreground bg-gray-50"
               />
               <Button
                 type="button"

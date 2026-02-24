@@ -137,12 +137,12 @@
   animation: gradient-shift 3s ease infinite;
 }
 
-/* Chat messages background — same as Lisa chat but +5% brightness */
+/* Chat messages background — WhatsApp-like wallpaper feel */
 .chat-messages-bg {
-  background: oklch(1 0.007 55); /* light: slightly above page bg */
+  background: oklch(0.96 0.008 55); /* light: warm off-white */
 }
 .dark .chat-messages-bg {
-  background: oklch(0.21 0.005 50); /* dark: page bg (0.16) + 5% brightness */
+  background: oklch(0.17 0.006 200); /* dark: deep teal-dark like WhatsApp dark */
 }
 
 /* Hide scrollbar but keep scroll functionality */

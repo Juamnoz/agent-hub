@@ -71,7 +71,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
             <SheetTitle className="text-lg font-semibold tracking-tight leading-tight">
               Lisa
             </SheetTitle>
-            <span className="text-[9px] font-medium text-muted-foreground tracking-wide">
+            <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
               by Aic studio
             </span>
           </div>
@@ -131,7 +131,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
               <Link
                 href="/lisa"
                 onClick={() => { setLisaExpanded(false); onOpenChange(false); }}
-                className="flex items-center gap-2 mx-3 mt-2 mb-1 rounded-lg px-3 py-2 text-[13px] font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+                className="flex items-center gap-2 mx-3 mt-2 mb-1 rounded-lg px-3 py-2 text-[15px] font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 {t.lisa.newAgent}
@@ -166,7 +166,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[13px] font-medium truncate">
+                              <span className="text-[15px] font-medium truncate">
                                 {agent.name}
                               </span>
                               <span
@@ -176,7 +176,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                                 )}
                               />
                             </div>
-                            <p className="text-[11px] text-muted-foreground truncate">
+                            <p className="text-[13px] text-muted-foreground truncate">
                               {agent.hotelName}
                             </p>
                           </div>

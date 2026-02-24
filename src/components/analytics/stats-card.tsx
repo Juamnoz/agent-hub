@@ -52,16 +52,16 @@ export function StatsCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[11px] sm:text-[13px] font-medium text-muted-foreground leading-tight">
+          <p className="text-[13px] sm:text-[15px] font-medium text-muted-foreground leading-tight">
             {title}
           </p>
-          <p className="text-[28px] sm:text-[32px] font-bold tracking-tight leading-tight mt-0.5 sm:mt-1">
+          <p className="text-[30px] sm:text-[34px] font-bold tracking-tight leading-tight mt-0.5 sm:mt-1">
             {value}
           </p>
           {trend && (
             <p
               className={cn(
-                "text-[10px] sm:text-xs font-medium mt-1",
+                "text-[12px] sm:text-xs font-medium mt-1",
                 trend.value >= 0 ? "text-emerald-600" : "text-red-500"
               )}
             >

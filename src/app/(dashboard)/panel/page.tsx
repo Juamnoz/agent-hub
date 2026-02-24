@@ -138,8 +138,8 @@ export default function PanelPage() {
       {/* ── Greeting + Stats ── */}
       <motion.div {...fadeUp(0)} className="flex items-center justify-between">
         <div>
-          <p className="text-[13px] text-muted-foreground">{greeting}</p>
-          <h1 className="text-[20px] font-bold leading-tight">Panel de control</h1>
+          <p className="text-[15px] text-muted-foreground">{greeting}</p>
+          <h1 className="text-[22px] font-bold leading-tight">Panel de control</h1>
         </div>
         <div className="flex items-center gap-4">
           <StatPill
@@ -165,9 +165,9 @@ export default function PanelPage() {
         <motion.div {...fadeUp(0.12)} className="space-y-2">
           <div className="flex items-center justify-between px-0.5">
             <div className="flex items-center gap-2">
-              <p className="text-[13px] font-semibold">Bandeja de entrada</p>
+              <p className="text-[15px] font-semibold">Bandeja de entrada</p>
               {pendingHumanCount > 0 && (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[12px] font-bold text-white">
                   {pendingHumanCount}
                 </span>
               )}
@@ -194,7 +194,7 @@ export default function PanelPage() {
                   : "/agents";
                 window.location.href = firstAgent;
               }}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-[12px] font-medium text-orange-500 transition-colors hover:bg-orange-50/50 dark:hover:bg-orange-500/5"
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-[14px] font-medium text-orange-500 transition-colors hover:bg-orange-50/50 dark:hover:bg-orange-500/5"
             >
               Ver todas las conversaciones
               <ChevronRight className="h-3.5 w-3.5" />
@@ -207,10 +207,10 @@ export default function PanelPage() {
       {agents.length > 0 && (
         <motion.div {...fadeUp(0.18)} className="space-y-2">
           <div className="flex items-center justify-between px-0.5">
-            <p className="text-[13px] font-semibold">Tus agentes</p>
+            <p className="text-[15px] font-semibold">Tus agentes</p>
             <Link
               href="/agents/new"
-              className="flex items-center gap-1 text-[12px] font-medium text-orange-500"
+              className="flex items-center gap-1 text-[14px] font-medium text-orange-500"
             >
               <Plus className="h-3.5 w-3.5" />
               Nuevo
@@ -231,7 +231,7 @@ export default function PanelPage() {
       {/* ── Smart alerts ── */}
       {alerts.length > 0 && (
         <motion.div {...fadeUp(0.24)} className="space-y-2">
-          <p className="text-[12px] font-medium text-muted-foreground px-0.5">
+          <p className="text-[14px] font-medium text-muted-foreground px-0.5">
             Lisa sugiere
           </p>
           <div className="space-y-2">
@@ -252,8 +252,8 @@ export default function PanelPage() {
           <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-8 w-8 object-contain" />
         </div>
         <div className="flex-1">
-          <p className="text-[14px] font-semibold text-foreground leading-tight">Pregúntale a Lisa</p>
-          <p className="text-[11px] text-muted-foreground">Tu copiloto de IA</p>
+          <p className="text-[16px] font-semibold text-foreground leading-tight">Pregúntale a Lisa</p>
+          <p className="text-[13px] text-muted-foreground">Tu copiloto de IA</p>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
       </Link>
@@ -277,28 +277,28 @@ function InboxRow({ conv, agentName }: { conv: Conversation; agentName: string }
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${getColor(conv.contactName)} shadow-sm`}
       >
-        <span className="text-[11px] font-bold text-white">{getInitials(conv.contactName)}</span>
+        <span className="text-[13px] font-bold text-white">{getInitials(conv.contactName)}</span>
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-[13px] font-semibold truncate text-foreground">{conv.contactName}</span>
+          <span className="text-[15px] font-semibold truncate text-foreground">{conv.contactName}</span>
           {isHuman && (
-            <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-400">
+            <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-500/20 px-1.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
               HUMANO
             </span>
           )}
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[11px] text-muted-foreground truncate">{conv.lastMessage || "..."}</span>
+          <span className="text-[13px] text-muted-foreground truncate">{conv.lastMessage || "..."}</span>
         </div>
       </div>
 
       {/* Right */}
       <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-[11px] text-muted-foreground">{formatRelativeTime(conv.lastMessageAt)}</span>
-        <span className="text-[10px] text-muted-foreground/60 truncate max-w-[60px] text-right">{agentName}</span>
+        <span className="text-[13px] text-muted-foreground">{formatRelativeTime(conv.lastMessageAt)}</span>
+        <span className="text-[12px] text-muted-foreground/60 truncate max-w-[60px] text-right">{agentName}</span>
       </div>
     </Link>
   );
@@ -317,9 +317,9 @@ function StatPill({
     <div className="flex flex-col items-center gap-0.5">
       <div className="flex items-center gap-1 text-foreground/50">
         {icon}
-        <p className="text-[13px] font-semibold tabular-nums leading-tight text-foreground">{value}</p>
+        <p className="text-[15px] font-semibold tabular-nums leading-tight text-foreground">{value}</p>
       </div>
-      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -345,13 +345,13 @@ function AlertCard({ alert }: { alert: AgentAlert }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-semibold text-muted-foreground truncate">
+        <p className="text-[13px] font-semibold text-muted-foreground truncate">
           {alert.agentName}
         </p>
-        <p className="text-[13px] font-medium leading-tight">{alert.text}</p>
+        <p className="text-[15px] font-medium leading-tight">{alert.text}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <span className="text-[12px] font-medium text-muted-foreground">
+        <span className="text-[14px] font-medium text-muted-foreground">
           {alert.action}
         </span>
         <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />

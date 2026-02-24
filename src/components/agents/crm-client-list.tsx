@@ -118,7 +118,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
               placeholder={t.conversations.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[14px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-orange-500/20 transition-all"
+              className="w-full rounded-xl bg-gray-100/80 py-2 pl-9 pr-3 text-[16px] outline-none placeholder:text-gray-400 focus:bg-gray-100 focus:ring-2 focus:ring-orange-500/20 transition-all"
             />
           </div>
           {/* Filter chips */}
@@ -156,7 +156,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
         {/* Stats bar */}
         <div className="flex items-center gap-2 px-1">
           <Users className="h-4 w-4 text-gray-400" />
-          <span className="text-[13px] text-gray-500">
+          <span className="text-[15px] text-gray-500">
             {filtered.length} {t.crm.clients}
           </span>
         </div>
@@ -165,7 +165,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center rounded-2xl bg-white ring-1 ring-black/[0.04]">
             <Users className="h-10 w-10 text-gray-200 mb-3" />
-            <p className="text-[14px] text-gray-400">{t.crm.noClients}</p>
+            <p className="text-[16px] text-gray-400">{t.crm.noClients}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -185,24 +185,24 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                       client.name
                     )} shadow-sm`}
                   >
-                    <span className="text-[13px] font-semibold text-white">
+                    <span className="text-[15px] font-semibold text-white">
                       {getInitials(client.name)}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[15px] font-semibold truncate">{client.name}</span>
+                      <span className="text-[17px] font-semibold truncate">{client.name}</span>
                       {client.status === "vip" && (
                         <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />
                       )}
                     </div>
-                    <p className="text-[13px] text-gray-500">{client.phone}</p>
+                    <p className="text-[15px] text-gray-500">{client.phone}</p>
                   </div>
                   <div className="flex flex-wrap justify-end gap-1">
                     {client.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                        className={`px-2 py-0.5 rounded-full text-[13px] font-medium ${
                           tagColors[tag] || "bg-gray-100 text-gray-600"
                         }`}
                       >
@@ -211,7 +211,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-4 mt-2.5 text-[12px] text-gray-400">
+                <div className="flex items-center gap-4 mt-2.5 text-[14px] text-gray-400">
                   <span className="flex items-center gap-1">
                     <MessageSquare className="h-3 w-3" />
                     {client.totalMessages} msgs
@@ -237,7 +237,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
           <div className="relative w-full max-w-lg mx-4 mb-0 sm:mb-0 rounded-t-2xl sm:rounded-2xl bg-white shadow-xl animate-in slide-in-from-bottom-4 duration-300 max-h-[85vh] overflow-y-auto">
             {/* Header */}
             <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-black/[0.06] px-5 py-4 flex items-center justify-between rounded-t-2xl z-10">
-              <h3 className="text-[17px] font-bold">{selectedClient.name}</h3>
+              <h3 className="text-[19px] font-bold">{selectedClient.name}</h3>
               <button
                 onClick={() => setSelectedClient(null)}
                 className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
@@ -254,15 +254,15 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                     selectedClient.name
                   )} shadow-sm`}
                 >
-                  <span className="text-[16px] font-bold text-white">
+                  <span className="text-[18px] font-bold text-white">
                     {getInitials(selectedClient.name)}
                   </span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[17px] font-bold">{selectedClient.name}</span>
+                    <span className="text-[19px] font-bold">{selectedClient.name}</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-medium ring-1 ${
+                      className={`px-2 py-0.5 rounded-full text-[13px] font-medium ring-1 ${
                         statusColors[selectedClient.status]
                       }`}
                     >
@@ -273,7 +273,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                     {selectedClient.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                        className={`px-2 py-0.5 rounded-full text-[13px] font-medium ${
                           tagColors[tag] || "bg-gray-100 text-gray-600"
                         }`}
                       >
@@ -316,7 +316,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <StickyNote className="h-4 w-4 text-gray-400" />
-                  <span className="text-[13px] font-semibold text-gray-600">{t.crm.notes}</span>
+                  <span className="text-[15px] font-semibold text-gray-600">{t.crm.notes}</span>
                 </div>
                 {editingNotes ? (
                   <div className="space-y-2">
@@ -324,13 +324,13 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
                       rows={3}
-                      className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
+                      className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={() => setEditingNotes(false)}
-                        className="px-3 py-1.5 text-[13px] font-medium text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="px-3 py-1.5 text-[15px] font-medium text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         {t.common.cancel}
                       </button>
@@ -340,7 +340,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                           setSelectedClient({ ...selectedClient, notes: notesValue });
                           setEditingNotes(false);
                         }}
-                        className="px-3 py-1.5 text-[13px] font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
+                        className="px-3 py-1.5 text-[15px] font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
                       >
                         {t.common.save}
                       </button>
@@ -349,7 +349,7 @@ export function CRMClientList({ agentId }: { agentId: string }) {
                 ) : (
                   <button
                     onClick={() => setEditingNotes(true)}
-                    className="w-full text-left rounded-xl bg-gray-50 px-3 py-2.5 text-[14px] text-gray-600 hover:bg-gray-100 transition-colors min-h-[60px]"
+                    className="w-full text-left rounded-xl bg-gray-50 px-3 py-2.5 text-[16px] text-gray-600 hover:bg-gray-100 transition-colors min-h-[60px]"
                   >
                     {selectedClient.notes || (
                       <span className="text-gray-400 italic">{t.crm.addNote}</span>
@@ -377,7 +377,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all ${
+      className={`px-3 py-1 rounded-full text-[14px] font-medium transition-all ${
         active
           ? "bg-orange-500 text-white shadow-sm"
           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -396,7 +396,7 @@ function InfoRow({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5 text-[14px] text-gray-600">
+    <div className="flex items-center gap-2.5 text-[16px] text-gray-600">
       <Icon className="h-4 w-4 text-gray-400 shrink-0" />
       <span>{label}</span>
     </div>
@@ -406,8 +406,8 @@ function InfoRow({
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-gray-50 px-3 py-2.5">
-      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">{label}</p>
-      <p className="text-[16px] font-bold mt-0.5">{value}</p>
+      <p className="text-[13px] font-medium text-gray-400 uppercase tracking-wider">{label}</p>
+      <p className="text-[18px] font-bold mt-0.5">{value}</p>
     </div>
   );
 }

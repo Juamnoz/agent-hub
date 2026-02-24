@@ -140,10 +140,10 @@ export function ContactsEditor({ agentId }: ContactsEditorProps) {
                         <Phone className="h-4 w-4 text-orange-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-medium truncate">
+                        <p className="text-[17px] font-medium truncate">
                           {contact.name}
                         </p>
-                        <p className="text-[13px] text-muted-foreground truncate">
+                        <p className="text-[15px] text-muted-foreground truncate">
                           {contact.phone}
                           {contact.description && ` · ${contact.description}`}
                         </p>

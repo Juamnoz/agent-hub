@@ -1,5 +1,31 @@
 // Official brand SVG icons — vectorized from SimpleIcons (simpleicons.org)
 // Usage: <IconWhatsApp className="h-4 w-4" />
+import Image from "next/image";
+
+export function IconWompi({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/wompi_icono.png" alt="Wompi" width={40} height={40} className={className} />;
+}
+export function IconBold({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/bold_icono.png" alt="Bold" width={40} height={40} className={className} />;
+}
+export function IconGmail({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/gmail_icono.webp" alt="Gmail" width={40} height={40} className={className} />;
+}
+export function IconGoogleSheets({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/sheets_icono.png" alt="Google Sheets" width={40} height={40} className={className} />;
+}
+export function IconGoogleCalendar({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/calendar_icono.png" alt="Google Calendar" width={40} height={40} className={className} />;
+}
+export function IconShopify({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/shopify_icono.svg" alt="Shopify" width={40} height={40} className={className} />;
+}
+export function IconWooCommerce({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/woocommerce_icono.webp" alt="WooCommerce" width={40} height={40} className={className} />;
+}
+export function IconMercadoPago({ className }: { className?: string }) {
+  return <Image unoptimized src="/icons/mercadopago_icono.webp" alt="Mercado Pago" width={40} height={40} className={className} />;
+}
 
 export function IconWhatsApp({ className }: { className?: string }) {
   return (
@@ -65,6 +91,7 @@ export function IconTripAdvisor({ className }: { className?: string }) {
     </svg>
   );
 }
+
 
 export function IconGoogleMaps({ className }: { className?: string }) {
   return (

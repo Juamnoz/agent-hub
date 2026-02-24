@@ -27,7 +27,7 @@ import {
   MessageSquare,
   Settings,
 } from "lucide-react";
-import { IconWhatsApp } from "@/components/icons/brand-icons";
+import { IconWhatsApp, IconGmail, IconGoogleSheets, IconGoogleCalendar, IconWompi, IconBold, IconShopify, IconWooCommerce, IconMercadoPago } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
 import { type Integration, type Agent, PLAN_INTEGRATION_LIMITS, CURRENT_PLAN, ALGORITHM_RECOMMENDED_INTEGRATIONS } from "@/lib/mock-data";
 import type { Translations } from "@/lib/i18n/types";
@@ -189,13 +189,13 @@ export default function AgentDetailPage({
       color: "amber",
     },
     {
-      id: "products",
-      label: "Catálogo",
-      icon: ShoppingBag,
-      href: `/agents/${agentId}/products`,
-      configured: hasProducts,
-      stat: hasProducts ? `${agentProducts.length}` : "",
-      color: "violet",
+      id: "train",
+      label: t.trainingChat.quickActionTitle,
+      icon: BrainCircuit,
+      href: `/agents/${agentId}/train`,
+      configured: true,
+      stat: "",
+      color: "whatsapp",
     },
     {
       id: "whatsapp",
@@ -222,16 +222,16 @@ export default function AgentDetailPage({
       href: `/agents/${agentId}/crm`,
       configured: true,
       stat: "",
-      color: "rose",
+      color: "gray",
     },
     {
-      id: "train",
-      label: t.trainingChat.quickActionTitle,
-      icon: BrainCircuit,
-      href: `/agents/${agentId}/train`,
-      configured: true,
-      stat: "",
-      color: "whatsapp",
+      id: "products",
+      label: "Catálogo",
+      icon: ShoppingBag,
+      href: `/agents/${agentId}/products`,
+      configured: hasProducts,
+      stat: hasProducts ? `${agentProducts.length}` : "",
+      color: "violet",
     },
     {
       id: "stats",
@@ -240,7 +240,7 @@ export default function AgentDetailPage({
       href: `/agents/${agentId}/analytics`,
       configured: true,
       stat: "",
-      color: "gray",
+      color: "white",
     },
     {
       id: "social",
@@ -249,7 +249,7 @@ export default function AgentDetailPage({
       href: `/agents/${agentId}/social`,
       configured: !!hasSocial,
       stat: "",
-      color: "orange",
+      color: "pink",
     },
     {
       id: "settings",
@@ -273,6 +273,8 @@ export default function AgentDetailPage({
     violet: { circle: "bg-violet-100 dark:bg-violet-500/20", icon: "text-violet-600 dark:text-violet-400" },
     gray: { circle: "bg-gray-100 dark:bg-white/10", icon: "text-gray-600 dark:text-gray-400" },
     slate: { circle: "bg-slate-100 dark:bg-slate-500/20", icon: "text-slate-600 dark:text-slate-400" },
+    white: { circle: "bg-white dark:bg-white/10 border border-border", icon: "text-gray-700 dark:text-gray-300" },
+    pink: { circle: "bg-pink-100 dark:bg-pink-500/20", icon: "text-pink-500 dark:text-pink-400" },
   };
 
   const fadeUp = (delay: number) => ({
@@ -309,21 +311,21 @@ export default function AgentDetailPage({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <h1 className="text-[17px] font-bold tracking-tight truncate">{agent.name}</h1>
+              <h1 className="text-[19px] font-bold tracking-tight truncate">{agent.name}</h1>
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
             </div>
-            <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
+            <p className="text-[15px] text-muted-foreground truncate">{agent.hotelName}</p>
           </div>
           <Settings className="h-4 w-4 text-muted-foreground/40 shrink-0" />
         </Link>
         {/* Fila 2: toggle activo/inactivo */}
         <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-muted/30">
           <div>
-            <p className="text-[13px] font-medium leading-tight">
+            <p className="text-[15px] font-medium leading-tight">
               {agent.status === "active" ? "Activo — respondiendo mensajes" : "Pausado — no responde"}
             </p>
             {!allDeployed && agent.status !== "active" && (
-              <p className="text-[10px] text-amber-500 mt-0.5">Completa los pasos para activar</p>
+              <p className="text-[12px] text-amber-500 mt-0.5">Completa los pasos para activar</p>
             )}
           </div>
           <button
@@ -358,14 +360,14 @@ export default function AgentDetailPage({
         {/* Header: score + nivel */}
         <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
           <div>
-            <p className="text-[13px] font-semibold text-white leading-tight">Calidad del agente</p>
-            <p className="text-[11px] text-white/40 mt-0.5">
+            <p className="text-[15px] font-semibold text-white leading-tight">Calidad del agente</p>
+            <p className="text-[13px] text-white/40 mt-0.5">
               {completedDeployCount} de {deploySteps.length} pasos completados
             </p>
           </div>
           <div className="flex items-end gap-0.5">
-            <span className={`text-[28px] font-bold tabular-nums leading-none ${qualityColor}`}>{qualityScore}</span>
-            <span className="text-[12px] text-white/35 mb-1">/ 100</span>
+            <span className={`text-[30px] font-bold tabular-nums leading-none ${qualityColor}`}>{qualityScore}</span>
+            <span className="text-[14px] text-white/35 mb-1">/ 100</span>
           </div>
         </div>
         {/* Barra de calidad */}
@@ -376,7 +378,7 @@ export default function AgentDetailPage({
               style={{ width: `${qualityScore}%` }}
             />
           </div>
-          <p className={`text-[11px] font-semibold mt-1 ${qualityColor}`}>{qualityLabel}</p>
+          <p className={`text-[13px] font-semibold mt-1 ${qualityColor}`}>{qualityLabel}</p>
         </div>
         {/* Pasos */}
         <div className="border-t border-white/8 divide-y divide-white/6">
@@ -394,13 +396,13 @@ export default function AgentDetailPage({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-[13px] font-medium leading-tight ${step.done ? "text-white/40" : "text-white/90"}`}>
+                <p className={`text-[15px] font-medium leading-tight ${step.done ? "text-white/40" : "text-white/90"}`}>
                   {step.title}
                 </p>
-                <p className="text-[11px] text-white/35 mt-0.5">{step.description}</p>
+                <p className="text-[13px] text-white/35 mt-0.5">{step.description}</p>
               </div>
               {step.done ? (
-                <span className="text-[10px] font-semibold text-emerald-400 shrink-0">Listo</span>
+                <span className="text-[12px] font-semibold text-emerald-400 shrink-0">Listo</span>
               ) : (
                 <ChevronRight className="h-4 w-4 text-white/25 shrink-0" />
               )}
@@ -417,7 +419,7 @@ export default function AgentDetailPage({
               updateAgent(agentId, { status: next });
               toast.success(next === "active" ? "Agente activado" : "Agente pausado");
             }}
-            className={`w-full rounded-xl py-3 text-[14px] font-semibold transition-all ${
+            className={`w-full rounded-xl py-3 text-[16px] font-semibold transition-all ${
               allDeployed || agent.status === "active"
                 ? agent.status === "active"
                   ? "bg-white/10 text-white/70 active:bg-white/15"
@@ -465,19 +467,19 @@ export default function AgentDetailPage({
                   ) : null}
                 </div>
                 {isNumericStat && (
-                  <span className={`absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums ring-2 ring-background ${
+                  <span className={`absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[12px] font-bold tabular-nums ring-2 ring-background ${
                     item.id === "chat" ? "bg-amber-500 text-white" : "bg-foreground text-background"
                   }`}>
                     {item.stat}
                   </span>
                 )}
                 {isWhatsapp && hasWhatsapp && (
-                  <span className="absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[9px] font-bold text-white ring-2 ring-background whitespace-nowrap">
+                  <span className="absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-bold text-white ring-2 ring-background whitespace-nowrap">
                     Conectado
                   </span>
                 )}
                 {item.id === "train" && (
-                  <span className={`absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full px-1.5 text-[9px] font-bold ring-2 ring-background whitespace-nowrap ${
+                  <span className={`absolute -top-1 -right-3 flex h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold ring-2 ring-background whitespace-nowrap ${
                     isTrainConfigured
                       ? "bg-emerald-500 text-white"
                       : "bg-amber-500 text-white"
@@ -486,7 +488,7 @@ export default function AgentDetailPage({
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground text-center leading-tight max-w-[72px]">
+              <span className="text-[12px] text-muted-foreground text-center leading-tight max-w-[72px]">
                 {item.label}
               </span>
             </Link>
@@ -518,7 +520,7 @@ export default function AgentDetailPage({
         {deleteStep === 0 && (
           <button
             onClick={() => setDeleteStep(1)}
-            className="w-full rounded-2xl bg-card px-4 py-3.5 text-[15px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] active:bg-red-50"
+            className="w-full rounded-2xl bg-card px-4 py-3.5 text-[17px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] active:bg-red-50"
           >
             {t.agentSettings.deleteAgent}
           </button>
@@ -527,20 +529,20 @@ export default function AgentDetailPage({
         {deleteStep === 1 && (
           <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="px-5 py-4 text-center border-b border-border">
-              <p className="text-[15px] font-semibold">{t.agentSettings.deleteConfirmTitle}</p>
-              <p className="text-[13px] text-muted-foreground mt-1">
+              <p className="text-[17px] font-semibold">{t.agentSettings.deleteConfirmTitle}</p>
+              <p className="text-[15px] text-muted-foreground mt-1">
                 {t.agentSettings.deleteConfirmDescription}
               </p>
             </div>
             <button
               onClick={() => setDeleteStep(2)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
+              className="w-full px-4 py-3 text-[17px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
             >
               {t.agentSettings.deletePermanently}
             </button>
             <button
               onClick={() => setDeleteStep(0)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
+              className="w-full px-4 py-3 text-[17px] font-medium text-orange-600 transition-colors active:bg-orange-50"
             >
               {t.common.cancel}
             </button>
@@ -551,10 +553,10 @@ export default function AgentDetailPage({
           <div className="rounded-2xl bg-white ring-1 ring-red-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="px-5 py-4 text-center border-b border-red-100 bg-red-50/50">
               <Trash2 className="h-6 w-6 text-red-500 mx-auto mb-2" />
-              <p className="text-[14px] font-semibold text-red-600">
+              <p className="text-[16px] font-semibold text-red-600">
                 {t.agentSettings.deleteConfirmTitle}
               </p>
-              <p className="text-[12px] text-red-500/80 mt-0.5">
+              <p className="text-[14px] text-red-500/80 mt-0.5">
                 {t.agentSettings.deleteConfirmDescription}
               </p>
             </div>
@@ -564,13 +566,13 @@ export default function AgentDetailPage({
                 toast.success(t.agentSettings.agentDeleted);
                 router.push("/agents");
               }}
-              className="w-full px-4 py-3 text-[15px] font-semibold text-red-600 border-b border-red-100 transition-colors active:bg-red-50"
+              className="w-full px-4 py-3 text-[17px] font-semibold text-red-600 border-b border-red-100 transition-colors active:bg-red-50"
             >
               {t.agentSettings.deletePermanently}
             </button>
             <button
               onClick={() => setDeleteStep(0)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
+              className="w-full px-4 py-3 text-[17px] font-medium text-orange-600 transition-colors active:bg-orange-50"
             >
               {t.common.cancel}
             </button>
@@ -590,6 +592,20 @@ const INTEGRATION_ICONS: Record<string, React.ComponentType<{ className?: string
   Mail,
   Globe,
   ShoppingBag,
+};
+
+const SWAP_TITLE_INTEGRATIONS = new Set(["wompi", "bold", "google-sheets", "google-calendar", "gmail", "shopify", "woocommerce"]);
+const ROUNDED_BRAND_ICONS = new Set(["wompi", "bold", "mercadopago"]);
+
+const BRAND_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  "wompi": IconWompi,
+  "bold": IconBold,
+  "mercadopago": IconMercadoPago,
+  "gmail": IconGmail,
+  "google-sheets": IconGoogleSheets,
+  "google-calendar": IconGoogleCalendar,
+  "shopify": IconShopify,
+  "woocommerce": IconWooCommerce,
 };
 
 const PLAN_TIER_ORDER: Record<string, number> = { starter: 0, pro: 1, business: 2, enterprise: 3 };
@@ -642,7 +658,7 @@ function IntegrationsSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-0.5">
-        <h2 className="text-[15px] font-semibold text-muted-foreground">
+        <h2 className="text-[17px] font-semibold text-muted-foreground">
           {t.integrations.title} ({activeCount}/{limitLabel} {t.integrations.activeCount})
         </h2>
       </div>
@@ -652,57 +668,67 @@ function IntegrationsSection({
         if (items.length === 0) return null;
         return (
           <div key={cat.key} className="space-y-2">
-            <h3 className="text-[13px] font-medium text-muted-foreground px-0.5">
+            <h3 className="text-[15px] font-medium text-muted-foreground px-0.5">
               {cat.label}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 auto-rows-fr">
               {items.map((integration, idx) => {
                 const locked = isLocked(integration);
                 const Icon = INTEGRATION_ICONS[integration.icon] ?? CreditCard;
                 const itemT = t.integrations.items[integration.name as keyof typeof t.integrations.items];
+                const swapTitle = SWAP_TITLE_INTEGRATIONS.has(integration.name);
+                const BrandIcon = BRAND_ICONS[integration.name];
+                const roundedBrand = ROUNDED_BRAND_ICONS.has(integration.name);
+                const mainLabel = swapTitle ? (itemT?.description ?? integration.description) : (itemT?.name ?? integration.name);
+                const subLabel = swapTitle ? (itemT?.name ?? integration.name) : (itemT?.description ?? integration.description);
                 return (
                   <motion.div
                     key={integration.id}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 380, damping: 30, delay: idx * 0.05 }}
-                    className={`flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all ${
+                    className={`flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all h-full ${
                       locked ? "opacity-60 cursor-pointer" : ""
                     }`}
                     onClick={locked ? () => router.push("/billing") : undefined}
                   >
                     <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                        locked ? "bg-muted" : "bg-orange-50 dark:bg-orange-500/15"
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center ${
+                        BrandIcon
+                          ? roundedBrand ? "rounded-xl overflow-hidden" : ""
+                          : `rounded-xl ${locked ? "bg-muted" : "bg-orange-50 dark:bg-orange-500/15"}`
                       }`}
                     >
-                      <Icon className={`h-5 w-5 ${locked ? "text-gray-400" : "text-orange-600"}`} />
+                      {BrandIcon
+                        ? <BrandIcon className="h-10 w-10 object-contain" />
+                        : <Icon className={`h-5 w-5 ${locked ? "text-gray-400" : "text-orange-600"}`} />
+                      }
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[14px] font-semibold leading-tight">
-                          {itemT?.name ?? integration.name}
+                        <span className="text-[16px] font-semibold leading-tight">
+                          {mainLabel}
                         </span>
                         {locked && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 text-amber-700 border-amber-200 bg-amber-50">
+                          <Badge variant="outline" className="text-[12px] px-1.5 py-0 gap-0.5 text-amber-700 border-amber-200 bg-amber-50">
                             <Lock className="h-2.5 w-2.5" />
                             {requiredPlanLabel(integration)}
                           </Badge>
                         )}
                         {!locked && integration.configured && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 text-emerald-700 border-emerald-200 bg-emerald-50">
+                          <Badge variant="outline" className="text-[12px] px-1.5 py-0 gap-0.5 text-emerald-700 border-emerald-200 bg-emerald-50">
                             <CheckCircle2 className="h-2.5 w-2.5" />
                             {t.integrations.configured}
                           </Badge>
                         )}
                         {!locked && isRecommended(integration) && (
-                          <Badge className="text-[10px] bg-orange-50 text-orange-700 border-orange-200" variant="outline">
+                          <Badge className="text-[12px] bg-orange-50 text-orange-700 border-orange-200" variant="outline">
                             {t.personalityBuilder.recommended}
                           </Badge>
                         )}
                       </div>
-                      <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-1">
-                        {itemT?.description ?? integration.description}
+                      <p className="text-[14px] text-muted-foreground mt-0.5 line-clamp-1">
+                        {subLabel}
                       </p>
                     </div>
                     {!locked && (
@@ -783,8 +809,8 @@ function SetupCard({
           <Icon className={`h-5 w-5 ${colors.icon}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[15px] font-semibold leading-tight">{title}</h3>
-          <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-1">
+          <h3 className="text-[17px] font-semibold leading-tight">{title}</h3>
+          <p className="text-[15px] text-muted-foreground mt-0.5 line-clamp-1">
             {description}
           </p>
         </div>

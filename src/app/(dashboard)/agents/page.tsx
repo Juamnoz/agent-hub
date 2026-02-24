@@ -26,7 +26,7 @@ export default function AgentsPage() {
           <motion.div {...fadeUp(0)} className="flex items-center justify-end">
             <Link
               href="/agents/new"
-              className="flex items-center gap-1.5 rounded-full bg-muted px-3.5 h-8 text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 rounded-full bg-muted px-3.5 h-8 text-[15px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               {t.agents.newAgent}

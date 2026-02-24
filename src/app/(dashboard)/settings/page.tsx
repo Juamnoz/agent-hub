@@ -55,7 +55,7 @@ export default function SettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={handleSave}
-              className="bg-transparent text-[14px] text-right text-muted-foreground outline-none w-full max-w-[180px] text-ellipsis"
+              className="bg-transparent text-[16px] text-right text-muted-foreground outline-none w-full max-w-[180px] text-ellipsis"
             />
           </FieldRow>
           <Divider />
@@ -65,7 +65,7 @@ export default function SettingsPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={handleSave}
-              className="bg-transparent text-[14px] text-right text-muted-foreground outline-none w-full max-w-[200px] text-ellipsis"
+              className="bg-transparent text-[16px] text-right text-muted-foreground outline-none w-full max-w-[200px] text-ellipsis"
             />
           </FieldRow>
         </Section>
@@ -79,8 +79,8 @@ export default function SettingsPage() {
             className="flex w-full items-center gap-3 px-4 py-3.5"
           >
             <Globe className="h-5 w-5 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-[14px] font-medium text-left">{t.settingsPage.currency}</span>
-            <span className="text-[13px] text-muted-foreground mr-1">{currency}</span>
+            <span className="flex-1 text-[16px] font-medium text-left">{t.settingsPage.currency}</span>
+            <span className="text-[15px] text-muted-foreground mr-1">{currency}</span>
             <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showCurrencyPicker ? "rotate-90" : ""}`} />
           </button>
           {showCurrencyPicker && (
@@ -89,7 +89,7 @@ export default function SettingsPage() {
                 <button
                   key={c.value}
                   onClick={() => { setCurrency(c.value); setShowCurrencyPicker(false); handleSave(); }}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-[13px]"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-[15px]"
                 >
                   <span className="flex-1 text-left">{c.label}</span>
                   {currency === c.value && <Check className="h-4 w-4 text-orange-500" />}
@@ -106,8 +106,8 @@ export default function SettingsPage() {
           <Link href="/billing" className="flex items-center gap-3 px-4 py-3.5">
             <CreditCard className="h-5 w-5 shrink-0 text-orange-500" />
             <div className="flex-1">
-              <p className="text-[14px] font-medium">Planes y facturación</p>
-              <p className="text-[12px] text-muted-foreground">Plan Pro · $80/mes</p>
+              <p className="text-[16px] font-medium">Planes y facturación</p>
+              <p className="text-[14px] text-muted-foreground">Plan Pro · $80/mes</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
         {deleteStep === 0 && (
           <button
             onClick={() => setDeleteStep(1)}
-            className="w-full rounded-2xl bg-card px-4 py-3.5 text-[15px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98]"
+            className="w-full rounded-2xl bg-card px-4 py-3.5 text-[17px] font-medium text-red-500 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98]"
           >
             {t.settingsPage.deleteAccount}
           </button>
@@ -146,18 +146,18 @@ export default function SettingsPage() {
           <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="px-5 py-4 text-center border-b border-border">
               <Trash2 className="h-5 w-5 text-red-500 mx-auto mb-2" />
-              <p className="text-[15px] font-semibold">{t.settingsPage.deleteAccount}</p>
-              <p className="text-[13px] text-muted-foreground mt-1">{t.settingsPage.deleteAccountConfirm}</p>
+              <p className="text-[17px] font-semibold">{t.settingsPage.deleteAccount}</p>
+              <p className="text-[15px] text-muted-foreground mt-1">{t.settingsPage.deleteAccountConfirm}</p>
             </div>
             <button
               onClick={() => { toast.error(t.settingsPage.deleteAccountWarning); setDeleteStep(0); }}
-              className="w-full px-4 py-3 text-[15px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
+              className="w-full px-4 py-3 text-[17px] font-medium text-red-500 border-b border-border transition-colors active:bg-red-50"
             >
               {t.settingsPage.deleteAccount}
             </button>
             <button
               onClick={() => setDeleteStep(0)}
-              className="w-full px-4 py-3 text-[15px] font-medium text-orange-600 transition-colors active:bg-orange-50"
+              className="w-full px-4 py-3 text-[17px] font-medium text-orange-600 transition-colors active:bg-orange-50"
             >
               Cancelar
             </button>
@@ -171,7 +171,7 @@ export default function SettingsPage() {
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-0">
-      <p className="text-[13px] font-medium text-muted-foreground px-0.5 mb-1.5">{label}</p>
+      <p className="text-[15px] font-medium text-muted-foreground px-0.5 mb-1.5">{label}</p>
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
         {children}
       </div>
@@ -182,7 +182,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
-      <span className="flex-1 text-[14px] font-medium">{label}</span>
+      <span className="flex-1 text-[16px] font-medium">{label}</span>
       {children}
     </div>
   );

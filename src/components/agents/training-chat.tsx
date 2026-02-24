@@ -44,7 +44,7 @@ function WelcomeState({
       <h2 className="text-lg font-bold text-foreground">
         {t.trainingChat.welcomeTitle.replace("{agentName}", agentName)}
       </h2>
-      <p className="mt-1.5 max-w-xs text-center text-[13px] text-muted-foreground leading-relaxed">
+      <p className="mt-1.5 max-w-xs text-center text-[15px] text-muted-foreground leading-relaxed">
         {t.trainingChat.welcomeSubtitle}
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2.5">
@@ -52,7 +52,7 @@ function WelcomeState({
           <button
             key={s.toolType}
             onClick={() => onSuggestedAction(s.toolType)}
-            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-all hover:bg-accent hover:shadow-md active:scale-[0.97]"
+            className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-[15px] font-medium text-foreground shadow-sm transition-all hover:bg-accent hover:shadow-md active:scale-[0.97]"
           >
             {s.icon}
             {s.label}
@@ -69,7 +69,7 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   if (message.role === "system") {
     return (
       <div className="flex justify-center py-1">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-medium text-emerald-700">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[14px] font-medium text-emerald-700">
           <CheckCircle2 className="h-3.5 w-3.5" />
           {t.trainingChat.knowledgeSaved}
         </span>
@@ -82,12 +82,12 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
       <div className="flex justify-end px-4 py-1">
         <div className="max-w-[80%] rounded-2xl rounded-br-md bg-muted px-4 py-2.5">
           {message.attachmentName && (
-            <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-orange-600">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[14px] font-medium text-orange-600">
               <Paperclip className="h-3 w-3" />
               {message.attachmentName}
             </div>
           )}
-          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          <p className="text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
     );
@@ -103,11 +103,11 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
       </div>
       <div className="max-w-[80%]">
         <div className="rounded-2xl rounded-bl-md bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30 px-4 py-2.5">
-          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
+          <p className="text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
         {message.knowledgeSaved && content === message.content && (
           <div className="mt-1.5 flex justify-start">
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[13px] font-medium text-emerald-700">
               <CheckCircle2 className="h-3 w-3" />
               {t.trainingChat.knowledgeSaved}
             </span>
@@ -293,14 +293,14 @@ export function TrainingChat({ agentId }: { agentId: string }) {
             <Bot className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="text-[14px] font-semibold leading-tight">{agent.name}</h2>
-            <p className="text-[11px] text-muted-foreground">{t.trainingChat.subtitle}</p>
+            <h2 className="text-[16px] font-semibold leading-tight">{agent.name}</h2>
+            <p className="text-[13px] text-muted-foreground">{t.trainingChat.subtitle}</p>
           </div>
         </div>
         {messages.length > 0 && (
           <button
             onClick={handleClear}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-gray-500 transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[14px] font-medium text-gray-500 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Trash2 className="h-3.5 w-3.5" />
             {t.trainingChat.clearChat}
@@ -333,7 +333,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
             onKeyDown={handleKeyDown}
             placeholder={t.trainingChat.inputPlaceholder}
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:border-orange-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
+            className="flex-1 resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-[16px] text-foreground placeholder:text-muted-foreground focus:border-orange-300 focus:bg-background focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all"
             style={{ maxHeight: 120 }}
           />
           <button
@@ -354,7 +354,7 @@ export function TrainingChat({ agentId }: { agentId: string }) {
               <button
                 key={chip.type}
                 onClick={() => handleToolClick(chip.type)}
-                className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground hover:border-border active:scale-[0.97]"
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[14px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground hover:border-border active:scale-[0.97]"
               >
                 <Icon className="h-3.5 w-3.5" />
                 {label}

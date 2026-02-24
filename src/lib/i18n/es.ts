@@ -510,6 +510,7 @@ export const es: Translations = {
     items: {
       wompi: { name: "Wompi", description: "Pagos en línea y recaudos" },
       bold: { name: "Bold", description: "Pasarela de pagos Colombia" },
+      mercadopago: { name: "Mercado Pago", description: "Pagos con Mercado Pago" },
       invoicing: { name: "Facturación electrónica", description: "DIAN Colombia" },
       logistics: { name: "Logística", description: "Seguimiento de envíos" },
       "google-sheets": { name: "Google Sheets", description: "Lectura de catálogos y productos" },

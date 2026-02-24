@@ -89,8 +89,8 @@ export default function AgentSettingsPage({
       {/* Identity */}
       <motion.div {...fadeUp(0.08)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div>
-          <h2 className="text-[15px] font-semibold">{t.agentSettings.basicInfo}</h2>
-          <p className="text-[13px] text-muted-foreground">
+          <h2 className="text-[17px] font-semibold">{t.agentSettings.basicInfo}</h2>
+          <p className="text-[15px] text-muted-foreground">
             {t.agentSettings.basicInfoDescription}
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function AgentSettingsPage({
                 <Bot className="h-6 w-6 text-neutral-400" />
               )}
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-white text-[10px] font-semibold">Subir</span>
+                <span className="text-white text-[12px] font-semibold">Subir</span>
               </div>
             </button>
             <Input
@@ -134,7 +134,7 @@ export default function AgentSettingsPage({
               reader.readAsDataURL(file);
             }}
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             Toca el avatar para subir desde tu dispositivo, o pega una URL.
           </p>
         </div>
@@ -161,10 +161,10 @@ export default function AgentSettingsPage({
       {/* Language & tone */}
       <motion.div {...fadeUp(0.14)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div>
-          <h2 className="text-[15px] font-semibold">
+          <h2 className="text-[17px] font-semibold">
             {t.agentSettings.personalityTone}
           </h2>
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[15px] text-muted-foreground">
             {t.agentSettings.personalityToneDescription}
           </p>
         </div>

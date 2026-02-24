@@ -193,13 +193,13 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     <div className="space-y-4">
       {/* Header: count + add button */}
       <div className="flex items-center justify-between">
-        <span className="text-[13px] text-muted-foreground">
+        <span className="text-[15px] text-muted-foreground">
           {agentProducts.length} {agentProducts.length === 1 ? "producto" : "productos"}
         </span>
         <Button
           size="sm"
           onClick={openNew}
-          className="h-8 rounded-full px-3.5 text-[13px] font-medium lisa-btn text-white border-0"
+          className="h-8 rounded-full px-3.5 text-[15px] font-medium lisa-btn text-white border-0"
         >
           <Plus className="h-3.5 w-3.5 mr-1" />
           {t.products.addProduct}
@@ -212,14 +212,14 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-500/15 mb-3">
             <Package className="h-6 w-6 text-orange-600" />
           </div>
-          <h3 className="text-[15px] font-semibold mb-1">{t.products.noProductsTitle}</h3>
-          <p className="text-[13px] text-muted-foreground mb-4 max-w-[260px] leading-relaxed">
+          <h3 className="text-[17px] font-semibold mb-1">{t.products.noProductsTitle}</h3>
+          <p className="text-[15px] text-muted-foreground mb-4 max-w-[260px] leading-relaxed">
             {t.products.noProductsDescription}
           </p>
           <Button
             size="sm"
             onClick={openNew}
-            className="h-8 rounded-full px-4 text-[13px] font-medium lisa-btn text-white border-0"
+            className="h-8 rounded-full px-4 text-[15px] font-medium lisa-btn text-white border-0"
           >
             {t.products.addFirstProduct}
           </Button>
@@ -228,7 +228,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
         <div className="space-y-1.5">
           {categories.map((cat) => (
             <div key={cat}>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-0.5 mb-1.5 mt-3 first:mt-0">
+              <p className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider px-0.5 mb-1.5 mt-3 first:mt-0">
                 {cat}
               </p>
               {agentProducts
@@ -250,21 +250,21 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <p className="text-[14px] font-semibold leading-tight truncate">{product.name}</p>
-                        <span className="text-[13px] font-bold text-orange-600 shrink-0">${product.price}</span>
+                        <p className="text-[16px] font-semibold leading-tight truncate">{product.name}</p>
+                        <span className="text-[15px] font-bold text-orange-600 shrink-0">${product.price}</span>
                       </div>
                       {product.description && (
-                        <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
+                        <p className="text-[14px] text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
                       )}
                       {(product.stock != null || product.sku) && (
                         <div className="flex items-center gap-1.5 mt-1">
                           {product.stock != null && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[12px] text-muted-foreground">
                               Stock: <span className="font-medium text-foreground">{product.stock}</span>
                             </span>
                           )}
                           {product.sku && (
-                            <span className="text-[10px] text-muted-foreground">{product.sku}</span>
+                            <span className="text-[12px] text-muted-foreground">{product.sku}</span>
                           )}
                         </div>
                       )}
@@ -305,7 +305,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
         >
           <div className="flex items-center gap-2">
             <Upload className="h-4 w-4 text-muted-foreground" />
-            <span className="text-[14px] font-medium">{t.products.importTitle}</span>
+            <span className="text-[16px] font-medium">{t.products.importTitle}</span>
           </div>
           <ChevronDown
             className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${importOpen ? "rotate-180" : ""}`}
@@ -323,14 +323,14 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                     <Icon className={`h-4 w-4 ${src.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium leading-tight">{src.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{src.sublabel}</p>
+                    <p className="text-[15px] font-medium leading-tight">{src.label}</p>
+                    <p className="text-[13px] text-muted-foreground">{src.sublabel}</p>
                   </div>
                   {src.ready ? (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 text-[12px] rounded-full px-3 shrink-0"
+                      className="h-7 text-[14px] rounded-full px-3 shrink-0"
                       disabled={importingSource !== null}
                       onClick={() => handleImport(src.id)}
                     >
@@ -343,7 +343,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                   ) : (
                     <Link
                       href={`/agents/${agentId}/settings`}
-                      className="flex items-center gap-1 text-[12px] font-medium text-orange-600 hover:text-orange-700 shrink-0"
+                      className="flex items-center gap-1 text-[14px] font-medium text-orange-600 hover:text-orange-700 shrink-0"
                     >
                       Conectar
                       <ArrowRight className="h-3 w-3" />
@@ -521,7 +521,7 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
       className="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-border py-6 text-sm text-muted-foreground hover:border-orange-300 hover:bg-orange-50/50 dark:hover:bg-orange-500/5 transition-colors cursor-pointer"
     >
       <Upload className="h-6 w-6 text-muted-foreground/60" />
-      <span className="text-[13px] font-medium">{t.products.imageUrl}</span>
+      <span className="text-[15px] font-medium">{t.products.imageUrl}</span>
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
     </button>
   );

@@ -158,17 +158,17 @@ export default function TrainPage({
       <motion.div {...fadeUp(0.08)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-[15px] font-semibold">
+            <h2 className="text-[17px] font-semibold">
               {t.personalityBuilder.algorithmTitle}
             </h2>
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-[15px] text-muted-foreground">
               {agent.algorithmType
                 ? "Tipo de negocio configurado — no se puede cambiar"
                 : t.personalityBuilder.algorithmSubtitle}
             </p>
           </div>
           {agent.algorithmType && (
-            <span className="flex items-center gap-1 shrink-0 text-[11px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
+            <span className="flex items-center gap-1 shrink-0 text-[13px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
               <Lock className="h-3 w-3" />
               Fijo
             </span>
@@ -206,13 +206,13 @@ export default function TrainPage({
                   />
                 </div>
                 <span
-                  className={`text-[13px] font-semibold leading-tight ${
+                  className={`text-[15px] font-semibold leading-tight ${
                     selected ? "text-orange-500" : "text-foreground"
                   }`}
                 >
                   {t.personalityBuilder.algorithms[tKey].name}
                 </span>
-                <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
+                <span className="text-[13px] text-muted-foreground leading-tight line-clamp-2">
                   {t.personalityBuilder.algorithms[tKey].description}
                 </span>
                 {selected && isLocked && (
@@ -223,7 +223,7 @@ export default function TrainPage({
           })}
         </div>
         {agent.algorithmType && (
-          <p className="text-[11px] text-muted-foreground/60 text-center pt-1">
+          <p className="text-[13px] text-muted-foreground/60 text-center pt-1">
             El tipo de negocio define el núcleo del algoritmo y no puede modificarse, igual que el objetivo de una campaña publicitaria.
           </p>
         )}
@@ -232,17 +232,17 @@ export default function TrainPage({
       {/* Section 2: Communication style */}
       <motion.div {...fadeUp(0.16)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-5">
         <div>
-          <h2 className="text-[15px] font-semibold">
+          <h2 className="text-[17px] font-semibold">
             {t.personalityBuilder.title}
           </h2>
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[15px] text-muted-foreground">
             {t.personalityBuilder.subtitle}
           </p>
         </div>
 
         {/* Region */}
         <div className="space-y-3">
-          <Label className="text-[14px] font-semibold">
+          <Label className="text-[16px] font-semibold">
             {t.personalityBuilder.regionTitle}
           </Label>
           <div className="grid grid-cols-2 gap-2">
@@ -263,13 +263,13 @@ export default function TrainPage({
                 >
                   <span className="text-2xl">{REGION_FLAGS[key]}</span>
                   <span
-                    className={`text-[13px] font-semibold ${
+                    className={`text-[15px] font-semibold ${
                       selected ? "text-orange-500" : "text-foreground"
                     }`}
                   >
                     {t.personalityBuilder.regions[key]}
                   </span>
-                  <span className="text-[11px] text-muted-foreground leading-tight italic">
+                  <span className="text-[13px] text-muted-foreground leading-tight italic">
                     &ldquo;{t.personalityBuilder.regionDescriptions[key]}&rdquo;
                   </span>
                 </motion.button>
@@ -280,7 +280,7 @@ export default function TrainPage({
 
         {/* Register */}
         <div className="space-y-3">
-          <Label className="text-[14px] font-semibold">
+          <Label className="text-[16px] font-semibold">
             {t.personalityBuilder.registerTitle}
           </Label>
           <div className="grid grid-cols-2 gap-2">
@@ -300,13 +300,13 @@ export default function TrainPage({
                   }`}
                 >
                   <span
-                    className={`text-[13px] font-semibold ${
+                    className={`text-[15px] font-semibold ${
                       selected ? "text-orange-500" : "text-foreground"
                     }`}
                   >
                     {t.personalityBuilder.registers[key]}
                   </span>
-                  <span className="text-[11px] text-muted-foreground leading-tight">
+                  <span className="text-[13px] text-muted-foreground leading-tight">
                     {t.personalityBuilder.registerDescriptions[key]}
                   </span>
                 </motion.button>
@@ -320,10 +320,10 @@ export default function TrainPage({
       <motion.div {...fadeUp(0.24)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-[15px] font-semibold">
+            <h2 className="text-[17px] font-semibold">
               {t.agents.systemPrompt}
             </h2>
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-[15px] text-muted-foreground">
               {t.agents.systemPromptDescription}
             </p>
           </div>
@@ -356,11 +356,11 @@ export default function TrainPage({
               <Bot className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-orange-600 mb-1">
+              <p className="text-[13px] font-semibold text-orange-600 mb-1">
                 {agent.name}
               </p>
               <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-card px-3 py-2 shadow-sm ring-1 ring-black/5">
-                <p className="text-[13px] text-foreground leading-relaxed">
+                <p className="text-[15px] text-foreground leading-relaxed">
                   {preview}
                 </p>
               </div>
@@ -394,7 +394,7 @@ export default function TrainPage({
           />
           <Label
             htmlFor="advanced-mode-train"
-            className="text-[13px] text-muted-foreground cursor-pointer"
+            className="text-[15px] text-muted-foreground cursor-pointer"
           >
             {t.personalityBuilder.advancedMode}
           </Label>
@@ -405,12 +405,12 @@ export default function TrainPage({
       <motion.div {...fadeUp(0.32)} className="space-y-3">
         <div className="relative flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-[12px] font-semibold text-foreground whitespace-nowrap">
+          <span className="text-[14px] font-semibold text-foreground whitespace-nowrap">
             Probar y corregir antes de guardar
           </span>
           <div className="h-px flex-1 bg-border" />
         </div>
-        <p className="text-[12px] text-muted-foreground text-center -mt-1 px-2">
+        <p className="text-[14px] text-muted-foreground text-center -mt-1 px-2">
           Último paso obligatorio — prueba el algoritmo con mensajes reales y ajusta el prompt si algo no responde como esperas.
         </p>
         <TrainingChat agentId={agentId} />

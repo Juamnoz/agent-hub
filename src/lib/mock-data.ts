@@ -839,6 +839,7 @@ export const mockIntegrations: Integration[] = [
   // agent-001
   { id: "int-001", agentId: "agent-001", name: "wompi", description: "Pagos en línea y recaudos", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: true, environment: "sandbox", configured: true, credentials: { publicKey: "pub_test_abc123", privateKey: "prv_test_xyz789", eventsKey: "evt_test_def456" } },
   { id: "int-002", agentId: "agent-001", name: "bold", description: "Pasarela de pagos Colombia", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
+  { id: "int-003", agentId: "agent-001", name: "mercadopago", description: "Pagos con Mercado Pago", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
   { id: "int-005", agentId: "agent-001", name: "invoicing", description: "DIAN Colombia", category: "operations", icon: "FileText", requiredPlan: "business", enabled: false },
   { id: "int-006", agentId: "agent-001", name: "logistics", description: "Seguimiento de envíos", category: "operations", icon: "Package", requiredPlan: "business", enabled: false },
   { id: "int-013", agentId: "agent-001", name: "google-sheets", description: "Lectura de catálogos y productos", category: "productivity", icon: "Table2", requiredPlan: "pro", enabled: false },
@@ -849,6 +850,7 @@ export const mockIntegrations: Integration[] = [
   // agent-002
   { id: "int-007", agentId: "agent-002", name: "wompi", description: "Pagos en línea y recaudos", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
   { id: "int-008", agentId: "agent-002", name: "bold", description: "Pasarela de pagos Colombia", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: true, environment: "sandbox", configured: true, credentials: { apiKey: "bold_test_key_123", secretKey: "bold_test_secret_456" } },
+  { id: "int-009", agentId: "agent-002", name: "mercadopago", description: "Pagos con Mercado Pago", category: "payments", icon: "CreditCard", requiredPlan: "pro", enabled: false },
   { id: "int-011", agentId: "agent-002", name: "invoicing", description: "DIAN Colombia", category: "operations", icon: "FileText", requiredPlan: "business", enabled: false },
   { id: "int-012", agentId: "agent-002", name: "logistics", description: "Seguimiento de envíos", category: "operations", icon: "Package", requiredPlan: "business", enabled: false },
   { id: "int-018", agentId: "agent-002", name: "google-sheets", description: "Lectura de catálogos y productos", category: "productivity", icon: "Table2", requiredPlan: "pro", enabled: false },

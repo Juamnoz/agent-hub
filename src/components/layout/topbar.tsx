@@ -35,7 +35,7 @@ export function Topbar({ title }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-6">
-      <h1 className="text-[17px] font-semibold tracking-tight">{title}</h1>
+      <h1 className="text-[19px] font-semibold tracking-tight">{title}</h1>
 
       <div className="ml-auto flex items-center gap-1.5">
         <LocaleSwitcher />

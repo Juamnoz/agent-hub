@@ -102,8 +102,8 @@ function AttachmentMenu({ onSelect }: { onSelect: (type: TrainingToolType) => vo
               <Icon className="h-3.5 w-3.5 text-foreground" />
             </div>
             <div>
-              <p className="text-[13px] font-medium leading-tight">{opt.label}</p>
-              <p className="text-[11px] text-muted-foreground">{opt.description}</p>
+              <p className="text-[15px] font-medium leading-tight">{opt.label}</p>
+              <p className="text-[13px] text-muted-foreground">{opt.description}</p>
             </div>
           </button>
         );
@@ -139,7 +139,7 @@ function AgentSelector({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-foreground/80 transition-colors hover:bg-muted active:bg-muted/70"
+        className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[15px] font-medium text-foreground/80 transition-colors hover:bg-muted active:bg-muted/70"
       >
         <span className="max-w-[110px] truncate">{selected?.name ?? "Todos"}</span>
         <ChevronDown
@@ -165,8 +165,8 @@ function AgentSelector({
                 <img src="/lisa-isologo-white.png" alt="Lisa" className="h-5 w-5 object-contain" />
               </div>
               <div className="flex-1 text-left">
-                <p className="text-[13px] font-semibold">Todos los agentes</p>
-                <p className="text-[11px] text-muted-foreground">Vista general del negocio</p>
+                <p className="text-[15px] font-semibold">Todos los agentes</p>
+                <p className="text-[13px] text-muted-foreground">Vista general del negocio</p>
               </div>
               {selectedAgentId === null && <Check className="h-4 w-4 shrink-0 text-orange-500" />}
             </button>
@@ -180,16 +180,22 @@ function AgentSelector({
                 className={`flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/80 ${selectedAgentId === a.id ? "bg-orange-50 dark:bg-orange-500/10" : ""}`}
               >
                 <div className="relative shrink-0">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                    <Bot className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-sm">
+                    {a.avatar ? (
+                      <img src={a.avatar} alt={a.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-neutral-700 dark:bg-neutral-600">
+                        <Bot className="h-4 w-4 text-neutral-400" />
+                      </div>
+                    )}
                   </div>
                   <span
                     className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${STATUS_DOT[a.status] ?? "bg-gray-400"}`}
                   />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-[13px] font-semibold truncate">{a.name}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{a.hotelName}</p>
+                  <p className="text-[15px] font-semibold truncate">{a.name}</p>
+                  <p className="text-[13px] text-muted-foreground truncate">{a.hotelName}</p>
                 </div>
                 {selectedAgentId === a.id && <Check className="h-4 w-4 shrink-0 text-orange-500" />}
               </button>
@@ -207,7 +213,7 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   if (message.role === "system") {
     return (
       <div className="flex justify-center py-1">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-3 py-1 text-[12px] font-medium text-emerald-700 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-3 py-1 text-[14px] font-medium text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="h-3.5 w-3.5" />
           Conocimiento guardado
         </span>
@@ -220,12 +226,12 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
       <div className="flex justify-end px-4 py-1">
         <div className="max-w-[80%] rounded-2xl rounded-br-md bg-muted px-4 py-2.5">
           {message.attachmentName && (
-            <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-orange-600">
+            <div className="mb-1.5 flex items-center gap-1.5 text-[14px] font-medium text-orange-600">
               <Paperclip className="h-3 w-3" />
               {message.attachmentName}
             </div>
           )}
-          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          <p className="text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
     );
@@ -234,16 +240,16 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
   const content = message.displayContent ?? message.content;
   return (
     <div className="flex gap-2.5 px-4 py-1">
-      <div className="mt-0.5 h-7 w-7 shrink-0 overflow-hidden rounded-full">
+      <div className="mt-0.5 h-10 w-10 shrink-0 overflow-hidden rounded-full">
         <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-full w-full object-contain" />
       </div>
       <div className="max-w-[80%]">
         <div className="rounded-2xl rounded-bl-md bg-orange-50 dark:bg-orange-500/10 px-4 py-2.5">
-          <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
+          <p className="text-[16px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
         {message.knowledgeSaved && content === message.content && (
           <div className="mt-1.5 flex justify-start">
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-0.5 text-[13px] font-medium text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="h-3 w-3" />
               Conocimiento guardado
             </span>
@@ -259,7 +265,7 @@ function MessageBubble({ message }: { message: TrainingMessage & { displayConten
 function TypingIndicator() {
   return (
     <div className="flex gap-2.5 px-4 py-1">
-      <div className="mt-0.5 h-7 w-7 shrink-0 overflow-hidden rounded-full">
+      <div className="mt-0.5 h-10 w-10 shrink-0 overflow-hidden rounded-full">
         <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-full w-full object-contain" />
       </div>
       <div className="rounded-2xl rounded-bl-md bg-orange-50 dark:bg-orange-500/10 px-4 py-3">
@@ -314,13 +320,13 @@ function WelcomeScreen({
         <img
           src="/lisa-logo-orange.png"
           alt="Lisa"
-          className="h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(249,115,22,0.35)]"
+          className="h-40 w-auto object-contain drop-shadow-[0_4px_24px_rgba(249,115,22,0.35)]"
         />
       </motion.div>
 
       {/* Greeting — user first, then question */}
       <motion.p
-        className="text-center text-[27px] font-bold leading-snug tracking-tight text-foreground"
+        className="text-center text-[29px] font-bold leading-snug tracking-tight text-foreground"
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.07, type: "spring", stiffness: 340, damping: 28 }}
@@ -330,7 +336,7 @@ function WelcomeScreen({
 
       {/* Question: which agent? */}
       <motion.p
-        className="mt-2 text-[15px] text-muted-foreground text-center"
+        className="mt-2 text-[17px] text-muted-foreground text-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12, type: "spring", stiffness: 320, damping: 28 }}
@@ -349,7 +355,7 @@ function WelcomeScreen({
           {/* "All" chip */}
           <button
             onClick={() => onAgentSelect(null)}
-            className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium shadow-sm transition-all active:scale-[0.96] ${
+            className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[15px] font-medium shadow-sm transition-all active:scale-[0.96] ${
               selectedAgentId === null
                 ? "border-transparent bg-foreground text-background"
                 : "border-border bg-card text-foreground hover:bg-muted"
@@ -361,15 +367,21 @@ function WelcomeScreen({
             <button
               key={a.id}
               onClick={() => onAgentSelect(a.id)}
-              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium shadow-sm transition-all active:scale-[0.96] ${
+              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[15px] font-medium shadow-sm transition-all active:scale-[0.96] ${
                 selectedAgentId === a.id
                   ? "border-transparent bg-foreground text-background"
                   : "border-border bg-card text-foreground hover:bg-muted"
               }`}
             >
-              <span
-                className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[a.status] ?? "bg-gray-400"}`}
-              />
+              <div className="h-5 w-5 shrink-0 overflow-hidden rounded-md">
+                {a.avatar ? (
+                  <img src={a.avatar} alt={a.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-neutral-700 dark:bg-neutral-600">
+                    <Bot className="h-3 w-3 text-neutral-400" />
+                  </div>
+                )}
+              </div>
               {a.name}
             </button>
           ))}
@@ -378,7 +390,7 @@ function WelcomeScreen({
 
       {/* Divider */}
       <motion.p
-        className="mt-6 text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50"
+        className="mt-6 text-[13px] font-medium uppercase tracking-widest text-muted-foreground/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.24 }}
@@ -397,7 +409,7 @@ function WelcomeScreen({
           <button
             key={s.key}
             onClick={() => onSuggestion(s.label, s.key)}
-            className="rounded-full border border-border bg-card px-4 py-2 text-[13px] font-medium text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.96]"
+            className="rounded-full border border-border bg-card px-4 py-2 text-[15px] font-medium text-foreground shadow-sm transition-all hover:bg-muted active:scale-[0.96]"
           >
             {s.label}
           </button>
@@ -722,28 +734,28 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3"
+            className="shrink-0 border-b border-border"
           >
+            <div className="flex items-center justify-between px-4 py-3 lg:max-w-[720px] lg:mx-auto">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 overflow-hidden">
-                <img src="/lisa-isologo-white.png" alt="Lisa" className="h-4 w-4 object-contain" />
-              </div>
-              <p className="text-[14px] font-semibold">
+              <img src="/lisa-isologo-orange.png" alt="Lisa" className="h-10 w-10 object-contain" />
+              <p className="text-[16px] font-semibold">
                 {isTrainingMode ? agent?.name : "Lisa"}
               </p>
               {isTrainingMode && agent?.hotelName && (
-                <span className="text-[12px] text-muted-foreground">— {agent.hotelName}</span>
+                <span className="text-[14px] text-muted-foreground">— {agent.hotelName}</span>
               )}
             </div>
             {hasMessages && (
               <button
                 onClick={handleClear}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[14px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Limpiar
               </button>
             )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -846,10 +858,10 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 360, damping: 22 }}
               >
-                <img src="/lisa-logo-orange.png" alt="Lisa" className="h-14 w-auto object-contain drop-shadow-[0_4px_20px_rgba(249,115,22,0.35)]" />
+                <img src="/lisa-logo-orange.png" alt="Lisa" className="h-28 w-auto object-contain drop-shadow-[0_4px_20px_rgba(249,115,22,0.35)]" />
               </motion.div>
               <motion.h2
-                className="text-[17px] font-bold text-foreground"
+                className="text-[19px] font-bold text-foreground"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
@@ -857,7 +869,7 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
                 {t.lisa.welcomeTrainingTitle.replace("{agentName}", agent!.name)}
               </motion.h2>
               <motion.p
-                className="mt-2 max-w-xs text-center text-[13px] text-muted-foreground leading-relaxed"
+                className="mt-2 max-w-xs text-center text-[15px] text-muted-foreground leading-relaxed"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.14 }}
@@ -877,7 +889,7 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
           )
         ) : (
           /* Messages */
-          <div className="py-4 space-y-1">
+          <div className="py-4 space-y-1 lg:max-w-[720px] lg:mx-auto lg:w-full">
             <AnimatePresence mode="popLayout" initial={false}>
               {displayedMessages.map((msg) => (
                 <motion.div
@@ -910,7 +922,7 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
 
       {/* Input card — always visible at bottom */}
       <motion.div
-        className="shrink-0"
+        className="shrink-0 lg:max-w-[720px] lg:mx-auto lg:w-full"
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.12 }}

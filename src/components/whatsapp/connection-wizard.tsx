@@ -155,8 +155,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
           <h3 className="font-semibold text-lg mb-1">{t.whatsapp.connectedTitle}</h3>
           <p className="text-sm text-muted-foreground mb-3">{t.whatsapp.connectedDescription}</p>
           <div className="flex items-center gap-2 mb-6">
-            <Badge variant="outline" className="text-[13px]">{agent?.whatsappPhoneNumber ?? "+57 300 123 4567"}</Badge>
-            <Badge variant="outline" className="text-[11px] bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800">
+            <Badge variant="outline" className="text-[15px]">{agent?.whatsappPhoneNumber ?? "+57 300 123 4567"}</Badge>
+            <Badge variant="outline" className="text-[13px] bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800">
               {t.whatsapp.connectedVia} {provLabel}
             </Badge>
           </div>
@@ -171,8 +171,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
     return (
       <div className="space-y-4">
         <div>
-          <h2 className="text-[17px] font-semibold">{t.whatsapp.chooseProvider}</h2>
-          <p className="text-[13px] text-muted-foreground mt-0.5">{t.whatsapp.chooseProviderDescription}</p>
+          <h2 className="text-[19px] font-semibold">{t.whatsapp.chooseProvider}</h2>
+          <p className="text-[15px] text-muted-foreground mt-0.5">{t.whatsapp.chooseProviderDescription}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -181,14 +181,14 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
             onClick={() => { setProvider("coexistence"); setCoexMethod(null); }}
             className="group relative flex flex-col items-start rounded-2xl bg-card px-4 py-4 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:shadow-md hover:ring-orange-300 active:scale-[0.97] text-left"
           >
-            <Badge className="absolute -top-1.5 right-2 bg-orange-500 text-white text-[9px] px-1.5 py-0 leading-4">
+            <Badge className="absolute -top-1.5 right-2 bg-orange-500 text-white text-[11px] px-1.5 py-0 leading-4">
               Recomendado
             </Badge>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/15 mb-3">
               <Link2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-[14px] font-semibold leading-tight">Coexistencia</h3>
-            <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+            <h3 className="text-[16px] font-semibold leading-tight">Coexistencia</h3>
+            <p className="text-[14px] text-muted-foreground mt-1 leading-snug">
               Conecta tu número existente con QR o código. Sin cambiar tu WhatsApp actual.
             </p>
           </button>
@@ -201,8 +201,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/15 mb-3">
               <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h3 className="text-[14px] font-semibold leading-tight">{t.whatsapp.wati}</h3>
-            <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{t.whatsapp.watiDescription}</p>
+            <h3 className="text-[16px] font-semibold leading-tight">{t.whatsapp.wati}</h3>
+            <p className="text-[14px] text-muted-foreground mt-1 leading-snug">{t.whatsapp.watiDescription}</p>
           </button>
 
           {/* Meta API */}
@@ -213,8 +213,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/15 mb-3">
               <Smartphone className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-[14px] font-semibold leading-tight">{t.whatsapp.directMeta}</h3>
-            <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{t.whatsapp.directMetaDescription}</p>
+            <h3 className="text-[16px] font-semibold leading-tight">{t.whatsapp.directMeta}</h3>
+            <p className="text-[14px] text-muted-foreground mt-1 leading-snug">{t.whatsapp.directMetaDescription}</p>
           </button>
         </div>
       </div>
@@ -228,8 +228,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
       return (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Badge variant="outline" className="text-[11px]">Coexistencia</Badge>
-            <Button variant="ghost" size="sm" className="text-[12px] text-muted-foreground h-7"
+            <Badge variant="outline" className="text-[13px]">Coexistencia</Badge>
+            <Button variant="ghost" size="sm" className="text-[14px] text-muted-foreground h-7"
               onClick={() => setProvider(null)}>
               {t.whatsapp.changeProvider}
             </Button>
@@ -237,8 +237,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
 
           <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
             <div className="p-5 border-b border-border">
-              <h3 className="text-[16px] font-semibold">Elige cómo conectar</h3>
-              <p className="text-[13px] text-muted-foreground mt-0.5">
+              <h3 className="text-[18px] font-semibold">Elige cómo conectar</h3>
+              <p className="text-[15px] text-muted-foreground mt-0.5">
                 Ambos métodos permiten coexistir con tu WhatsApp normal.
               </p>
             </div>
@@ -251,8 +251,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                   <QrCode className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-[14px] font-semibold">Código QR</p>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">Escanea con WhatsApp</p>
+                  <p className="text-[16px] font-semibold">Código QR</p>
+                  <p className="text-[14px] text-muted-foreground mt-0.5">Escanea con WhatsApp</p>
                 </div>
               </button>
               <button
@@ -263,8 +263,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                   <Phone className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-[14px] font-semibold">Número de teléfono</p>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">Vincula con un código</p>
+                  <p className="text-[16px] font-semibold">Número de teléfono</p>
+                  <p className="text-[14px] text-muted-foreground mt-0.5">Vincula con un código</p>
                 </div>
               </button>
             </div>
@@ -279,10 +279,10 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[11px]">Coexistencia</Badge>
-              <Badge variant="outline" className="text-[11px]">QR</Badge>
+              <Badge variant="outline" className="text-[13px]">Coexistencia</Badge>
+              <Badge variant="outline" className="text-[13px]">QR</Badge>
             </div>
-            <Button variant="ghost" size="sm" className="text-[12px] text-muted-foreground h-7"
+            <Button variant="ghost" size="sm" className="text-[14px] text-muted-foreground h-7"
               onClick={() => setCoexMethod(null)}>
               ← Volver
             </Button>
@@ -305,7 +305,7 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                 )}
                 {!qrExpired && (
                   <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                    <span className="bg-card ring-1 ring-border text-[11px] font-medium px-2.5 py-0.5 rounded-full text-muted-foreground">
+                    <span className="bg-card ring-1 ring-border text-[13px] font-medium px-2.5 py-0.5 rounded-full text-muted-foreground">
                       Expira en {qrSeconds}s
                     </span>
                   </div>
@@ -313,8 +313,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
               </div>
 
               <div className="mt-2 space-y-2 text-center max-w-xs">
-                <p className="text-[14px] font-semibold">Escanea con tu WhatsApp</p>
-                <ol className="text-[12px] text-muted-foreground text-left space-y-1 list-decimal list-inside">
+                <p className="text-[16px] font-semibold">Escanea con tu WhatsApp</p>
+                <ol className="text-[14px] text-muted-foreground text-left space-y-1 list-decimal list-inside">
                   <li>Abre WhatsApp en tu teléfono</li>
                   <li>Toca <strong>⋮</strong> → <strong>Dispositivos vinculados</strong></li>
                   <li>Toca <strong>Vincular un dispositivo</strong></li>
@@ -339,10 +339,10 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[11px]">Coexistencia</Badge>
-              <Badge variant="outline" className="text-[11px]">Teléfono</Badge>
+              <Badge variant="outline" className="text-[13px]">Coexistencia</Badge>
+              <Badge variant="outline" className="text-[13px]">Teléfono</Badge>
             </div>
-            <Button variant="ghost" size="sm" className="text-[12px] text-muted-foreground h-7"
+            <Button variant="ghost" size="sm" className="text-[14px] text-muted-foreground h-7"
               onClick={() => setCoexMethod(null)}>
               ← Volver
             </Button>
@@ -352,8 +352,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
             {phoneStep === "enter" ? (
               <div className="p-5 space-y-4">
                 <div>
-                  <h3 className="text-[16px] font-semibold">Ingresa tu número</h3>
-                  <p className="text-[13px] text-muted-foreground mt-0.5">
+                  <h3 className="text-[18px] font-semibold">Ingresa tu número</h3>
+                  <p className="text-[15px] text-muted-foreground mt-0.5">
                     Recibirás un código de 8 dígitos en WhatsApp.
                   </p>
                 </div>
@@ -364,9 +364,9 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                     placeholder="+57 300 123 4567"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="text-[15px]"
+                    className="text-[17px]"
                   />
-                  <p className="text-[12px] text-muted-foreground">Incluye el código de país (ej. +57 para Colombia)</p>
+                  <p className="text-[14px] text-muted-foreground">Incluye el código de país (ej. +57 para Colombia)</p>
                 </div>
                 <Button
                   className="w-full rounded-full"
@@ -380,16 +380,16 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
             ) : (
               <div className="p-5 space-y-4">
                 <div>
-                  <h3 className="text-[16px] font-semibold">Ingresa el código</h3>
-                  <p className="text-[13px] text-muted-foreground mt-0.5">
+                  <h3 className="text-[18px] font-semibold">Ingresa el código</h3>
+                  <p className="text-[15px] text-muted-foreground mt-0.5">
                     Abre WhatsApp y ve a <strong>Dispositivos vinculados → Vincular con número</strong>. Ingresa el código que aparece.
                   </p>
                 </div>
                 {/* Mock code display */}
                 <div className="rounded-xl bg-muted p-4 text-center">
-                  <p className="text-[11px] text-muted-foreground mb-1">Ingresa este código en WhatsApp</p>
-                  <p className="text-[32px] font-bold tracking-[0.3em] text-orange-500">48291736</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Válido por 5 minutos</p>
+                  <p className="text-[13px] text-muted-foreground mb-1">Ingresa este código en WhatsApp</p>
+                  <p className="text-[34px] font-bold tracking-[0.3em] text-orange-500">48291736</p>
+                  <p className="text-[13px] text-muted-foreground mt-1">Válido por 5 minutos</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="verify-code">Confirma el código</Label>
@@ -399,7 +399,7 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                     maxLength={8}
                     value={verifyCode}
                     onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ""))}
-                    className="text-center text-[20px] tracking-widest font-bold"
+                    className="text-center text-[22px] tracking-widest font-bold"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -445,8 +445,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Badge variant="outline" className="text-[11px]">{provider === "wati" ? "WATI" : "Meta API"}</Badge>
-        <Button variant="ghost" size="sm" className="text-[12px] text-muted-foreground h-7"
+        <Badge variant="outline" className="text-[13px]">{provider === "wati" ? "WATI" : "Meta API"}</Badge>
+        <Button variant="ghost" size="sm" className="text-[14px] text-muted-foreground h-7"
           onClick={() => { setProvider(null); setCurrentStep(0); }}>
           {t.whatsapp.changeProvider}
         </Button>
@@ -460,11 +460,11 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               ) : i === currentStep ? (
                 <div className="h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                  <span className="text-[10px] text-white font-bold">{i + 1}</span>
+                  <span className="text-[12px] text-white font-bold">{i + 1}</span>
                 </div>
               ) : (
                 <div className="h-5 w-5 rounded-full ring-1 ring-border flex items-center justify-center">
-                  <span className="text-[10px] text-muted-foreground font-medium">{i + 1}</span>
+                  <span className="text-[12px] text-muted-foreground font-medium">{i + 1}</span>
                 </div>
               )}
               <span className="text-xs font-medium whitespace-nowrap hidden sm:inline">{step.title}</span>
@@ -476,8 +476,8 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
 
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-5 pb-3">
-          <h3 className="text-[16px] font-semibold">{steps[currentStep].title}</h3>
-          <p className="text-[13px] text-muted-foreground mt-0.5">{steps[currentStep].description}</p>
+          <h3 className="text-[18px] font-semibold">{steps[currentStep].title}</h3>
+          <p className="text-[15px] text-muted-foreground mt-0.5">{steps[currentStep].description}</p>
         </div>
         <div className="px-5 pb-5 space-y-4">
           {provider === "meta" && currentStep === 0 && (
@@ -534,7 +534,7 @@ export function ConnectionWizard({ agentId, isConnected }: ConnectionWizardProps
                 <code className="flex-1 bg-muted px-3 py-2 rounded-lg text-sm break-all">{webhookUrl}</code>
                 <Button variant="outline" size="icon" onClick={copyWebhookUrl}><Copy className="h-4 w-4" /></Button>
               </div>
-              <p className="text-[12px] text-muted-foreground">WATI Dashboard → Settings → Webhooks → Add Webhook URL</p>
+              <p className="text-[14px] text-muted-foreground">WATI Dashboard → Settings → Webhooks → Add Webhook URL</p>
             </div>
           )}
           {isTestStep && (

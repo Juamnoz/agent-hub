@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  BrainCircuit, Bot,
+  Bot,
   ShoppingBag,
   CreditCard,
   Settings,
@@ -51,7 +51,7 @@ export function Sidebar() {
   // Main nav — mirrors mobile bottom tab bar: Panel | Agentes | Lisa
   const mainNavItems = [
     { label: "Panel", href: "/panel", icon: LayoutDashboard },
-    { label: t.nav.agents, href: "/agents", icon: BrainCircuit },
+    { label: t.nav.agents, href: "/agents", icon: Bot },
   ];
 
   // Secondary nav — lives at the bottom of the sidebar
@@ -84,7 +84,7 @@ export function Sidebar() {
       <PopoverTrigger asChild>
         <button className={triggerClasses}>
           {/* Lisa isologo naranja transparente */}
-          <img src="/lisa-isologo-orange.png" alt="" className="shrink-0 h-4 w-4 object-contain" />
+          <img src="/lisa-isologo-orange.png" alt="" className="shrink-0 h-8 w-8 object-contain" />
           {!collapsed && (
             <>
               <span className="flex-1 text-left">Lisa</span>
@@ -123,7 +123,7 @@ export function Sidebar() {
             <Link
               href="/lisa"
               onClick={() => setLisaOpen(false)}
-              className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-[13px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/15 dark:hover:bg-orange-500/25 dark:text-orange-400 transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-[15px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/15 dark:hover:bg-orange-500/25 dark:text-orange-400 transition-colors"
             >
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shrink-0">
                 <Plus className="h-3.5 w-3.5 text-white" />
@@ -134,7 +134,7 @@ export function Sidebar() {
 
           {/* ── Recientes (mock) ── */}
           <div className="border-t border-border">
-            <p className="px-4 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+            <p className="px-4 pt-2.5 pb-1 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/50">
               Recientes
             </p>
             {[
@@ -150,8 +150,8 @@ export function Sidebar() {
                 className="flex items-center gap-2.5 px-4 py-2 hover:bg-accent/50 transition-colors group"
               >
                 <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground" />
-                <span className="flex-1 text-[12px] text-foreground/80 truncate">{item.title}</span>
-                <span className="text-[11px] text-muted-foreground/40 shrink-0">{item.time}</span>
+                <span className="flex-1 text-[14px] text-foreground/80 truncate">{item.title}</span>
+                <span className="text-[13px] text-muted-foreground/40 shrink-0">{item.time}</span>
               </Link>
             ))}
           </div>
@@ -159,7 +159,7 @@ export function Sidebar() {
           {/* ── Entrenar agente ── */}
           {agents.length > 0 && (
             <div className="border-t border-border pb-2">
-              <p className="px-4 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+              <p className="px-4 pt-2.5 pb-1 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/50">
                 Entrenar agente
               </p>
               {agents.map((agent) => {
@@ -180,8 +180,8 @@ export function Sidebar() {
                       <span className={cn("absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-popover", statusColors[agent.status] ?? "bg-gray-400")} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium truncate">{agent.name}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{agent.hotelName}</p>
+                      <p className="text-[14px] font-medium truncate">{agent.name}</p>
+                      <p className="text-[12px] text-muted-foreground truncate">{agent.hotelName}</p>
                     </div>
                     {isSelected && <Check className="h-3.5 w-3.5 text-orange-500 shrink-0" />}
                   </button>
@@ -204,8 +204,8 @@ export function Sidebar() {
       >
         <div
           className={cn(
-            "flex h-14 items-center border-b border-border",
-            collapsed ? "justify-center px-0" : "justify-between px-6"
+            "flex items-center border-b border-border py-0",
+            collapsed ? "justify-center px-0" : "justify-between px-4"
           )}
         >
           {collapsed ? (
@@ -222,22 +222,19 @@ export function Sidebar() {
             </Tooltip>
           ) : (
             <>
-              <Link href="/panel" className="flex items-center gap-2">
+              <Link href="/panel" className="flex items-center">
                 {/* Lisa wordmark — light mode */}
                 <img
                   src="/lisa-logo-orange.png"
                   alt="Lisa"
-                  className="h-8 object-contain dark:hidden"
+                  className="h-20 object-contain dark:hidden"
                 />
                 {/* Lisa wordmark — dark mode (white on transparent bg) */}
                 <img
                   src="/lisa-logo-white.png"
                   alt="Lisa"
-                  className="h-8 object-contain hidden dark:block"
+                  className="h-20 object-contain hidden dark:block"
                 />
-                <span className="text-[9px] font-medium text-muted-foreground tracking-wide mt-auto mb-0.5">
-                  by Aic studio
-                </span>
               </Link>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -291,6 +288,15 @@ export function Sidebar() {
           {/* Lisa — prominent, like the center tab on mobile */}
           {renderLisaItem()}
         </nav>
+
+        {/* ── By Aic studio ── */}
+        {!collapsed && (
+          <div className="px-4 pb-2">
+            <span className="text-[11px] font-medium text-muted-foreground/50 tracking-wide">
+              by Aic studio
+            </span>
+          </div>
+        )}
 
         {/* ── Secondary nav + logout ── */}
         <div className="border-t border-border p-3 flex flex-col gap-1">

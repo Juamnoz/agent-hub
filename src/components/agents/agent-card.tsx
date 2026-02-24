@@ -39,13 +39,13 @@ function QualityBar({ score }: { score: number }) {
   return (
     <div className="flex flex-col items-center gap-1 w-full">
       <div className="flex items-end gap-0.5">
-        <span className="text-[15px] font-bold tabular-nums leading-tight text-foreground/80">{score}</span>
-        <span className="text-[10px] text-muted-foreground/50 mb-0.5">%</span>
+        <span className="text-[17px] font-bold tabular-nums leading-tight text-foreground/80">{score}</span>
+        <span className="text-[12px] text-muted-foreground/50 mb-0.5">%</span>
       </div>
       <div className="w-full h-1 rounded-full bg-border overflow-hidden">
         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${score}%` }} />
       </div>
-      <span className={`text-[10px] font-medium ${textColor}`}>{label}</span>
+      <span className={`text-[12px] font-medium ${textColor}`}>{label}</span>
     </div>
   );
 }
@@ -101,37 +101,17 @@ export function AgentCard({ agent, className }: AgentCardProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <h3 className="text-[13px] font-semibold truncate">{agent.name}</h3>
+                <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[agent.status]}`} />
               </div>
-              <p className="text-[11px] text-muted-foreground truncate">{agent.hotelName}</p>
+              <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
             </div>
           </div>
 
           {/* Stats: 3 columns */}
           <div className="grid grid-cols-3 divide-x divide-border mt-2 pt-2 border-t border-border items-stretch">
 
-            {/* Mensajes — clickable, azul con icono */}
-            <Link
-              href={`/agents/${agent.id}/conversations`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex flex-col items-center justify-between gap-1 px-1.5 py-1.5"
-            >
-              <span className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-500 py-1.5 shadow-sm active:bg-blue-600 transition-colors">
-                <MessageSquare className="h-3.5 w-3.5 text-white" />
-                <span className="text-[13px] font-bold tabular-nums leading-tight text-white">
-                  {agent.messageCount.toLocaleString()}
-                </span>
-              </span>
-              <span className="text-[10px] text-muted-foreground/60">Mensajes</span>
-            </Link>
-
-            {/* Calidad — barra de progreso */}
-            <div className="flex flex-col items-center justify-center px-2 py-1.5 w-full">
-              <QualityBar score={getQualityScore(agent)} />
-            </div>
-
-            {/* WhatsApp — estático, secundario */}
+            {/* WhatsApp — primero */}
             <div className="flex flex-col items-center justify-between gap-1 px-1 py-1.5">
               <span className="flex flex-1 items-center justify-center">
                 <IconWhatsApp
@@ -140,8 +120,33 @@ export function AgentCard({ agent, className }: AgentCardProps) {
                   }`}
                 />
               </span>
-              <span className="text-[10px] text-muted-foreground/60">WhatsApp</span>
+              <span className="text-[12px] text-muted-foreground/60">WhatsApp</span>
             </div>
+
+            {/* Mensajes — clickable, texto plano con icono azul */}
+            <Link
+              href={`/agents/${agent.id}/conversations`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex flex-col items-center justify-between gap-1 px-1.5 py-1.5"
+            >
+              <span className="flex items-center justify-center">
+                <MessageSquare className="h-[18px] w-[18px] text-blue-500" />
+              </span>
+              <span className="text-[12px] text-muted-foreground/60">Mensajes</span>
+            </Link>
+
+            {/* Calidad */}
+            <div className="flex flex-col items-center justify-between gap-1 px-2 py-1.5 w-full">
+              <span className="text-[15px] font-semibold leading-tight text-foreground/80">Calidad</span>
+              <span className={`text-[13px] font-medium ${
+                getQualityScore(agent) >= 80 ? "text-emerald-500" :
+                getQualityScore(agent) >= 50 ? "text-amber-500" :
+                "text-rose-400"
+              }`}>
+                {getQualityScore(agent) >= 80 ? "Alta" : getQualityScore(agent) >= 50 ? "Media" : "Baja"}
+              </span>
+            </div>
+
           </div>
 
           {/* Toggle activar/desactivar */}
@@ -149,7 +154,7 @@ export function AgentCard({ agent, className }: AgentCardProps) {
             className="flex items-center justify-between mt-2 pt-2 border-t border-border px-0.5"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
           >
-            <span className={`text-[11px] font-medium ${agent.status === "active" ? "text-emerald-500" : "text-muted-foreground"}`}>
+            <span className={`text-[13px] font-medium ${agent.status === "active" ? "text-emerald-500" : "text-muted-foreground"}`}>
               {agent.status === "active" ? "Activo" : agent.status === "setup" ? "Configurando" : "Pausado"}
             </span>
             <button

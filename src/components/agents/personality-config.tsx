@@ -152,7 +152,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                   <Bot className="h-6 w-6 text-neutral-400" />
                 )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-[10px] font-semibold">Subir</span>
+                  <span className="text-white text-[12px] font-semibold">Subir</span>
                 </div>
               </button>
               {/* URL input */}
@@ -178,7 +178,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                 reader.readAsDataURL(file);
               }}
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Toca el avatar para subir desde tu dispositivo, o pega una URL.
             </p>
           </div>
@@ -220,10 +220,10 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                   <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? "bg-orange-100 dark:bg-orange-500/20" : "bg-muted"}`}>
                     <Icon className={`h-5 w-5 ${selected ? "text-orange-500" : "text-muted-foreground"}`} />
                   </div>
-                  <span className={`text-[13px] font-semibold leading-tight ${selected ? "text-orange-500" : "text-foreground"}`}>
+                  <span className={`text-[15px] font-semibold leading-tight ${selected ? "text-orange-500" : "text-foreground"}`}>
                     {t.personalityBuilder.algorithms[tKey].name}
                   </span>
-                  <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
+                  <span className="text-[13px] text-muted-foreground leading-tight line-clamp-2">
                     {t.personalityBuilder.algorithms[tKey].description}
                   </span>
                 </button>
@@ -242,7 +242,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
         <CardContent className="space-y-6">
           {/* Region */}
           <div className="space-y-3">
-            <Label className="text-[14px] font-semibold">{t.personalityBuilder.regionTitle}</Label>
+            <Label className="text-[16px] font-semibold">{t.personalityBuilder.regionTitle}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {REGION_KEYS.map((key) => {
                 const selected = region === key;
@@ -257,10 +257,10 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                     }`}
                   >
                     <span className="text-2xl">{REGION_FLAGS[key]}</span>
-                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
+                    <span className={`text-[15px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
                       {t.personalityBuilder.regions[key]}
                     </span>
-                    <span className="text-[11px] text-muted-foreground leading-tight italic">
+                    <span className="text-[13px] text-muted-foreground leading-tight italic">
                       &ldquo;{t.personalityBuilder.regionDescriptions[key]}&rdquo;
                     </span>
                   </button>
@@ -271,7 +271,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
 
           {/* Register */}
           <div className="space-y-3">
-            <Label className="text-[14px] font-semibold">{t.personalityBuilder.registerTitle}</Label>
+            <Label className="text-[16px] font-semibold">{t.personalityBuilder.registerTitle}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {REGISTER_KEYS.map((key) => {
                 const selected = register === key;
@@ -285,10 +285,10 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                         : "ring-border bg-card hover:bg-muted/60"
                     }`}
                   >
-                    <span className={`text-[13px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
+                    <span className={`text-[15px] font-semibold ${selected ? "text-orange-500" : "text-foreground"}`}>
                       {t.personalityBuilder.registers[key]}
                     </span>
-                    <span className="text-[11px] text-muted-foreground leading-tight">
+                    <span className="text-[13px] text-muted-foreground leading-tight">
                       {t.personalityBuilder.registerDescriptions[key]}
                     </span>
                   </button>
@@ -349,7 +349,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
                 checked={advancedMode}
                 onCheckedChange={setAdvancedMode}
               />
-              <Label htmlFor="advanced-mode" className="text-[13px] text-muted-foreground cursor-pointer">
+              <Label htmlFor="advanced-mode" className="text-[15px] text-muted-foreground cursor-pointer">
                 {t.personalityBuilder.advancedMode}
               </Label>
             </div>
@@ -358,16 +358,16 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
           {/* Preview */}
           {(personality || displayedPersonality) && (
             <div className="space-y-2">
-              <Label className="text-[14px] font-semibold">{t.personalityBuilder.previewTitle}</Label>
-              <p className="text-[12px] text-muted-foreground">{t.personalityBuilder.previewSubtitle}</p>
+              <Label className="text-[16px] font-semibold">{t.personalityBuilder.previewTitle}</Label>
+              <p className="text-[14px] text-muted-foreground">{t.personalityBuilder.previewSubtitle}</p>
               <div className="rounded-2xl bg-orange-50 dark:bg-orange-500/10 p-4 ring-1 ring-orange-200 dark:ring-orange-500/20">
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500">
                     <Bot className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-semibold text-orange-700 mb-1">{name || agent.name}</p>
-                    <p className="text-[13px] text-gray-700 leading-relaxed">{preview}</p>
+                    <p className="text-[13px] font-semibold text-orange-700 mb-1">{name || agent.name}</p>
+                    <p className="text-[15px] text-gray-700 leading-relaxed">{preview}</p>
                   </div>
                 </div>
               </div>

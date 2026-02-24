@@ -63,7 +63,7 @@ function StatusBadge({ status, t }: { status: ConversationStatus; t: ReturnType<
   };
   const c = config[status];
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${c.bg}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium ${c.bg}`}>
       <span>{c.icon}</span>
       {c.label}
     </span>
@@ -134,10 +134,10 @@ export function ConversationList({ agentId }: { agentId: string }) {
         {/* Needs attention banner */}
         {humanCount > 0 && (
           <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shrink-0">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[12px] font-bold text-white shrink-0">
               {humanCount}
             </span>
-            <p className="text-[12px] font-medium text-amber-700 dark:text-amber-400">
+            <p className="text-[14px] font-medium text-amber-700 dark:text-amber-400">
               {humanCount === 1 ? "1 conversación necesita tu atención" : `${humanCount} conversaciones necesitan tu atención`}
             </p>
           </div>
@@ -164,7 +164,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
                 <button
                   key={fb.key}
                   onClick={() => setStatusFilter(fb.key)}
-                  className={`flex-1 flex items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-[11px] font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-[13px] font-medium transition-colors ${
                     statusFilter === fb.key
                       ? isHumanTab && humanCount > 0
                         ? "bg-amber-500 text-white"
@@ -174,7 +174,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
                 >
                   <span>{fb.label}</span>
                   {count > 0 && (
-                    <span className={`rounded-full px-1 text-[9px] font-bold leading-none py-0.5 ${
+                    <span className={`rounded-full px-1 text-[11px] font-bold leading-none py-0.5 ${
                       statusFilter === fb.key ? "bg-white/25 text-white" : isHumanTab && humanCount > 0 ? "bg-amber-500 text-white" : "bg-muted-foreground/20 text-muted-foreground"
                     }`}>
                       {count}
@@ -191,7 +191,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-3" />
-              <p className="text-[14px] text-muted-foreground">{t.conversations.noConversations}</p>
+              <p className="text-[16px] text-muted-foreground">{t.conversations.noConversations}</p>
             </div>
           ) : (
             filtered.map((conv) => (
@@ -225,7 +225,7 @@ export function ConversationList({ agentId }: { agentId: string }) {
           <div className="flex-1 flex items-center justify-center text-gray-300">
             <div className="text-center">
               <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-200" />
-              <p className="text-[14px] text-gray-400">{t.conversations.selectConversation}</p>
+              <p className="text-[16px] text-gray-400">{t.conversations.selectConversation}</p>
             </div>
           </div>
         )}
@@ -260,21 +260,21 @@ function ConversationRow({
           conversation.contactName
         )} shadow-sm`}
       >
-        <span className="text-[13px] font-semibold text-white">
+        <span className="text-[15px] font-semibold text-white">
           {getInitials(conversation.contactName)}
         </span>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[15px] font-semibold truncate text-foreground">{conversation.contactName}</span>
+            <span className="text-[17px] font-semibold truncate text-foreground">{conversation.contactName}</span>
             <StatusBadge status={conversation.status} t={t} />
           </div>
-          <span className="text-[11px] text-muted-foreground shrink-0">
+          <span className="text-[13px] text-muted-foreground shrink-0">
             {formatTime(conversation.lastMessageAt, t.conversations)}
           </span>
         </div>
-        <p className="text-[13px] text-muted-foreground truncate mt-0.5">{conversation.lastMessage || "..."}</p>
+        <p className="text-[15px] text-muted-foreground truncate mt-0.5">{conversation.lastMessage || "..."}</p>
         {conversation.tags.length > 0 && (
           <div className="flex gap-1 mt-1 flex-wrap">
             {conversation.tags.map((tagName) => {
@@ -282,7 +282,7 @@ function ConversationRow({
               return (
                 <span
                   key={tagName}
-                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
+                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-medium text-white"
                   style={{ backgroundColor: tagDef?.color || "#6b7280" }}
                 >
                   {tagName}
@@ -339,13 +339,13 @@ function ChatView({
               conversation.contactName
             )}`}
           >
-            <span className="text-[12px] font-semibold text-white">
+            <span className="text-[14px] font-semibold text-white">
               {getInitials(conversation.contactName)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[15px] font-semibold leading-tight">{conversation.contactName}</h3>
-            <p className="text-[12px] text-gray-400">{conversation.contactPhone}</p>
+            <h3 className="text-[17px] font-semibold leading-tight">{conversation.contactName}</h3>
+            <p className="text-[14px] text-gray-400">{conversation.contactPhone}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Bot / Human iOS toggle */}
@@ -379,7 +379,7 @@ function ChatView({
                   isResolved ? "bot_handling" : "resolved"
                 )
               }
-              className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-200 ${
                 isResolved
                   ? "bg-green-500 text-white"
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
@@ -397,7 +397,7 @@ function ChatView({
             return (
               <span
                 key={tagName}
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium text-white"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[13px] font-medium text-white"
                 style={{ backgroundColor: tagDef?.color || "#6b7280" }}
               >
                 {tagName}
@@ -413,7 +413,7 @@ function ChatView({
           <div className="relative">
               <button
                 onClick={() => setShowTagDropdown(!showTagDropdown)}
-                className="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[11px] text-gray-500 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[13px] text-gray-500 hover:bg-gray-50 transition-colors"
               >
                 <Plus className="h-3 w-3" />
                 {t.conversations.addTag}
@@ -434,7 +434,7 @@ function ChatView({
       {/* Messages */}
       <div className="chat-messages-bg flex-1 overflow-y-auto px-4 py-4 space-y-3 relative">
         {/* Fondo con mini-iconos sutiles — igual que Lisa chat */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.045] dark:opacity-[0.035] select-none">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.06] dark:opacity-[0.055] select-none">
           {[
             { top: "4%",  left: "8%",  size: 28, rotate: 15,  icon: "bot" },
             { top: "4%",  left: "55%", size: 22, rotate: -8,  icon: "brain" },
@@ -545,7 +545,7 @@ function TagDropdown({
               if (active) removeTagFromConversation(conversationId, tag.name);
               else addTagToConversation(conversationId, tag.name);
             }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-gray-50 transition-colors"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-[15px] hover:bg-gray-50 transition-colors"
           >
             <span
               className="h-3 w-3 rounded-full shrink-0"
@@ -560,7 +560,7 @@ function TagDropdown({
         {!creating ? (
           <button
             onClick={() => setCreating(true)}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[13px] text-gray-500 hover:bg-gray-50"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-[15px] text-gray-500 hover:bg-gray-50"
           >
             <Plus className="h-3.5 w-3.5" />
             {t.conversations.createTag}
@@ -572,7 +572,7 @@ function TagDropdown({
               placeholder={t.conversations.tagName}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full rounded-lg border px-2 py-1 text-[12px] outline-none focus:ring-2 focus:ring-orange-500/20"
+              className="w-full rounded-lg border px-2 py-1 text-[14px] outline-none focus:ring-2 focus:ring-orange-500/20"
               autoFocus
             />
             <div className="flex gap-1">
@@ -599,7 +599,7 @@ function TagDropdown({
                   setCreating(false);
                 }
               }}
-              className="w-full rounded-lg bg-orange-500 px-2 py-1 text-[12px] font-medium text-white hover:bg-orange-600 transition-colors"
+              className="w-full rounded-lg bg-orange-500 px-2 py-1 text-[14px] font-medium text-white hover:bg-orange-600 transition-colors"
             >
               {t.conversations.createTag}
             </button>
@@ -669,44 +669,49 @@ function MessageBubble({
     minute: "2-digit",
   });
 
-  let bubbleClass: string;
+  // WhatsApp-style: sharp corner on the "tail" side
+  const shapeClass = isRight
+    ? "rounded-tl-2xl rounded-tr-[4px] rounded-bl-2xl rounded-br-2xl"
+    : "rounded-tl-[4px] rounded-tr-2xl rounded-br-2xl rounded-bl-2xl";
+
+  let colorClass: string;
   if (isAgent) {
-    bubbleClass = "bg-orange-500 text-white rounded-br-md";
+    colorClass = "bg-orange-500 text-white";
   } else if (isHuman) {
-    bubbleClass = "bg-emerald-500 text-white rounded-br-md";
+    colorClass = "bg-emerald-600 text-white";
   } else {
-    bubbleClass = "bg-gray-100 text-gray-900 rounded-bl-md";
+    colorClass = "bg-card dark:bg-[#1f2c34] text-foreground";
   }
 
   return (
-    <div className={`flex ${isRight ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${bubbleClass}`}>
+    <div className={`flex ${isRight ? "justify-end" : "justify-start"} px-1`}>
+      <div className={`max-w-[75%] px-3.5 py-2 shadow-sm ${shapeClass} ${colorClass}`}>
+        {/* Role label — small, like WhatsApp "group" sender name */}
         {isAgent && (
-          <div className="flex items-center gap-1 mb-1">
-            <Bot className="h-3 w-3 opacity-70" />
-            <span className="text-[10px] font-medium opacity-70">Bot</span>
+          <div className="flex items-center gap-1 mb-0.5">
+            <Bot className="h-2.5 w-2.5 opacity-60" />
+            <span className="text-[12px] font-semibold opacity-60 tracking-wide uppercase">Bot</span>
           </div>
         )}
         {isHuman && (
-          <div className="flex items-center gap-1 mb-1">
-            <User className="h-3 w-3 opacity-70" />
-            <span className="text-[10px] font-medium opacity-70">{t.conversations.you}</span>
+          <div className="flex items-center gap-1 mb-0.5">
+            <User className="h-2.5 w-2.5 opacity-60" />
+            <span className="text-[12px] font-semibold opacity-60 tracking-wide uppercase">{t.conversations.you}</span>
           </div>
         )}
-        <p className="text-[14px] leading-relaxed">{message.content}</p>
-        <div
-          className={`flex items-center gap-2 mt-1.5 ${
-            isRight ? "justify-end" : "justify-start"
-          }`}
-        >
-          <span
-            className={`text-[10px] ${isRight ? "text-white/60" : "text-gray-400"}`}
-          >
-            {time}
-          </span>
+
+        {/* Message text + timestamp inline at end (WhatsApp style) */}
+        <p className="text-[16px] leading-relaxed">
+          {message.content}
+          {/* Invisible spacer so timestamp never overlaps text */}
+          <span className="inline-block w-16" />
+        </p>
+
+        {/* Timestamp + confidence — bottom right, overlaid */}
+        <div className={`flex items-center gap-1.5 -mt-4 ${isRight ? "justify-end" : "justify-end"}`}>
           {isAgent && message.confidence != null && (
             <span
-              className={`flex items-center gap-0.5 text-[10px] font-medium ${
+              className={`flex items-center gap-0.5 text-[12px] font-medium ${
                 message.confidence >= 0.9
                   ? "text-emerald-200"
                   : message.confidence >= 0.7
@@ -718,6 +723,9 @@ function MessageBubble({
               {Math.round(message.confidence * 100)}%
             </span>
           )}
+          <span className={`text-[13px] ${isRight ? "text-white/60" : "text-muted-foreground"}`}>
+            {time}
+          </span>
         </div>
       </div>
     </div>

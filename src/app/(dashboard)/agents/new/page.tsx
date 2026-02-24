@@ -464,12 +464,12 @@ export default function NewAgentPage() {
         <div className="flex items-center justify-between pb-2 max-w-lg mx-auto">
           <button
             onClick={handleBack}
-            className="flex items-center gap-0.5 text-[15px] font-medium text-white/70 active:opacity-60 transition-opacity"
+            className="flex items-center gap-0.5 text-[17px] font-medium text-white/70 active:opacity-60 transition-opacity"
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
             {step === 0 ? "Cancelar" : "Atrás"}
           </button>
-          <span className="text-[13px] font-medium text-white/40 tabular-nums">
+          <span className="text-[15px] font-medium text-white/40 tabular-nums">
             {step + 1} / {TOTAL_STEPS}
           </span>
         </div>
@@ -493,13 +493,13 @@ export default function NewAgentPage() {
         {/* Step 0 — header */}
         {step === 0 && (
           <div className="space-y-0.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Tipo de negocio
             </p>
-            <h1 className="text-[22px] font-bold tracking-tight leading-tight">
+            <h1 className="text-[24px] font-bold tracking-tight leading-tight">
               ¿Cuál es tu tipo de negocio?
             </h1>
-            <p className="text-[13px] text-muted-foreground leading-snug">
+            <p className="text-[15px] text-muted-foreground leading-snug">
               Elige el tipo para pre-configurar tu agente inteligente
             </p>
           </div>
@@ -514,13 +514,13 @@ export default function NewAgentPage() {
               <hero.Icon className={`h-5 w-5 ${hero.iconColor}`} />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground leading-tight">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground leading-tight">
                 {hero.sectionLabel}
               </p>
-              <h1 className="text-[20px] font-bold tracking-tight leading-tight">
+              <h1 className="text-[22px] font-bold tracking-tight leading-tight">
                 {hero.title}
               </h1>
-              <p className="text-[12px] text-muted-foreground leading-snug">
+              <p className="text-[14px] text-muted-foreground leading-snug">
                 {hero.subtitle}
               </p>
             </div>
@@ -546,7 +546,7 @@ export default function NewAgentPage() {
                   }`}
                 >
                   {bt.comingSoon && (
-                    <span className="absolute top-2.5 right-2.5 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                       Pronto
                     </span>
                   )}
@@ -562,13 +562,13 @@ export default function NewAgentPage() {
                   </div>
                   <div>
                     <p
-                      className={`text-[13px] font-semibold leading-tight ${
+                      className={`text-[15px] font-semibold leading-tight ${
                         selected ? "text-orange-500" : "text-foreground"
                       }`}
                     >
                       {bt.name}
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                    <p className="text-[13px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
                       {bt.description}
                     </p>
                   </div>
@@ -591,7 +591,7 @@ export default function NewAgentPage() {
                   placeholder={t.agents.agentNamePlaceholder}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="flex-1 min-w-0 bg-transparent text-[15px] placeholder:text-muted-foreground/50 outline-none"
+                  className="flex-1 min-w-0 bg-transparent text-[17px] placeholder:text-muted-foreground/50 outline-none"
                 />
               </div>
               {/* Business name */}
@@ -602,17 +602,17 @@ export default function NewAgentPage() {
                   placeholder={businessNameLabel}
                   value={hotelName}
                   onChange={(e) => setHotelName(e.target.value)}
-                  className="flex-1 min-w-0 bg-transparent text-[15px] placeholder:text-muted-foreground/50 outline-none"
+                  className="flex-1 min-w-0 bg-transparent text-[17px] placeholder:text-muted-foreground/50 outline-none"
                 />
               </div>
               {/* Language */}
               <div className="flex items-center gap-3.5 px-4 h-[58px]">
                 <Globe className="h-5 w-5 text-blue-500 shrink-0" />
-                <span className="flex-1 text-[15px] text-foreground">
+                <span className="flex-1 text-[17px] text-foreground">
                   {t.agents.language}
                 </span>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="border-0 bg-transparent shadow-none h-auto p-0 gap-1 w-auto text-[15px] text-muted-foreground ring-0 focus:ring-0 focus-visible:ring-0">
+                  <SelectTrigger className="border-0 bg-transparent shadow-none h-auto p-0 gap-1 w-auto text-[17px] text-muted-foreground ring-0 focus:ring-0 focus-visible:ring-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -625,7 +625,7 @@ export default function NewAgentPage() {
               </div>
             </div>
 
-            <p className="text-[13px] text-muted-foreground px-1">
+            <p className="text-[15px] text-muted-foreground px-1">
               Puedes cambiar estos datos en cualquier momento desde la configuración del agente.
             </p>
           </div>
@@ -655,10 +655,10 @@ export default function NewAgentPage() {
                         <opt.Icon className={`h-[18px] w-[18px] ${opt.iconColor}`} />
                       </div>
                       <div>
-                        <p className="text-[15px] font-semibold leading-tight">
+                        <p className="text-[17px] font-semibold leading-tight">
                           {opt.label}
                         </p>
-                        <p className="text-[12px] text-muted-foreground">
+                        <p className="text-[14px] text-muted-foreground">
                           {opt.description}
                         </p>
                       </div>
@@ -678,7 +678,7 @@ export default function NewAgentPage() {
                   </div>
                   {/* Chat bubble example */}
                   <div className="bg-muted/70 rounded-xl px-3 py-2.5 ml-12">
-                    <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    <p className="text-[15px] text-muted-foreground leading-relaxed">
                       {opt.bubble}
                     </p>
                   </div>
@@ -689,7 +689,7 @@ export default function NewAgentPage() {
             {/* Collapsible advanced personalization */}
             <button
               onClick={() => setShowPersonality((v) => !v)}
-              className="flex items-center gap-2 text-[14px] font-medium text-orange-500 active:opacity-60 transition-opacity py-1"
+              className="flex items-center gap-2 text-[16px] font-medium text-orange-500 active:opacity-60 transition-opacity py-1"
             >
               <span>{showPersonality ? "Ocultar personalización" : "Personalizar más"}</span>
               <ChevronLeft
@@ -701,7 +701,7 @@ export default function NewAgentPage() {
 
             {showPersonality && (
               <div className="space-y-1.5">
-                <Label className="text-[13px] text-muted-foreground px-1">
+                <Label className="text-[15px] text-muted-foreground px-1">
                   Instrucciones adicionales (opcional)
                 </Label>
                 <Textarea
@@ -709,7 +709,7 @@ export default function NewAgentPage() {
                   value={personality}
                   onChange={(e) => setPersonality(e.target.value)}
                   rows={4}
-                  className="resize-none text-[14px] rounded-2xl"
+                  className="resize-none text-[16px] rounded-2xl"
                 />
               </div>
             )}
@@ -725,10 +725,10 @@ export default function NewAgentPage() {
                 {agentFaqs.map((faq) => (
                   <div key={faq.id} className="flex items-start gap-3 px-4 py-3.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold leading-tight">
+                      <p className="text-[16px] font-semibold leading-tight">
                         {faq.question}
                       </p>
-                      <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-2">
+                      <p className="text-[15px] text-muted-foreground mt-0.5 line-clamp-2">
                         {faq.answer}
                       </p>
                     </div>
@@ -747,7 +747,7 @@ export default function NewAgentPage() {
             <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <div className="px-4 pt-4 space-y-3">
                 <div className="space-y-1.5">
-                  <Label className="text-[13px] text-muted-foreground">
+                  <Label className="text-[15px] text-muted-foreground">
                     {t.setupWizard.question}
                   </Label>
                   <input
@@ -755,12 +755,12 @@ export default function NewAgentPage() {
                     placeholder="¿Cuál es el horario de atención?"
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
-                    className="w-full bg-transparent text-[15px] placeholder:text-muted-foreground/50 outline-none"
+                    className="w-full bg-transparent text-[17px] placeholder:text-muted-foreground/50 outline-none"
                   />
                 </div>
                 <div className="h-px bg-border/60" />
                 <div className="space-y-1.5">
-                  <Label className="text-[13px] text-muted-foreground">
+                  <Label className="text-[15px] text-muted-foreground">
                     {t.setupWizard.answer}
                   </Label>
                   <textarea
@@ -768,14 +768,14 @@ export default function NewAgentPage() {
                     value={faqAnswer}
                     onChange={(e) => setFaqAnswer(e.target.value)}
                     rows={3}
-                    className="w-full bg-transparent text-[14px] placeholder:text-muted-foreground/50 outline-none resize-none"
+                    className="w-full bg-transparent text-[16px] placeholder:text-muted-foreground/50 outline-none resize-none"
                   />
                 </div>
               </div>
               <button
                 onClick={handleAddFaq}
                 disabled={!faqQuestion.trim() || !faqAnswer.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-3 border-t border-border/60 text-[14px] font-semibold text-orange-500 disabled:text-muted-foreground disabled:opacity-50 active:bg-muted/50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-3 border-t border-border/60 text-[16px] font-semibold text-orange-500 disabled:text-muted-foreground disabled:opacity-50 active:bg-muted/50 transition-colors"
               >
                 <Plus className="h-4 w-4" strokeWidth={2.5} />
                 {t.setupWizard.addFaq}
@@ -785,10 +785,10 @@ export default function NewAgentPage() {
             {/* Empty state hint */}
             {agentFaqs.length === 0 && (
               <div className="rounded-2xl bg-amber-50 dark:bg-amber-500/10 ring-1 ring-amber-200 dark:ring-amber-500/20 px-4 py-3">
-                <p className="text-[13px] text-amber-700 dark:text-amber-400 font-medium">
+                <p className="text-[15px] text-amber-700 dark:text-amber-400 font-medium">
                   Agrega al menos una pregunta para continuar
                 </p>
-                <p className="text-[12px] text-amber-600/70 dark:text-amber-400/70 mt-0.5">
+                <p className="text-[14px] text-amber-600/70 dark:text-amber-400/70 mt-0.5">
                   Cuantas más preguntas agregues, mejor responde tu agente
                 </p>
               </div>
@@ -817,12 +817,12 @@ export default function NewAgentPage() {
                         [field.key]: e.target.value,
                       }))
                     }
-                    className="flex-1 min-w-0 bg-transparent text-[14px] placeholder:text-muted-foreground/40 outline-none"
+                    className="flex-1 min-w-0 bg-transparent text-[16px] placeholder:text-muted-foreground/40 outline-none"
                   />
                 </div>
               ))}
             </div>
-            <p className="text-[13px] text-muted-foreground px-1">
+            <p className="text-[15px] text-muted-foreground px-1">
               Todos los campos son opcionales. El agente usará esta información para responder mejor.
             </p>
           </div>
@@ -882,21 +882,21 @@ export default function NewAgentPage() {
               {/* Orbiting star */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-0 w-0">
                 <div style={{ animation: "orbitStar 6s linear infinite", transformOrigin: "0 0" }}>
-                  <span className="text-[10px] text-orange-300">✦</span>
+                  <span className="text-[12px] text-orange-300">✦</span>
                 </div>
               </div>
 
               {/* Static stars */}
               <span
-                className="absolute top-0 right-6 text-[8px] text-orange-400"
+                className="absolute top-0 right-6 text-[10px] text-orange-400"
                 style={{ animation: "starTwinkle 2s ease-in-out 0.3s infinite" }}
               >✦</span>
               <span
-                className="absolute top-6 left-2 text-[6px] text-orange-300/70"
+                className="absolute top-6 left-2 text-[8px] text-orange-300/70"
                 style={{ animation: "starTwinkle 2.5s ease-in-out 0.7s infinite" }}
               >✦</span>
               <span
-                className="absolute bottom-8 right-2 text-[7px] text-orange-400/60"
+                className="absolute bottom-8 right-2 text-[9px] text-orange-400/60"
                 style={{ animation: "starTwinkle 1.8s ease-in-out 1.1s infinite" }}
               >✦</span>
 
@@ -929,10 +929,10 @@ export default function NewAgentPage() {
               className="space-y-2 px-2"
               style={{ animation: "fadeUp .6s ease-out .2s both" }}
             >
-              <h1 className="text-[26px] font-bold tracking-tight leading-tight">
+              <h1 className="text-[28px] font-bold tracking-tight leading-tight">
                 Activa tu agente
               </h1>
-              <p className="text-[14px] text-muted-foreground leading-snug max-w-[260px] mx-auto">
+              <p className="text-[16px] text-muted-foreground leading-snug max-w-[260px] mx-auto">
                 Al activarlo, <span className="font-medium text-[#25D366]">WhatsApp</span> empezará a responder mensajes de tus clientes automáticamente.
               </p>
             </div>
@@ -951,13 +951,13 @@ export default function NewAgentPage() {
             <>
               <Button
                 onClick={handleDeploy}
-                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
+                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
               >
                 Activar agente
               </Button>
               <button
                 onClick={handleDeploy}
-                className="w-full py-2.5 text-[15px] font-medium text-white/50 active:opacity-60 transition-opacity"
+                className="w-full py-2.5 text-[17px] font-medium text-white/50 active:opacity-60 transition-opacity"
               >
                 Configurar más tarde
               </button>
@@ -967,14 +967,14 @@ export default function NewAgentPage() {
               <Button
                 onClick={handleContinue}
                 disabled={!canContinue}
-                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[17px] rounded-2xl"
+                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
               >
                 {STEP_CTA[step]}
               </Button>
               {step === 5 && (
                 <button
                   onClick={handleSkipWhatsapp}
-                  className="w-full py-2.5 text-[15px] font-medium text-white/50 active:opacity-60 transition-opacity"
+                  className="w-full py-2.5 text-[17px] font-medium text-white/50 active:opacity-60 transition-opacity"
                 >
                   Conectar WhatsApp después
                 </button>

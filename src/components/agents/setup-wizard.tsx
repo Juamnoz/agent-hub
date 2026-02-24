@@ -38,7 +38,7 @@ function StepIndicator({
             {/* Dot */}
             <div className="flex flex-col items-center gap-1 shrink-0">
               <div
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-[13px] font-bold transition-colors ${
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-[15px] font-bold transition-colors ${
                   isDone
                     ? "bg-emerald-500 text-white"
                     : isActive
@@ -49,7 +49,7 @@ function StepIndicator({
                 {isDone ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
               </div>
               <span
-                className={`text-[10px] font-medium whitespace-nowrap ${
+                className={`text-[12px] font-medium whitespace-nowrap ${
                   isActive ? "text-orange-600" : isDone ? "text-emerald-600" : "text-muted-foreground"
                 }`}
               >
@@ -101,8 +101,8 @@ function StepFaqs({ agentId }: { agentId: string }) {
               className="flex items-start gap-3 rounded-xl bg-muted/50 p-3 ring-1 ring-border"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold leading-tight">{faq.question}</p>
-                <p className="text-[12px] text-muted-foreground mt-0.5 line-clamp-2">{faq.answer}</p>
+                <p className="text-[15px] font-semibold leading-tight">{faq.question}</p>
+                <p className="text-[14px] text-muted-foreground mt-0.5 line-clamp-2">{faq.answer}</p>
               </div>
               <button
                 onClick={() => deleteFaq(faq.id)}
@@ -118,22 +118,22 @@ function StepFaqs({ agentId }: { agentId: string }) {
       {/* Mini form */}
       <div className="rounded-xl ring-1 ring-border p-4 space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-[13px]">{t.setupWizard.question}</Label>
+          <Label className="text-[15px]">{t.setupWizard.question}</Label>
           <Input
             placeholder="¿Cuál es el horario de atención?"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            className="text-[14px]"
+            className="text-[16px]"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-[13px]">{t.setupWizard.answer}</Label>
+          <Label className="text-[15px]">{t.setupWizard.answer}</Label>
           <Textarea
             placeholder="Atendemos de lunes a viernes de 9am a 6pm."
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             rows={3}
-            className="text-[14px] resize-none"
+            className="text-[16px] resize-none"
           />
         </div>
         <Button
@@ -149,7 +149,7 @@ function StepFaqs({ agentId }: { agentId: string }) {
       </div>
 
       {agentFaqs.length === 0 && (
-        <p className="text-[12px] text-muted-foreground text-center">
+        <p className="text-[14px] text-muted-foreground text-center">
           {t.setupWizard.minOneFaq}
         </p>
       )}
@@ -180,13 +180,13 @@ function StepPersonality({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-[13px]">{t.agents.tone}</Label>
+        <Label className="text-[15px]">{t.agents.tone}</Label>
         <div className="flex gap-2">
           {toneOptions.map((opt) => (
             <button
               key={opt.key}
               onClick={() => onToneChange(opt.key as "formal" | "friendly" | "casual")}
-              className={`flex-1 rounded-xl py-2.5 text-[13px] font-medium border transition-all ${
+              className={`flex-1 rounded-xl py-2.5 text-[15px] font-medium border transition-all ${
                 tone === opt.key
                   ? "border-orange-500 bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400"
                   : "border-border bg-card text-muted-foreground hover:border-orange-300"
@@ -198,13 +198,13 @@ function StepPersonality({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className="text-[13px]">{t.agents.personality}</Label>
+        <Label className="text-[15px]">{t.agents.personality}</Label>
         <Textarea
           placeholder={t.setupWizard.personalityPlaceholder}
           value={personality}
           onChange={(e) => onPersonalityChange(e.target.value)}
           rows={4}
-          className="text-[14px] resize-none"
+          className="text-[16px] resize-none"
         />
       </div>
     </div>
@@ -217,7 +217,7 @@ function StepWhatsapp({ agentId, isConnected }: { agentId: string; isConnected: 
   const { t } = useLocaleStore();
   return (
     <div className="space-y-4">
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-[15px] text-muted-foreground">
         {t.setupWizard.step3Subtitle}
       </p>
       <ConnectionWizard agentId={agentId} isConnected={isConnected} />
@@ -253,24 +253,24 @@ function StepLaunch({
         <Rocket className="h-10 w-10 text-orange-500 animate-bounce" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-[20px] font-bold tracking-tight">
+        <h2 className="text-[22px] font-bold tracking-tight">
           ¡{agentName} está listo para despegar!
         </h2>
-        <p className="text-[14px] text-muted-foreground max-w-xs mx-auto">
+        <p className="text-[16px] text-muted-foreground max-w-xs mx-auto">
           {t.setupWizard.step4Subtitle}
         </p>
       </div>
       <div className="w-full space-y-2.5 pt-2">
         <Button
           onClick={handleTestWhatsApp}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 font-semibold text-[15px] h-11"
+          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 font-semibold text-[17px] h-11"
         >
           {t.setupWizard.testOnWhatsapp}
         </Button>
         <Button
           variant="outline"
           onClick={onActivate}
-          className="w-full font-medium text-[14px] h-10"
+          className="w-full font-medium text-[16px] h-10"
         >
           {t.setupWizard.viewAgent}
         </Button>
@@ -339,10 +339,10 @@ export function SetupWizard({ agentId }: SetupWizardProps) {
       {/* Step Indicator */}
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
+          <p className="text-[14px] font-medium text-muted-foreground uppercase tracking-wider">
             {t.common.create}
           </p>
-          <span className="text-[12px] text-muted-foreground">
+          <span className="text-[14px] text-muted-foreground">
             {step + 1} {t.setupWizard.of} 4
           </span>
         </div>
@@ -359,12 +359,12 @@ export function SetupWizard({ agentId }: SetupWizardProps) {
         {/* Header */}
         {step < 3 && (
           <div>
-            <h2 className="text-[18px] font-bold leading-tight">
+            <h2 className="text-[20px] font-bold leading-tight">
               {step === 0 && t.setupWizard.step1Title}
               {step === 1 && t.setupWizard.step2Title}
               {step === 2 && t.setupWizard.step3Title}
             </h2>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
+            <p className="text-[15px] text-muted-foreground mt-0.5">
               {step === 0 && t.setupWizard.step1Subtitle}
               {step === 1 && t.setupWizard.step2Subtitle}
               {step === 2 && t.setupWizard.step3Subtitle}
@@ -398,7 +398,7 @@ export function SetupWizard({ agentId }: SetupWizardProps) {
           <Button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="w-full lisa-btn text-white border-0 font-semibold text-[15px] h-11"
+            className="w-full lisa-btn text-white border-0 font-semibold text-[17px] h-11"
           >
             {t.setupWizard.continue}
           </Button>

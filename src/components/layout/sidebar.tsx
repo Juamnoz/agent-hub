@@ -1,198 +1,118 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Bot,
-  ShoppingBag,
   CreditCard,
   Settings,
   LogOut,
   PanelLeftClose,
   PanelLeft,
-  ChevronRight,
   Check,
   Plus,
   MessageSquare,
-  Zap,
+  Sun,
+  Moon,
+  Trash2,
+  MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { useAgentStore } from "@/stores/agent-store";
+import { useChatHistoryStore, type ChatSession } from "@/stores/chat-history-store";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
-const statusColors: Record<string, string> = {
-  active: "bg-green-500",
-  inactive: "bg-gray-400",
-  setup: "bg-amber-500",
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatRelativeTime(isoString: string): string {
+  const now = new Date();
+  const date = new Date(isoString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return "ahora";
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays === 1) return "Ayer";
+  if (diffDays < 7) return `${diffDays}d`;
+  return date.toLocaleDateString("es", { month: "short", day: "numeric" });
+}
+
+function groupSessionsByDate(sessions: ChatSession[]) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const weekAgo = new Date(today.getTime() - 7 * 86400000);
+
+  const groups: { label: string; items: ChatSession[] }[] = [
+    { label: "Hoy", items: [] },
+    { label: "Ayer", items: [] },
+    { label: "Última semana", items: [] },
+    { label: "Más antiguas", items: [] },
+  ];
+
+  for (const s of sessions) {
+    const d = new Date(s.updatedAt);
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (dayStart >= today) groups[0].items.push(s);
+    else if (dayStart >= yesterday) groups[1].items.push(s);
+    else if (dayStart >= weekAgo) groups[2].items.push(s);
+    else groups[3].items.push(s);
+  }
+
+  return groups.filter((g) => g.items.length > 0);
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { t } = useLocaleStore();
   const { collapsed, toggleSidebar } = useSidebarStore();
   const agents = useAgentStore((s) => s.agents);
-  const [lisaOpen, setLisaOpen] = useState(false);
+  const { sessions, deleteSession } = useChatHistoryStore();
+  const currentChatId = searchParams.get("chat");
 
-  // Main nav — mirrors mobile bottom tab bar: Panel | Agentes | Lisa
-  const mainNavItems = [
-    { label: "Panel", href: "/panel", icon: LayoutDashboard },
-    { label: t.nav.agents, href: "/agents", icon: Bot },
-  ];
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+  function toggleTheme() {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem("lisa-theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  }
 
-  // Secondary nav — lives at the bottom of the sidebar
+  const isLisaActive = pathname.startsWith("/lisa");
+  const isPanelActive = pathname === "/panel" || pathname.startsWith("/panel/");
+  const isAgentsActive = pathname === "/agents" || pathname.startsWith("/agents/");
+
   const secondaryNavItems = [
     { label: t.nav.billing, href: "/billing", icon: CreditCard },
     { label: t.nav.settings, href: "/settings", icon: Settings },
   ];
-
-  const isLisaActive = pathname.startsWith("/lisa");
-
-  // Extract current agent ID from pathname if on lisa/[agentId] page
-  const lisaMatch = pathname.match(/^\/lisa\/([^/]+)$/);
-  const currentLisaAgentId = lisaMatch?.[1] ?? null;
-
-  function handleSelectAgent(agentId: string) {
-    setLisaOpen(false);
-    router.push(`/lisa/${agentId}`);
-  }
-
-  function renderLisaItem() {
-    const triggerClasses = cn(
-      "flex items-center rounded-lg text-sm font-medium transition-colors w-full cursor-pointer",
-      collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
-      isLisaActive
-        ? "bg-accent text-accent-foreground"
-        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-    );
-
-    const trigger = (
-      <PopoverTrigger asChild>
-        <button className={triggerClasses}>
-          {/* Lisa isologo naranja transparente */}
-          <img src="/lisa-isologo-orange.png" alt="" className="shrink-0 h-8 w-8 object-contain" />
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-left">Lisa</span>
-              <ChevronRight
-                className={cn(
-                  "h-3 w-3 text-muted-foreground/60 transition-transform",
-                  lisaOpen && "rotate-90"
-                )}
-              />
-            </>
-          )}
-        </button>
-      </PopoverTrigger>
-    );
-
-    return (
-      <Popover open={lisaOpen} onOpenChange={setLisaOpen}>
-        {collapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-            {!lisaOpen && (
-              <TooltipContent side="right">Lisa</TooltipContent>
-            )}
-          </Tooltip>
-        ) : (
-          trigger
-        )}
-        <PopoverContent
-          side="right"
-          align="start"
-          sideOffset={collapsed ? 8 : 12}
-          className="w-[280px] p-0 overflow-hidden"
-        >
-          {/* ── Nueva conversación ── */}
-          <div className="p-2.5">
-            <Link
-              href="/lisa"
-              onClick={() => setLisaOpen(false)}
-              className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2.5 text-[15px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/15 dark:hover:bg-orange-500/25 dark:text-orange-400 transition-colors"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shrink-0">
-                <Plus className="h-3.5 w-3.5 text-white" />
-              </div>
-              Nueva conversación
-            </Link>
-          </div>
-
-          {/* ── Recientes (mock) ── */}
-          <div className="border-t border-border">
-            <p className="px-4 pt-2.5 pb-1 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-              Recientes
-            </p>
-            {[
-              { title: "¿Cómo van mis agentes?", time: "12m", href: "/lisa" },
-              { title: "Mejoras para Playa Azul", time: "2h", href: "/lisa" },
-              { title: "Nueva FAQ: check-in", time: "Ayer", href: "/lisa" },
-              { title: "Métricas de la semana", time: "3d", href: "/lisa" },
-            ].map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                onClick={() => setLisaOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 hover:bg-accent/50 transition-colors group"
-              >
-                <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground" />
-                <span className="flex-1 text-[14px] text-foreground/80 truncate">{item.title}</span>
-                <span className="text-[13px] text-muted-foreground/40 shrink-0">{item.time}</span>
-              </Link>
-            ))}
-          </div>
-
-          {/* ── Entrenar agente ── */}
-          {agents.length > 0 && (
-            <div className="border-t border-border pb-2">
-              <p className="px-4 pt-2.5 pb-1 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-                Entrenar agente
-              </p>
-              {agents.map((agent) => {
-                const isSelected = currentLisaAgentId === agent.id;
-                return (
-                  <button
-                    key={agent.id}
-                    onClick={() => handleSelectAgent(agent.id)}
-                    className={cn(
-                      "flex items-center gap-2.5 w-full px-4 py-2 text-left transition-colors",
-                      isSelected ? "bg-accent" : "hover:bg-accent/50"
-                    )}
-                  >
-                    <div className="relative shrink-0">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted">
-                        <Bot className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                      <span className={cn("absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-popover", statusColors[agent.status] ?? "bg-gray-400")} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium truncate">{agent.name}</p>
-                      <p className="text-[12px] text-muted-foreground truncate">{agent.hotelName}</p>
-                    </div>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-orange-500 shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
-    );
-  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -202,9 +122,10 @@ export function Sidebar() {
           collapsed ? "lg:w-16" : "lg:w-60"
         )}
       >
+        {/* ── Header: logo + collapse button ── */}
         <div
           className={cn(
-            "flex items-center border-b border-border py-0",
+            "flex h-20 shrink-0 items-center border-b border-border",
             collapsed ? "justify-center px-0" : "justify-between px-4"
           )}
         >
@@ -223,18 +144,8 @@ export function Sidebar() {
           ) : (
             <>
               <Link href="/panel" className="flex items-center">
-                {/* Lisa wordmark — light mode */}
-                <img
-                  src="/lisa-logo-orange.png"
-                  alt="Lisa"
-                  className="h-20 object-contain dark:hidden"
-                />
-                {/* Lisa wordmark — dark mode (white on transparent bg) */}
-                <img
-                  src="/lisa-logo-white.png"
-                  alt="Lisa"
-                  className="h-20 object-contain hidden dark:block"
-                />
+                <img src="/lisa-logo-orange.png" alt="Lisa" className="h-20 object-contain dark:hidden" />
+                <img src="/lisa-logo-white.png" alt="Lisa" className="h-20 object-contain hidden dark:block" />
               </Link>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -251,103 +162,251 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* ── Main nav (mirrors mobile tabs: Panel | Agentes | Lisa) ── */}
-        <nav className="flex-1 flex flex-col gap-1 p-3">
-          {mainNavItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
+        {/* ── Scrollable body ── */}
+        <div className="flex flex-1 flex-col overflow-hidden">
 
-            const link = (
+          {/* ── Nueva conversación ── */}
+          <div className={cn("shrink-0 p-3", collapsed && "flex justify-center")}>
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/lisa"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-sm"
+                    aria-label="Nueva conversación"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Nueva conversación</TooltipContent>
+              </Tooltip>
+            ) : (
               <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center rounded-lg text-sm font-medium transition-colors",
-                  collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
-                  isActive && !isLisaActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
+                href="/lisa"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[15px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/15 dark:hover:bg-orange-500/25 dark:text-orange-400 transition-colors"
               >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!collapsed && item.label}
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shrink-0">
+                  <Plus className="h-3 w-3 text-white" />
+                </div>
+                Nueva conversación
               </Link>
-            );
-
-            if (collapsed) {
-              return (
-                <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>{link}</TooltipTrigger>
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                </Tooltip>
-              );
-            }
-            return link;
-          })}
-
-          {/* Lisa — prominent, like the center tab on mobile */}
-          {renderLisaItem()}
-        </nav>
-
-        {/* ── By Aic studio ── */}
-        {!collapsed && (
-          <div className="px-4 pb-2">
-            <span className="text-[11px] font-medium text-muted-foreground/50 tracking-wide">
-              by Aic studio
-            </span>
+            )}
           </div>
-        )}
 
-        {/* ── Secondary nav + logout ── */}
-        <div className="border-t border-border p-3 flex flex-col gap-1">
-          {secondaryNavItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-
-            const link = (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center rounded-lg text-sm font-medium transition-colors",
-                  collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!collapsed && item.label}
-              </Link>
-            );
-
-            if (collapsed) {
-              return (
-                <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>{link}</TooltipTrigger>
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                </Tooltip>
+          {/* ── Main nav: Panel + Agentes + Chats ── */}
+          <div className={cn("shrink-0 flex flex-col gap-0.5 px-3")}>
+            {[
+              { label: "Panel", href: "/panel", icon: LayoutDashboard, active: isPanelActive },
+              { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
+              { label: "Chats", href: "/chats", icon: MessagesSquare, active: pathname === "/chats" || pathname.startsWith("/chats/") },
+            ].map((item) => {
+              const link = (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center rounded-lg text-sm font-medium transition-colors",
+                    collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+                    item.active
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && item.label}
+                </Link>
               );
-            }
-            return link;
-          })}
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                    <TooltipContent side="right">{item.label}</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return link;
+            })}
+          </div>
 
-          {/* Logout */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{t.common.signOut}</TooltipContent>
-            </Tooltip>
-          ) : (
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-              <LogOut className="h-4 w-4" />
-              {t.common.signOut}
-            </button>
+          {/* ── Chat history (scrollable, fills remaining space) ── */}
+          {!collapsed && (
+            <div className="flex-1 overflow-y-auto mt-2 min-h-0">
+              {sessions.length === 0 ? (
+                /* Empty state — subtle hint */
+                <div className="px-4 py-6 text-center">
+                  <MessageSquare className="mx-auto h-7 w-7 text-muted-foreground/25 mb-2" />
+                  <p className="text-[13px] text-muted-foreground/40 leading-snug">
+                    Tus conversaciones<br />aparecerán aquí
+                  </p>
+                </div>
+              ) : (
+                groupSessionsByDate(sessions).map((group) => (
+                  <div key={group.label}>
+                    <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/40">
+                      {group.label}
+                    </p>
+                    {group.items.map((session) => {
+                      const isActive = currentChatId === session.id;
+                      return (
+                        <div key={session.id} className="group relative flex items-center mx-1.5">
+                          <Link
+                            href={`/lisa?chat=${session.id}`}
+                            className={cn(
+                              "flex flex-1 items-center gap-2 rounded-lg px-2.5 py-2 pr-8 transition-colors min-w-0",
+                              isActive
+                                ? "bg-accent text-accent-foreground"
+                                : "text-muted-foreground hover:bg-accent/60 hover:text-accent-foreground"
+                            )}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                            <span className="flex-1 text-[14px] truncate">{session.title}</span>
+                            <span className="text-[12px] opacity-40 shrink-0 tabular-nums">
+                              {formatRelativeTime(session.updatedAt)}
+                            </span>
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              deleteSession(session.id);
+                              if (isActive) router.push("/lisa");
+                            }}
+                            className="absolute right-1 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            aria-label="Eliminar conversación"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
+            </div>
           )}
+
+          {/* Collapsed: spacer */}
+          {collapsed && <div className="flex-1" />}
+
+          {/* ── By Aic studio ── */}
+          {!collapsed && (
+            <div className="px-4 pb-2 shrink-0">
+              <span className="text-[11px] font-medium text-muted-foreground/50 tracking-wide">
+                by Aic studio
+              </span>
+            </div>
+          )}
+
+          {/* ── Secondary nav (Billing, Settings) ── */}
+          <div className="shrink-0 border-t border-border p-3 flex flex-col gap-1">
+            {secondaryNavItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              const link = (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center rounded-lg text-sm font-medium transition-colors",
+                    collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && item.label}
+                </Link>
+              );
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                    <TooltipContent side="right">{item.label}</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return link;
+            })}
+          </div>
+
+          {/* ── Profile + utilities (Claude-style) ── */}
+          <div className="shrink-0 border-t border-border p-3">
+            {collapsed ? (
+              /* Collapsed: stacked icons */
+              <div className="flex flex-col items-center gap-2">
+                <LocaleSwitcher />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={toggleTheme}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{isDark ? "Modo claro" : "Modo oscuro"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{t.common.signOut}</TooltipContent>
+                </Tooltip>
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="text-[11px] font-semibold bg-orange-500 text-white">JD</AvatarFallback>
+                </Avatar>
+              </div>
+            ) : (
+              /* Expanded: Claude-style profile row */
+              <div className="flex flex-col gap-1">
+                {/* Utilities row */}
+                <div className="flex items-center gap-1 px-1">
+                  <LocaleSwitcher />
+                  <button
+                    onClick={toggleTheme}
+                    aria-label={isDark ? "Modo claro" : "Modo oscuro"}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  </button>
+                </div>
+                {/* Profile dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-accent transition-colors text-left">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="text-[13px] font-semibold bg-orange-500 text-white">JD</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[15px] font-semibold truncate leading-tight">John Doe</p>
+                        <p className="text-[13px] text-muted-foreground truncate leading-tight">john@hotel.com</p>
+                      </div>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="top" align="start" className="w-52 rounded-xl mb-1">
+                    <div className="px-2 py-1.5">
+                      <p className="text-[15px] font-semibold">John Doe</p>
+                      <p className="text-[13px] text-muted-foreground">john@hotel.com</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings">{t.nav.settings}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/billing">{t.nav.billing}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive focus:text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {t.common.signOut}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
     </TooltipProvider>

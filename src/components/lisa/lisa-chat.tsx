@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
+import { useChatHistoryStore } from "@/stores/chat-history-store";
 import type { Agent, TrainingMessage, TrainingToolType } from "@/lib/mock-data";
 
 // ─── Response bank ─────────────────────────────────────────────────────────────
@@ -571,24 +572,35 @@ function InputCard({
 
 interface LisaChatProps {
   agentId?: string;
+  conversationId?: string;
   className?: string;
 }
 
-export function LisaChat({ agentId, className }: LisaChatProps) {
+export function LisaChat({ agentId, conversationId, className }: LisaChatProps) {
   const { agents, trainingMessages, addTrainingMessage, clearTrainingMessages } = useAgentStore();
   const { t } = useLocaleStore();
+  const { createSession, addMessage: addMessageToHistory } = useChatHistoryStore();
   const agent = agentId ? agents.find((a) => a.id === agentId) : null;
 
-  const [creationMessages, setCreationMessages] = useState<(TrainingMessage & { displayContent?: string })[]>([]);
+  // Load stored messages for this conversation (if any)
+  const storedMsgs = conversationId
+    ? (useChatHistoryStore.getState().sessions.find((s) => s.id === conversationId)?.messages ?? []).map(
+        (m) => ({ id: m.id, agentId: "lisa-creation", role: m.role as "user" | "agent", content: m.content })
+      )
+    : [];
+
+  const [creationMessages, setCreationMessages] = useState<(TrainingMessage & { displayContent?: string })[]>(storedMsgs);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [displayedMessages, setDisplayedMessages] = useState<(TrainingMessage & { displayContent?: string })[]>([]);
+  const [displayedMessages, setDisplayedMessages] = useState<(TrainingMessage & { displayContent?: string })[]>(storedMsgs);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typewriterRef = useRef<NodeJS.Timeout | null>(null);
-  const lastProcessedCount = useRef(0);
-  const msgIdCounter = useRef(0);
+  const lastProcessedCount = useRef(storedMsgs.length);
+  const msgIdCounter = useRef(storedMsgs.length);
+  // Track session ID — initialized from prop (if loading existing) or null (new conversation)
+  const currentSessionIdRef = useRef<string | null>(conversationId ?? null);
 
   const isTrainingMode = !!agentId;
   const trainingMsgs = agentId ? trainingMessages.filter((m) => m.agentId === agentId) : [];
@@ -644,22 +656,30 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
   useEffect(() => () => { if (typewriterRef.current) clearTimeout(typewriterRef.current); }, []);
 
   const addCreationMessage = useCallback((content: string, responseKey?: string) => {
+    const userMsgId = `lisa-${++msgIdCounter.current}`;
     setCreationMessages((prev) => [
       ...prev,
-      { id: `lisa-${++msgIdCounter.current}`, agentId: "lisa-creation", role: "user", content },
+      { id: userMsgId, agentId: "lisa-creation", role: "user", content },
     ]);
     setIsTyping(true);
+    // Capture session ID at the time of call (ref is stable)
+    const sessId = currentSessionIdRef.current;
     setTimeout(() => {
       const responseContent =
         responseKey && COPILOT_RESPONSES[responseKey]
           ? COPILOT_RESPONSES[responseKey]
           : getCopilotResponse(content);
+      const agentMsgId = `lisa-${++msgIdCounter.current}`;
       setCreationMessages((prev) => [
         ...prev,
-        { id: `lisa-${++msgIdCounter.current}`, agentId: "lisa-creation", role: "agent", content: responseContent },
+        { id: agentMsgId, agentId: "lisa-creation", role: "agent", content: responseContent },
       ]);
+      // Persist agent response to history store
+      if (sessId) {
+        addMessageToHistory(sessId, { id: agentMsgId, role: "agent", content: responseContent });
+      }
     }, 800 + Math.random() * 400);
-  }, []);
+  }, [addMessageToHistory]);
 
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
@@ -668,9 +688,17 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
     if (isTrainingMode && agentId) {
       addTrainingMessage(agentId, trimmed);
     } else {
+      // Create a new session on first message
+      if (!currentSessionIdRef.current) {
+        const newId = createSession(trimmed);
+        currentSessionIdRef.current = newId;
+      }
+      // Save user message to history store
+      const userMsgId = `lisa-${msgIdCounter.current + 1}`;
+      addMessageToHistory(currentSessionIdRef.current, { id: userMsgId, role: "user", content: trimmed });
       addCreationMessage(trimmed);
     }
-  }, [input, isTrainingMode, agentId, addTrainingMessage, addCreationMessage]);
+  }, [input, isTrainingMode, agentId, addTrainingMessage, addCreationMessage, createSession, addMessageToHistory]);
 
   const handleAttachment = useCallback(
     (type: TrainingToolType) => {
@@ -710,10 +738,13 @@ export function LisaChat({ agentId, className }: LisaChatProps) {
     if (typewriterRef.current) clearTimeout(typewriterRef.current);
     setIsTyping(false);
     lastProcessedCount.current = 0;
+    msgIdCounter.current = 0;
+    currentSessionIdRef.current = null;
     if (isTrainingMode && agentId) {
       clearTrainingMessages(agentId);
     } else {
       setCreationMessages([]);
+      setDisplayedMessages([]);
     }
   }, [isTrainingMode, agentId, clearTrainingMessages]);
 

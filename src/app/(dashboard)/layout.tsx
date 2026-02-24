@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
@@ -18,6 +19,7 @@ function usePageTitle(pathname: string): string {
     "/products": t.products.title,
     "/billing": t.nav.billing,
     "/settings": t.nav.settings,
+    "/chats": "Chats",
   };
 
   if (titles[pathname]) return titles[pathname];
@@ -47,7 +49,9 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <Suspense fallback={null}>
+        <Sidebar />
+      </Suspense>
 
       <div className={`transition-all duration-200 ${collapsed ? "lg:pl-16" : "lg:pl-60"}`}>
         <Topbar title={title} />

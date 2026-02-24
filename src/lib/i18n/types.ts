@@ -372,6 +372,7 @@ export interface Translations {
     items: {
       wompi: { name: string; description: string };
       bold: { name: string; description: string };
+      mercadopago: { name: string; description: string };
       invoicing: { name: string; description: string };
       logistics: { name: string; description: string };
       "google-sheets": { name: string; description: string };

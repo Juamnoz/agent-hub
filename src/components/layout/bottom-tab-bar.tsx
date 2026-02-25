@@ -18,6 +18,7 @@ export function BottomTabBar() {
   const pathname = usePathname();
   const conversations = useAgentStore((s) => s.conversations);
   const mobileOpen = useSidebarStore((s) => s.mobileOpen);
+  const modalOpen = useSidebarStore((s) => s.modalOpen);
   const pendingHuman = conversations.filter((c) => c.status === "human_handling").length;
 
   if (pathname === "/agents/new" || pathname.startsWith("/agents/new/")) return null;
@@ -28,7 +29,7 @@ export function BottomTabBar() {
 
   return (
     <AnimatePresence>
-      {!mobileOpen && (
+      {!mobileOpen && !modalOpen && (
     <motion.div
       className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-end justify-center px-3"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}

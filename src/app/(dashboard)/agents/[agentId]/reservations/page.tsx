@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Reservation, ReservationStatus } from "@/lib/mock-data";
@@ -74,6 +75,7 @@ export default function ReservationsPage({
   const { agentId } = use(params);
   const { agents, reservations, loadReservations, updateReservation, addReservation } = useAgentStore();
   const { hasFeature } = usePlanStore();
+  const { setModalOpen } = useSidebarStore();
   const agent = agents.find((a) => a.id === agentId);
 
   const isUnlocked = hasFeature("reservations_engine");
@@ -95,6 +97,13 @@ export default function ReservationsPage({
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [channelManagerConnected, setChannelManagerConnected] = useState(false);
   const [pmsConnected, setPmsConnected] = useState(false);
+
+  // Ocultar barra inferior cuando hay un modal abierto
+  useEffect(() => {
+    const isOpen = showNewDialog || selectedRes !== null;
+    setModalOpen(isOpen);
+    return () => setModalOpen(false);
+  }, [showNewDialog, selectedRes, setModalOpen]);
 
   // Calendar state
   const now = new Date();

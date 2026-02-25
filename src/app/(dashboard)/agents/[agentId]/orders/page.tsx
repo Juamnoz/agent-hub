@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Order, OrderStatus } from "@/lib/mock-data";
@@ -65,6 +66,7 @@ export default function OrdersPage({
   const { agentId } = use(params);
   const { agents, orders, loadOrders, updateOrder } = useAgentStore();
   const { hasFeature } = usePlanStore();
+  const { setModalOpen } = useSidebarStore();
   const agent = agents.find((a) => a.id === agentId);
   const isUnlocked = hasFeature("orders_engine");
 
@@ -77,6 +79,11 @@ export default function OrdersPage({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    setModalOpen(selectedOrder !== null);
+    return () => setModalOpen(false);
+  }, [selectedOrder, setModalOpen]);
 
   const filtered = agentOrders.filter((o) => {
     const matchSearch = !search || o.customerName.toLowerCase().includes(search.toLowerCase());

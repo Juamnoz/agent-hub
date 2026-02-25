@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { MenuItem } from "@/lib/mock-data";
@@ -29,6 +30,7 @@ export default function MenuPage({
   const { agentId } = use(params);
   const { agents, menuItems, loadMenuItems, addMenuItem, updateMenuItem, deleteMenuItem } = useAgentStore();
   const { hasFeature } = usePlanStore();
+  const { setModalOpen } = useSidebarStore();
   const agent = agents.find((a) => a.id === agentId);
   const isUnlocked = hasFeature("menu_manager");
 
@@ -40,6 +42,11 @@ export default function MenuPage({
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editItem, setEditItem] = useState<MenuItem | null>(null);
+
+  useEffect(() => {
+    setModalOpen(showAddDialog || editItem !== null);
+    return () => setModalOpen(false);
+  }, [showAddDialog, editItem, setModalOpen]);
 
   // Group by category
   const categories = Array.from(new Set(agentItems.map((m) => m.category)));

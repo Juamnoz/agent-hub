@@ -182,21 +182,25 @@ export default function AgentDetailPage({
     (c) => c.agentId === agentId && c.status === "human_handling"
   ).length;
 
-  // Slot 6 cambia según el tipo de agente
-  const moduleSlot = (() => {
+  // Slots que reemplazan "Catálogo" según el tipo de agente (pueden ser 1 ó 2)
+  const moduleSlots = (() => {
     switch (agent.algorithmType) {
       case "hotel":
+        return [{ id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" }];
       case "appointments":
-        return { id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" };
+        return [{ id: "reservations", label: "Citas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "violet" }];
       case "restaurant":
-        return { id: "menu", label: "Menú", icon: UtensilsCrossed, href: `/agents/${agentId}/menu`, configured: true, stat: "", color: "red" };
+        return [
+          { id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" },
+          { id: "menu", label: "Menú", icon: UtensilsCrossed, href: `/agents/${agentId}/menu`, configured: true, stat: "", color: "red" },
+        ];
       case "ecommerce":
       case "whatsapp-store":
-        return { id: "orders", label: "Pedidos", icon: ShoppingCart, href: `/agents/${agentId}/orders`, configured: true, stat: "", color: "violet" };
+        return [{ id: "orders", label: "Pedidos", icon: ShoppingCart, href: `/agents/${agentId}/orders`, configured: true, stat: "", color: "violet" }];
       case "inmobiliaria":
-        return { id: "properties", label: "Propiedades", icon: Building2, href: `/agents/${agentId}/properties`, configured: true, stat: "", color: "teal" };
+        return [{ id: "properties", label: "Propiedades", icon: Building2, href: `/agents/${agentId}/properties`, configured: true, stat: "", color: "teal" }];
       default:
-        return { id: "products", label: "Catálogo", icon: ShoppingBag, href: `/agents/${agentId}/products`, configured: hasProducts, stat: hasProducts ? `${agentProducts.length}` : "", color: "violet" };
+        return [{ id: "products", label: "Catálogo", icon: ShoppingBag, href: `/agents/${agentId}/products`, configured: hasProducts, stat: hasProducts ? `${agentProducts.length}` : "", color: "violet" }];
     }
   })();
 
@@ -246,7 +250,7 @@ export default function AgentDetailPage({
       stat: "",
       color: "gray",
     },
-    moduleSlot,
+    ...moduleSlots,
     {
       id: "stats",
       label: t.agents.setupCards.analyticsTitle,

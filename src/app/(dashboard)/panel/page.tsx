@@ -216,7 +216,7 @@ export default function PanelPage() {
               Nuevo
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 pb-2">
+          <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 py-2">
             {agents.map((agent) => (
               <AgentCard
                 key={agent.id}

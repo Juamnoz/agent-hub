@@ -15,6 +15,9 @@ import {
   type CommunicationStyle,
   type TrainingMessage,
   type TrainingToolType,
+  type Reservation,
+  type Order,
+  type MenuItem,
   mockAgents,
   mockFaqs,
   mockProducts,
@@ -27,9 +30,11 @@ import {
   mockWeeklyMessages,
   mockIntegrations,
   mockTrainingResponses,
-  PLAN_INTEGRATION_LIMITS,
-  CURRENT_PLAN,
+  mockReservations,
+  mockOrders,
+  mockMenuItems,
 } from "@/lib/mock-data";
+import { usePlanStore } from "@/stores/plan-store";
 import { sendWebhook } from "@/lib/webhook";
 
 interface AgentStore {
@@ -45,6 +50,9 @@ interface AgentStore {
   integrations: Integration[];
   stats: DashboardStats;
   weeklyMessages: WeeklyMessageData[];
+  reservations: Reservation[];
+  orders: Order[];
+  menuItems: MenuItem[];
 
   // Agent CRUD
   setCurrentAgent: (agent: Agent | null) => void;
@@ -102,6 +110,21 @@ interface AgentStore {
     credentials: Record<string, string>;
   }) => void;
 
+  // Reservations
+  loadReservations: (agentId: string) => void;
+  addReservation: (reservation: Omit<Reservation, "id" | "createdAt">) => void;
+  updateReservation: (id: string, updates: Partial<Reservation>) => void;
+
+  // Orders
+  loadOrders: (agentId: string) => void;
+  updateOrder: (id: string, updates: Partial<Order>) => void;
+
+  // Menu
+  loadMenuItems: (agentId: string) => void;
+  addMenuItem: (item: Omit<MenuItem, "id">) => void;
+  updateMenuItem: (id: string, updates: Partial<MenuItem>) => void;
+  deleteMenuItem: (id: string) => void;
+
   // Training Chat
   trainingMessages: TrainingMessage[];
   addTrainingMessage: (agentId: string, content: string, toolType?: TrainingToolType, attachmentName?: string) => void;
@@ -125,6 +148,9 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   trainingMessages: [],
   stats: mockDashboardStats,
   weeklyMessages: mockWeeklyMessages,
+  reservations: [],
+  orders: [],
+  menuItems: [],
 
   // -----------------------------------------------------------------------
   // Agent CRUD
@@ -493,11 +519,11 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     const integration = integrations.find((i) => i.id === integrationId);
     if (!integration) return;
 
-    // If enabling, check plan limit
+    // If enabling, check plan limit via plan-store
     if (!integration.enabled) {
       const activeCount = integrations.filter((i) => i.enabled).length;
-      const limit = PLAN_INTEGRATION_LIMITS[CURRENT_PLAN];
-      if (activeCount >= limit) return;
+      const canAdd = usePlanStore.getState().canAddIntegration(activeCount);
+      if (!canAdd) return;
     }
 
     set({
@@ -514,6 +540,80 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           ? { ...i, ...(config.environment ? { environment: config.environment } : {}), credentials: config.credentials, configured: true }
           : i
       ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Reservations
+  // -----------------------------------------------------------------------
+
+  loadReservations: (agentId) => {
+    const reservations = mockReservations.filter((r) => r.agentId === agentId);
+    set({ reservations });
+  },
+
+  addReservation: (reservationData) => {
+    const newReservation: Reservation = {
+      ...reservationData,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    set((state) => ({ reservations: [...state.reservations, newReservation] }));
+  },
+
+  updateReservation: (id, updates) => {
+    set((state) => ({
+      reservations: state.reservations.map((r) =>
+        r.id === id ? { ...r, ...updates } : r
+      ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Orders
+  // -----------------------------------------------------------------------
+
+  loadOrders: (agentId) => {
+    const orders = mockOrders.filter((o) => o.agentId === agentId);
+    set({ orders });
+  },
+
+  updateOrder: (id, updates) => {
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        o.id === id ? { ...o, ...updates } : o
+      ),
+    }));
+  },
+
+  // -----------------------------------------------------------------------
+  // Menu Items
+  // -----------------------------------------------------------------------
+
+  loadMenuItems: (agentId) => {
+    const menuItems = mockMenuItems.filter((m) => m.agentId === agentId);
+    set({ menuItems });
+  },
+
+  addMenuItem: (itemData) => {
+    const newItem: MenuItem = {
+      ...itemData,
+      id: crypto.randomUUID(),
+    };
+    set((state) => ({ menuItems: [...state.menuItems, newItem] }));
+  },
+
+  updateMenuItem: (id, updates) => {
+    set((state) => ({
+      menuItems: state.menuItems.map((m) =>
+        m.id === id ? { ...m, ...updates } : m
+      ),
+    }));
+  },
+
+  deleteMenuItem: (id) => {
+    set((state) => ({
+      menuItems: state.menuItems.filter((m) => m.id !== id),
     }));
   },
 

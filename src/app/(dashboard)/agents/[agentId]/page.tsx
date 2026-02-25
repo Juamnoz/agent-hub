@@ -26,6 +26,10 @@ import {
   ShoppingBag,
   MessageSquare,
   Settings,
+  CalendarDays,
+  UtensilsCrossed,
+  ShoppingCart,
+  Building2,
 } from "lucide-react";
 import { IconWhatsApp, IconGmail, IconGoogleSheets, IconGoogleCalendar, IconWompi, IconBold, IconShopify, IconWooCommerce, IconMercadoPago } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
@@ -178,6 +182,24 @@ export default function AgentDetailPage({
     (c) => c.agentId === agentId && c.status === "human_handling"
   ).length;
 
+  // Slot 6 cambia según el tipo de agente
+  const moduleSlot = (() => {
+    switch (agent.algorithmType) {
+      case "hotel":
+      case "appointments":
+        return { id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" };
+      case "restaurant":
+        return { id: "menu", label: "Menú", icon: UtensilsCrossed, href: `/agents/${agentId}/menu`, configured: true, stat: "", color: "red" };
+      case "ecommerce":
+      case "whatsapp-store":
+        return { id: "orders", label: "Pedidos", icon: ShoppingCart, href: `/agents/${agentId}/orders`, configured: true, stat: "", color: "violet" };
+      case "inmobiliaria":
+        return { id: "properties", label: "Propiedades", icon: Building2, href: `/agents/${agentId}/properties`, configured: true, stat: "", color: "teal" };
+      default:
+        return { id: "products", label: "Catálogo", icon: ShoppingBag, href: `/agents/${agentId}/products`, configured: hasProducts, stat: hasProducts ? `${agentProducts.length}` : "", color: "violet" };
+    }
+  })();
+
   const storyItems = [
     {
       id: "faqs",
@@ -224,15 +246,7 @@ export default function AgentDetailPage({
       stat: "",
       color: "gray",
     },
-    {
-      id: "products",
-      label: "Catálogo",
-      icon: ShoppingBag,
-      href: `/agents/${agentId}/products`,
-      configured: hasProducts,
-      stat: hasProducts ? `${agentProducts.length}` : "",
-      color: "violet",
-    },
+    moduleSlot,
     {
       id: "stats",
       label: t.agents.setupCards.analyticsTitle,
@@ -275,6 +289,8 @@ export default function AgentDetailPage({
     slate: { circle: "bg-slate-100 dark:bg-slate-500/20", icon: "text-slate-600 dark:text-slate-400" },
     white: { circle: "bg-white dark:bg-white/10 border border-border", icon: "text-gray-700 dark:text-gray-300" },
     pink: { circle: "bg-pink-100 dark:bg-pink-500/20", icon: "text-pink-500 dark:text-pink-400" },
+    red: { circle: "bg-red-100 dark:bg-red-500/20", icon: "text-red-600 dark:text-red-400" },
+    teal: { circle: "bg-teal-100 dark:bg-teal-500/20", icon: "text-teal-600 dark:text-teal-400" },
   };
 
   const fadeUp = (delay: number) => ({

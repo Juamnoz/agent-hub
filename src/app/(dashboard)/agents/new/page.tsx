@@ -34,6 +34,8 @@ import {
 } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
+import { usePlanStore } from "@/stores/plan-store";
+import { PLAN_AGENT_LIMITS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -290,6 +292,7 @@ export default function NewAgentPage() {
   const { addAgent, updateAgent, addFaq, deleteFaq, loadFaqs, faqs, agents } =
     useAgentStore();
   const { t } = useLocaleStore();
+  const { currentPlan, canAddAgent } = usePlanStore();
 
   // Wizard navigation
   const [step, setStep] = useState(0);
@@ -339,9 +342,11 @@ export default function NewAgentPage() {
   const progress = step / (TOTAL_STEPS - 1);
 
   // ── CTA enable condition ────────────────────────────────────
+  const atAgentLimit = !canAddAgent(agents.length);
+
   const canContinue =
     step === 0
-      ? algorithmType !== null
+      ? algorithmType !== null && !atAgentLimit
       : step === 1
       ? name.trim().length > 0 && hotelName.trim().length > 0
       : step === 2
@@ -502,6 +507,34 @@ export default function NewAgentPage() {
             <p className="text-[15px] text-muted-foreground leading-snug">
               Elige el tipo para pre-configurar tu agente inteligente
             </p>
+          </div>
+        )}
+
+        {/* Plan limit banner at step 0 */}
+        {step === 0 && !canAddAgent(agents.length) && (
+          <div className="rounded-2xl bg-amber-50 dark:bg-amber-500/10 ring-1 ring-amber-200 dark:ring-amber-500/20 px-4 py-4 space-y-2">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/20">
+                <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-amber-800 dark:text-amber-300 leading-tight">
+                  Límite alcanzado — Plan {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
+                </p>
+                <p className="text-[14px] text-amber-700/80 dark:text-amber-400/70 mt-0.5 leading-snug">
+                  Has alcanzado el límite de {PLAN_AGENT_LIMITS[currentPlan]} agente{PLAN_AGENT_LIMITS[currentPlan] !== 1 ? "s" : ""} de tu plan. Actualiza para crear más.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/billing")}
+              className="w-full rounded-xl py-2.5 text-[15px] font-semibold text-white"
+              style={{
+                background: "linear-gradient(148deg, #fb923c 0%, #f97316 52%, #d64602 100%)",
+              }}
+            >
+              Ver planes → Actualizar
+            </button>
           </div>
         )}
 

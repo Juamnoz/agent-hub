@@ -222,7 +222,137 @@ export const PLAN_AGENT_LIMITS: Record<PlanTier, number> = {
   enterprise: Infinity,
 };
 
+export const PLAN_MESSAGE_LIMITS: Record<PlanTier, number> = {
+  starter: 1000,
+  pro: 3000,
+  business: 15000,
+  enterprise: Infinity,
+};
+
+export const PLAN_WHATSAPP_LIMITS: Record<PlanTier, number> = {
+  starter: 1,
+  pro: 3,
+  business: 5,
+  enterprise: Infinity,
+};
+
+export type PlanFeature =
+  | "advanced_analytics"
+  | "reservations_engine"
+  | "orders_engine"
+  | "menu_manager"
+  | "properties_manager"
+  | "custom_integrations"
+  | "channel_manager"
+  | "pms_integration"
+  | "white_label"
+  | "priority_support";
+
+export const PLAN_FEATURES: Record<PlanTier, PlanFeature[]> = {
+  starter: [],
+  pro: ["advanced_analytics", "reservations_engine", "orders_engine", "menu_manager", "properties_manager"],
+  business: ["advanced_analytics", "reservations_engine", "orders_engine", "menu_manager", "properties_manager", "custom_integrations", "priority_support", "channel_manager", "pms_integration"],
+  enterprise: ["advanced_analytics", "reservations_engine", "orders_engine", "menu_manager", "properties_manager", "custom_integrations", "priority_support", "channel_manager", "pms_integration", "white_label"],
+};
+
+export const ALGORITHM_MODULES: Record<AlgorithmType, string[]> = {
+  hotel: ["reservations"],
+  restaurant: ["reservations", "menu"],
+  ecommerce: ["orders"],
+  "whatsapp-store": ["orders"],
+  appointments: ["reservations"],
+  inmobiliaria: ["properties"],
+};
+
+export const MODULE_FEATURE_MAP: Record<string, PlanFeature> = {
+  reservations: "reservations_engine",
+  orders: "orders_engine",
+  menu: "menu_manager",
+  properties: "properties_manager",
+};
+
 export const CURRENT_PLAN: PlanTier = "pro";
+
+// ---------------------------------------------------------------------------
+// Reservation Types
+// ---------------------------------------------------------------------------
+
+export type ReservationStatus = "pending" | "confirmed" | "cancelled";
+
+export interface Reservation {
+  id: string;
+  agentId: string;
+  guestName: string;
+  guestPhone: string;
+  checkIn: string;
+  checkOut: string;
+  roomType: string;
+  roomNumber?: string;
+  guests: number;
+  totalPrice: number;
+  status: ReservationStatus;
+  notes?: string;
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Order Types
+// ---------------------------------------------------------------------------
+
+export type OrderStatus = "new" | "processing" | "shipped" | "delivered" | "cancelled";
+
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface Order {
+  id: string;
+  agentId: string;
+  customerName: string;
+  customerPhone: string;
+  items: OrderItem[];
+  total: number;
+  status: OrderStatus;
+  address?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Menu Types
+// ---------------------------------------------------------------------------
+
+export interface MenuItem {
+  id: string;
+  agentId: string;
+  category: string;
+  name: string;
+  description?: string;
+  price: number;
+  isAvailable: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Property Types
+// ---------------------------------------------------------------------------
+
+export type PropertyStatus = "available" | "sold" | "rented";
+
+export interface Property {
+  id: string;
+  agentId: string;
+  title: string;
+  address: string;
+  price: number;
+  priceType: "sale" | "rent";
+  status: PropertyStatus;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  imageUrl?: string;
+}
 
 export interface DashboardStats {
   totalAgents: number;
@@ -1041,4 +1171,179 @@ export const mockContacts: HotelContact[] = [
     description: "Policía, bomberos, ambulancia",
     isActive: true,
   },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Reservations (for agent-001 — hotel)
+// ---------------------------------------------------------------------------
+
+export const mockReservations: Reservation[] = [
+  {
+    id: "res-001",
+    agentId: "agent-001",
+    guestName: "Carlos Martinez",
+    guestPhone: "+52 55 1234 5678",
+    checkIn: "2026-02-20",
+    checkOut: "2026-02-24",
+    roomType: "Suite Junior",
+    roomNumber: "305",
+    guests: 2,
+    totalPrice: 4800,
+    status: "confirmed",
+    notes: "Huésped frecuente. Prefiere vista al mar.",
+    createdAt: "2026-02-15T09:00:00Z",
+  },
+  {
+    id: "res-002",
+    agentId: "agent-001",
+    guestName: "Sarah Johnson",
+    guestPhone: "+1 310 555 0199",
+    checkIn: "2026-02-20",
+    checkOut: "2026-02-22",
+    roomType: "Habitación Estándar",
+    roomNumber: "112",
+    guests: 1,
+    totalPrice: 1800,
+    status: "confirmed",
+    notes: "Llega a las 2 PM. Traslado aeropuerto coordinado.",
+    createdAt: "2026-02-14T18:30:00Z",
+  },
+  {
+    id: "res-003",
+    agentId: "agent-001",
+    guestName: "Miguel Ángel Torres",
+    guestPhone: "+52 81 4444 9876",
+    checkIn: "2026-02-25",
+    checkOut: "2026-02-28",
+    roomType: "Suite Presidencial",
+    roomNumber: "501",
+    guests: 4,
+    totalPrice: 12000,
+    status: "pending",
+    notes: "Solicita cuna extra para bebé.",
+    createdAt: "2026-02-20T11:00:00Z",
+  },
+  {
+    id: "res-004",
+    agentId: "agent-001",
+    guestName: "Valentina Ríos",
+    guestPhone: "+57 315 678 9012",
+    checkIn: "2026-02-22",
+    checkOut: "2026-02-25",
+    roomType: "Habitación Deluxe",
+    roomNumber: "217",
+    guests: 2,
+    totalPrice: 3600,
+    status: "pending",
+    createdAt: "2026-02-19T14:20:00Z",
+  },
+  {
+    id: "res-005",
+    agentId: "agent-001",
+    guestName: "James Wilson",
+    guestPhone: "+44 7700 900123",
+    checkIn: "2026-02-10",
+    checkOut: "2026-02-14",
+    roomType: "Habitación Estándar",
+    roomNumber: "103",
+    guests: 2,
+    totalPrice: 2800,
+    status: "cancelled",
+    notes: "Canceló por cambio de planes.",
+    createdAt: "2026-02-05T09:00:00Z",
+  },
+  {
+    id: "res-006",
+    agentId: "agent-001",
+    guestName: "Ana López",
+    guestPhone: "+52 33 9876 5432",
+    checkIn: "2026-03-01",
+    checkOut: "2026-03-04",
+    roomType: "Suite Junior",
+    roomNumber: "308",
+    guests: 2,
+    totalPrice: 4200,
+    status: "confirmed",
+    createdAt: "2026-02-21T10:00:00Z",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Orders (for agent-003 — restaurant/e-commerce)
+// ---------------------------------------------------------------------------
+
+export const mockOrders: Order[] = [
+  {
+    id: "ord-001",
+    agentId: "agent-003",
+    customerName: "Pedro Ramírez",
+    customerPhone: "+52 55 5555 1234",
+    items: [
+      { name: "Tacos al Pastor x3", quantity: 2, unitPrice: 85 },
+      { name: "Mezcal Artesanal", quantity: 1, unitPrice: 120 },
+    ],
+    total: 290,
+    status: "delivered",
+    address: "Calle Orizaba 25, Col. Roma Norte",
+    createdAt: "2026-02-20T19:30:00Z",
+  },
+  {
+    id: "ord-002",
+    agentId: "agent-003",
+    customerName: "Laura Sánchez",
+    customerPhone: "+52 55 6789 0123",
+    items: [
+      { name: "Tacos al Pastor x3", quantity: 1, unitPrice: 85 },
+      { name: "Churros con Chocolate", quantity: 1, unitPrice: 65 },
+    ],
+    total: 150,
+    status: "processing",
+    address: "Av. Álvaro Obregón 40, Col. Roma",
+    createdAt: "2026-02-21T20:15:00Z",
+  },
+  {
+    id: "ord-003",
+    agentId: "agent-003",
+    customerName: "Roberto Díaz",
+    customerPhone: "+52 55 9999 4321",
+    items: [
+      { name: "Mezcal Artesanal", quantity: 2, unitPrice: 120 },
+    ],
+    total: 240,
+    status: "new",
+    address: "Tonalá 12, Col. Roma Sur",
+    createdAt: "2026-02-21T21:00:00Z",
+  },
+  {
+    id: "ord-004",
+    agentId: "agent-003",
+    customerName: "Sofía Mendez",
+    customerPhone: "+52 55 3333 7890",
+    items: [
+      { name: "Tacos al Pastor x3", quantity: 3, unitPrice: 85 },
+      { name: "Churros con Chocolate", quantity: 2, unitPrice: 65 },
+      { name: "Mezcal Artesanal", quantity: 1, unitPrice: 120 },
+    ],
+    total: 505,
+    status: "shipped",
+    address: "Sonora 88, Col. Condesa",
+    createdAt: "2026-02-21T18:45:00Z",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Mock Menu Items (for agent-003 — restaurant)
+// ---------------------------------------------------------------------------
+
+export const mockMenuItems: MenuItem[] = [
+  { id: "menu-001", agentId: "agent-003", category: "Entradas", name: "Guacamole", description: "Aguacate fresco con tomate, cebolla y chile serrano", price: 65, isAvailable: true },
+  { id: "menu-002", agentId: "agent-003", category: "Entradas", name: "Elote en vaso", description: "Maíz tierno con crema, queso cotija y chile", price: 45, isAvailable: true },
+  { id: "menu-003", agentId: "agent-003", category: "Platillos principales", name: "Tacos al Pastor", description: "Tres tacos de cerdo adobado con piña y cilantro", price: 85, isAvailable: true },
+  { id: "menu-004", agentId: "agent-003", category: "Platillos principales", name: "Enchiladas Verdes", description: "Tres enchiladas bañadas en salsa verde con pollo y crema", price: 110, isAvailable: true },
+  { id: "menu-005", agentId: "agent-003", category: "Platillos principales", name: "Carne Asada", description: "250g de arrachera a la parrilla con guarnición", price: 185, isAvailable: false },
+  { id: "menu-006", agentId: "agent-003", category: "Bebidas", name: "Mezcal Artesanal", description: "100% agave espadín, Oaxaca", price: 120, isAvailable: true },
+  { id: "menu-007", agentId: "agent-003", category: "Bebidas", name: "Agua fresca", description: "Jamaica, horchata o tamarindo", price: 35, isAvailable: true },
+  { id: "menu-008", agentId: "agent-003", category: "Bebidas", name: "Cerveza artesanal", description: "IPA o Stout local", price: 80, isAvailable: true },
+  { id: "menu-009", agentId: "agent-003", category: "Postres", name: "Churros con Chocolate", description: "Seis churros con chocolate caliente", price: 65, isAvailable: true },
+  { id: "menu-010", agentId: "agent-003", category: "Postres", name: "Pastel de tres leches", description: "Porción de pastel esponjoso con crema batida", price: 75, isAvailable: true },
 ];

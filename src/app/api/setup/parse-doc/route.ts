@@ -23,20 +23,25 @@ export async function POST(req: NextRequest) {
 
   let text = "";
 
-  if (name.endsWith(".txt") || name.endsWith(".md")) {
-    text = buffer.toString("utf-8");
-  } else if (name.endsWith(".pdf")) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require("pdf-parse");
-    const result = await pdfParse(buffer);
-    text = result.text;
-  } else if (name.endsWith(".docx")) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mammoth = require("mammoth");
-    const result = await mammoth.extractRawText({ buffer });
-    text = result.value;
-  } else {
-    return NextResponse.json({ error: "Formato no soportado. Usa .txt, .pdf o .docx" }, { status: 400 });
+  try {
+    if (name.endsWith(".txt") || name.endsWith(".md")) {
+      text = buffer.toString("utf-8");
+    } else if (name.endsWith(".pdf")) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require("pdf-parse");
+      const result = await pdfParse(buffer);
+      text = result.text;
+    } else if (name.endsWith(".docx")) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mammoth = require("mammoth");
+      const result = await mammoth.extractRawText({ buffer });
+      text = result.value;
+    } else {
+      return NextResponse.json({ error: "Formato no soportado. Usa .txt, .pdf o .docx" }, { status: 400 });
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `Error interno: ${msg}` }, { status: 500 });
   }
 
   return NextResponse.json({ text: text.trim() });

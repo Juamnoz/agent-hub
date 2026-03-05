@@ -169,7 +169,17 @@ export default function AgentSetupPage({
   }
 
   const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
-  const isValid = agentName.trim() && prompt.trim() && escalationPhone.trim() && adminPhone.trim();
+
+  // Colombia: +57 + 10 dígitos (móvil 3XX XXX XXXX o fijo)
+  function colDigits(phone: string) {
+    return phone.replace(/\D/g, "").replace(/^57/, "");
+  }
+  function isValidColPhone(phone: string) {
+    const digits = colDigits(phone);
+    return digits.length === 10;
+  }
+
+  const isValid = agentName.trim() && prompt.trim() && isValidColPhone(escalationPhone) && isValidColPhone(adminPhone);
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -675,13 +685,29 @@ export default function AgentSetupPage({
               <p className="text-[12px] text-white/35 pl-5">
                 A este número se enviarán las notificaciones cuando el agente necesite escalar una conversación a un humano.
               </p>
-              <input
-                type="tel"
-                value={escalationPhone}
-                onChange={(e) => setEscalationPhone(e.target.value)}
-                placeholder="+52 1 55 1234 5678"
-                className="w-full rounded-xl bg-white/6 px-4 py-3 text-[16px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-violet-500/50 transition-all"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={escalationPhone}
+                  onChange={(e) => setEscalationPhone(e.target.value)}
+                  placeholder="+57 300 123 4567"
+                  className={`w-full rounded-xl bg-white/6 px-4 py-3 pr-16 text-[16px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
+                    escalationPhone && isValidColPhone(escalationPhone)
+                      ? "ring-emerald-500/50"
+                      : escalationPhone
+                      ? "ring-red-500/40"
+                      : "ring-white/10 focus:ring-violet-500/50"
+                  }`}
+                />
+                <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] tabular-nums font-medium ${
+                  isValidColPhone(escalationPhone) ? "text-emerald-400" : "text-white/25"
+                }`}>
+                  {colDigits(escalationPhone).length}/10
+                </span>
+              </div>
+              <p className="text-[11px] text-white/25 pl-0.5">
+                Formato: +57 seguido de 10 dígitos · ej. +57 300 123 4567
+              </p>
             </div>
 
             <div className="h-px bg-white/6" />
@@ -695,15 +721,28 @@ export default function AgentSetupPage({
               <p className="text-[12px] text-white/35 pl-5">
                 Solo este número tendrá acceso de administración al agente. Si el agente recibe un mensaje desde este número, activará los comandos de gestión y escalamiento.
               </p>
-              <input
-                type="tel"
-                value={adminPhone}
-                onChange={(e) => setAdminPhone(e.target.value)}
-                placeholder="+52 1 55 1234 5678"
-                className="w-full rounded-xl bg-white/6 px-4 py-3 text-[16px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-emerald-500/50 transition-all"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value)}
+                  placeholder="+57 300 123 4567"
+                  className={`w-full rounded-xl bg-white/6 px-4 py-3 pr-16 text-[16px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
+                    adminPhone && isValidColPhone(adminPhone)
+                      ? "ring-emerald-500/50"
+                      : adminPhone
+                      ? "ring-red-500/40"
+                      : "ring-white/10 focus:ring-emerald-500/50"
+                  }`}
+                />
+                <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] tabular-nums font-medium ${
+                  isValidColPhone(adminPhone) ? "text-emerald-400" : "text-white/25"
+                }`}>
+                  {colDigits(adminPhone).length}/10
+                </span>
+              </div>
               <p className="text-[11px] text-white/25 pl-0.5">
-                Formato internacional: +[código país] [número] · ej. +521XXXXXXXXXX
+                Formato: +57 seguido de 10 dígitos · ej. +57 300 123 4567
               </p>
             </div>
           </div>

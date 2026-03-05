@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useRef } from "react";
+import { use, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -58,6 +58,127 @@ function parseFaqsFromText(text: string): { question: string; answer: string }[]
     question: p.split("\n")[0].trim(),
     answer: p.split("\n").slice(1).join(" ").trim(),
   }));
+}
+
+const COUNTRIES = [
+  { code: "+57",  flag: "🇨🇴", name: "Colombia",       digits: 10 },
+  { code: "+52",  flag: "🇲🇽", name: "México",         digits: 10 },
+  { code: "+1",   flag: "🇺🇸", name: "Estados Unidos", digits: 10 },
+  { code: "+34",  flag: "🇪🇸", name: "España",         digits: 9  },
+  { code: "+54",  flag: "🇦🇷", name: "Argentina",      digits: 10 },
+  { code: "+56",  flag: "🇨🇱", name: "Chile",          digits: 9  },
+  { code: "+51",  flag: "🇵🇪", name: "Perú",           digits: 9  },
+  { code: "+593", flag: "🇪🇨", name: "Ecuador",        digits: 9  },
+  { code: "+58",  flag: "🇻🇪", name: "Venezuela",      digits: 10 },
+  { code: "+506", flag: "🇨🇷", name: "Costa Rica",     digits: 8  },
+  { code: "+507", flag: "🇵🇦", name: "Panamá",         digits: 8  },
+  { code: "+502", flag: "🇬🇹", name: "Guatemala",      digits: 8  },
+  { code: "+503", flag: "🇸🇻", name: "El Salvador",    digits: 8  },
+  { code: "+504", flag: "🇭🇳", name: "Honduras",       digits: 8  },
+  { code: "+505", flag: "🇳🇮", name: "Nicaragua",      digits: 8  },
+];
+
+function PhoneField({
+  value, onChange, placeholder, ringColor,
+}: {
+  value: string;
+  onChange: (full: string) => void;
+  placeholder?: string;
+  ringColor?: string;
+}) {
+  const defaultCountry = COUNTRIES[0]; // Colombia
+  const [country, setCountry] = useState(defaultCountry);
+  const [local, setLocal] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sync outward value
+  useEffect(() => {
+    const digits = local.replace(/\D/g, "");
+    onChange(digits ? `${country.code}${digits}` : "");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local, country]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const digits = local.replace(/\D/g, "").length;
+  const valid = digits === country.digits;
+  const hasInput = local.trim().length > 0;
+
+  const ringClass = hasInput
+    ? valid
+      ? "ring-emerald-500/50"
+      : "ring-red-500/40"
+    : `ring-white/10 focus-within:${ringColor ?? "ring-orange-500/50"}`;
+
+  return (
+    <div ref={ref} className="relative">
+      <div className={`flex rounded-xl bg-white/6 ring-1 transition-all overflow-hidden ${ringClass}`}>
+        {/* Country selector button */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-1.5 px-3 py-3 border-r border-white/10 shrink-0 hover:bg-white/6 transition-colors"
+        >
+          <span className="text-[18px] leading-none">{country.flag}</span>
+          <span className="text-[13px] text-white/50 font-medium tabular-nums">{country.code}</span>
+          <ChevronDown className={`h-3 w-3 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        {/* Number input */}
+        <input
+          type="tel"
+          value={local}
+          onChange={(e) => setLocal(e.target.value)}
+          placeholder={placeholder ?? "300 123 4567"}
+          className="flex-1 bg-transparent px-3 py-3 text-[16px] text-white placeholder-white/25 outline-none min-w-0"
+        />
+
+        {/* Digit counter */}
+        <span className={`flex items-center pr-3.5 text-[12px] tabular-nums font-medium shrink-0 ${valid ? "text-emerald-400" : "text-white/25"}`}>
+          {digits}/{country.digits}
+        </span>
+      </div>
+
+      {/* Dropdown */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.12 }}
+            className="absolute left-0 top-full mt-1.5 z-50 w-full rounded-2xl bg-[#222] ring-1 ring-white/10 shadow-xl overflow-hidden"
+          >
+            <div className="max-h-52 overflow-y-auto">
+              {COUNTRIES.map((c) => (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => { setCountry(c); setOpen(false); }}
+                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/8 ${
+                    c.code === country.code ? "bg-orange-500/10" : ""
+                  }`}
+                >
+                  <span className="text-[18px] leading-none">{c.flag}</span>
+                  <span className="flex-1 text-[14px] text-white/80">{c.name}</span>
+                  <span className="text-[13px] text-white/35 tabular-nums">{c.code}</span>
+                  <span className="text-[11px] text-white/20">{c.digits} díg.</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 const AGENT_LABELS: Record<string, { name: string; color: string }> = {
@@ -170,16 +291,7 @@ export default function AgentSetupPage({
 
   const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
 
-  // Colombia: +57 + 10 dígitos (móvil 3XX XXX XXXX o fijo)
-  function colDigits(phone: string) {
-    return phone.replace(/\D/g, "").replace(/^57/, "");
-  }
-  function isValidColPhone(phone: string) {
-    const digits = colDigits(phone);
-    return digits.length === 10;
-  }
-
-  const isValid = agentName.trim() && prompt.trim() && isValidColPhone(escalationPhone) && isValidColPhone(adminPhone);
+  const isValid = agentName.trim() && prompt.trim() && escalationPhone.trim() && adminPhone.trim();
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -685,29 +797,7 @@ export default function AgentSetupPage({
               <p className="text-[12px] text-white/35 pl-5">
                 A este número se enviarán las notificaciones cuando el agente necesite escalar una conversación a un humano.
               </p>
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={escalationPhone}
-                  onChange={(e) => setEscalationPhone(e.target.value)}
-                  placeholder="+57 300 123 4567"
-                  className={`w-full rounded-xl bg-white/6 px-4 py-3 pr-16 text-[16px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
-                    escalationPhone && isValidColPhone(escalationPhone)
-                      ? "ring-emerald-500/50"
-                      : escalationPhone
-                      ? "ring-red-500/40"
-                      : "ring-white/10 focus:ring-violet-500/50"
-                  }`}
-                />
-                <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] tabular-nums font-medium ${
-                  isValidColPhone(escalationPhone) ? "text-emerald-400" : "text-white/25"
-                }`}>
-                  {colDigits(escalationPhone).length}/10
-                </span>
-              </div>
-              <p className="text-[11px] text-white/25 pl-0.5">
-                Formato: +57 seguido de 10 dígitos · ej. +57 300 123 4567
-              </p>
+              <PhoneField value={escalationPhone} onChange={setEscalationPhone} ringColor="ring-violet-500/50" />
             </div>
 
             <div className="h-px bg-white/6" />
@@ -721,29 +811,7 @@ export default function AgentSetupPage({
               <p className="text-[12px] text-white/35 pl-5">
                 Solo este número tendrá acceso de administración al agente. Si el agente recibe un mensaje desde este número, activará los comandos de gestión y escalamiento.
               </p>
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={adminPhone}
-                  onChange={(e) => setAdminPhone(e.target.value)}
-                  placeholder="+57 300 123 4567"
-                  className={`w-full rounded-xl bg-white/6 px-4 py-3 pr-16 text-[16px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
-                    adminPhone && isValidColPhone(adminPhone)
-                      ? "ring-emerald-500/50"
-                      : adminPhone
-                      ? "ring-red-500/40"
-                      : "ring-white/10 focus:ring-emerald-500/50"
-                  }`}
-                />
-                <span className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] tabular-nums font-medium ${
-                  isValidColPhone(adminPhone) ? "text-emerald-400" : "text-white/25"
-                }`}>
-                  {colDigits(adminPhone).length}/10
-                </span>
-              </div>
-              <p className="text-[11px] text-white/25 pl-0.5">
-                Formato: +57 seguido de 10 dígitos · ej. +57 300 123 4567
-              </p>
+              <PhoneField value={adminPhone} onChange={setAdminPhone} ringColor="ring-emerald-500/50" />
             </div>
           </div>
         </motion.div>

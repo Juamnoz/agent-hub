@@ -19,6 +19,8 @@ import {
   Phone,
   ShieldCheck,
   MessageCircle,
+  ImagePlus,
+  X,
 } from "lucide-react";
 
 async function parseDocument(file: File): Promise<string> {
@@ -194,10 +196,21 @@ const TONES = [
   { id: "enthusiastic",label: "Entusiasta",  desc: "Dinámico y motivador" },
 ];
 
+const MAX_IMAGES = 20;
+
 interface Faq {
   id: string;
   question: string;
   answer: string;
+}
+
+interface AgentImage {
+  id: string;
+  title: string;
+  url: string;       // URL pública tras subir
+  preview: string;   // blob URL local mientras sube
+  uploading: boolean;
+  error: string;
 }
 
 function genId() {
@@ -233,6 +246,8 @@ export default function AgentSetupPage({
   const [escalationPhone, setEscalationPhone] = useState(saved?.escalationPhone ?? "");
   const [adminPhone, setAdminPhone] = useState(saved?.adminPhone ?? "");
   const [contactsCollapsed, setContactsCollapsed] = useState(!!saved);
+  const [images, setImages] = useState<AgentImage[]>([]);
+  const imagesFileRef = useRef<HTMLInputElement>(null);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -284,6 +299,52 @@ export default function AgentSetupPage({
     setExpandedFaq(id);
   }
 
+  async function handleImagesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    const slots = MAX_IMAGES - images.length;
+    const toAdd = files.slice(0, slots);
+    if (!toAdd.length) return;
+
+    const newImgs: AgentImage[] = toAdd.map((f) => ({
+      id: genId(),
+      title: "",
+      url: "",
+      preview: URL.createObjectURL(f),
+      uploading: true,
+      error: "",
+    }));
+    setImages((prev) => [...prev, ...newImgs]);
+
+    // Upload each
+    for (let i = 0; i < toAdd.length; i++) {
+      const img = newImgs[i];
+      const form = new FormData();
+      form.append("file", toAdd[i]);
+      form.append("agentSlug", agentSlug);
+      try {
+        const res = await fetch("/api/setup/upload-image", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error al subir");
+        setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, url: data.url, uploading: false } : m));
+      } catch (err) {
+        setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, uploading: false, error: err instanceof Error ? err.message : "Error" } : m));
+      }
+    }
+  }
+
+  function removeImage(id: string) {
+    setImages((prev) => {
+      const img = prev.find((m) => m.id === id);
+      if (img?.preview) URL.revokeObjectURL(img.preview);
+      return prev.filter((m) => m.id !== id);
+    });
+  }
+
+  function updateImageTitle(id: string, title: string) {
+    setImages((prev) => prev.map((m) => m.id === id ? { ...m, title } : m));
+  }
+
   function removeFaq(id: string) {
     setFaqs((prev) => {
       const next = prev.filter((f) => f.id !== id);
@@ -305,13 +366,16 @@ export default function AgentSetupPage({
   const PROMPT_MIN = 150;
 
   const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
-  // FAQ inválida: tiene pregunta pero no tiene respuesta
   const incompleteFaqs = faqs.filter((f) => f.question.trim() && !f.answer.trim());
+  const imagesUploading = images.some((m) => m.uploading);
+  const imagesMissingTitle = images.filter((m) => m.url && !m.title.trim());
 
   const isValid =
     agentName.trim() &&
     prompt.trim().length >= PROMPT_MIN &&
     incompleteFaqs.length === 0 &&
+    !imagesUploading &&
+    imagesMissingTitle.length === 0 &&
     escalationPhone.trim() &&
     adminPhone.trim();
 
@@ -332,6 +396,7 @@ export default function AgentSetupPage({
       })),
       escalation_phone: escalationPhone.trim(),
       admin_phone: adminPhone.trim(),
+      images: images.filter((m) => m.url).map(({ title, url }) => ({ title: title.trim(), url })),
       created_at: new Date().toISOString(),
     };
 
@@ -530,11 +595,12 @@ export default function AgentSetupPage({
           transition={{ delay: 0.04 }}
           className="flex items-center gap-2 px-0.5"
         >
-          {["Nombre", "FAQs", "Prompt", "Contactos"].map((step, i) => {
+          {["Nombre", "FAQs", "Prompt", "Imágenes", "Contactos"].map((step, i) => {
             const done =
               i === 0 ? !!agentName.trim() :
               i === 1 ? validFaqs.length > 0 :
-              i === 2 ? !!prompt.trim() :
+              i === 2 ? prompt.trim().length >= PROMPT_MIN :
+              i === 3 ? (images.length > 0 && !imagesUploading && imagesMissingTitle.length === 0) :
               !!(escalationPhone.trim() && adminPhone.trim());
             return (
               <div key={step} className="flex items-center gap-1 flex-1">
@@ -550,7 +616,7 @@ export default function AgentSetupPage({
                 <span className={`text-[11px] font-medium ${done ? "text-white/60" : "text-white/25"}`}>
                   {step}
                 </span>
-                {i < 3 && <div className="flex-1 h-px bg-white/8" />}
+                {i < 4 && <div className="flex-1 h-px bg-white/8" />}
               </div>
             );
           })}
@@ -803,11 +869,122 @@ export default function AgentSetupPage({
           </div>
         </motion.div>
 
-        {/* 4 — Contactos */}
+        {/* 4 — Imágenes */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.23 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.21 }}
+          className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/15">
+                <ImagePlus className="h-4 w-4 text-pink-400" />
+              </div>
+              <div>
+                <p className="text-[15px] font-semibold text-white leading-tight">Galería de imágenes</p>
+                <p className="text-[12px] text-white/35">
+                  {images.length}/{MAX_IMAGES} imágenes — título obligatorio por imagen
+                </p>
+              </div>
+            </div>
+            {images.length < MAX_IMAGES && (
+              <>
+                <input
+                  ref={imagesFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleImagesSelected}
+                />
+                <button
+                  onClick={() => imagesFileRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-xl bg-pink-500/15 px-3 py-1.5 text-[13px] font-semibold text-pink-400 ring-1 ring-pink-500/20 transition-all hover:bg-pink-500/25 active:scale-[0.97]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Agregar
+                </button>
+              </>
+            )}
+          </div>
+
+          {images.length === 0 ? (
+            <button
+              onClick={() => imagesFileRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 py-10 text-white/25 transition-colors hover:text-white/40"
+            >
+              <ImagePlus className="h-8 w-8" />
+              <span className="text-[14px]">Toca para agregar imágenes</span>
+              <span className="text-[12px] text-white/20">JPG, PNG o WebP · máx. 5MB por imagen</span>
+            </button>
+          ) : (
+            <div className="p-3 grid grid-cols-2 gap-3">
+              <AnimatePresence initial={false}>
+                {images.map((img) => (
+                  <motion.div
+                    key={img.id}
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.88 }}
+                    transition={{ duration: 0.15 }}
+                    className="relative rounded-2xl overflow-hidden ring-1 ring-white/10 bg-white/5"
+                  >
+                    {/* Imagen */}
+                    <div className="relative aspect-square">
+                      <img
+                        src={img.preview || img.url}
+                        alt={img.title || "imagen"}
+                        className="h-full w-full object-cover"
+                      />
+                      {img.uploading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <Loader2 className="h-6 w-6 animate-spin text-white" />
+                        </div>
+                      )}
+                      {img.error && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-red-900/60 p-2">
+                          <p className="text-[11px] text-red-200 text-center">{img.error}</p>
+                        </div>
+                      )}
+                      {/* Delete button */}
+                      <button
+                        onClick={() => removeImage(img.id)}
+                        className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white/70 hover:text-white transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {/* Título */}
+                    <div className="p-2">
+                      <input
+                        type="text"
+                        value={img.title}
+                        onChange={(e) => updateImageTitle(img.id, e.target.value)}
+                        placeholder="Título de la imagen…"
+                        maxLength={60}
+                        className={`w-full rounded-lg bg-white/6 px-2.5 py-1.5 text-[13px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
+                          img.url && !img.title.trim()
+                            ? "ring-red-500/50 bg-red-500/5"
+                            : "ring-white/10 focus:ring-pink-500/50"
+                        }`}
+                      />
+                      {img.url && !img.title.trim() && (
+                        <p className="mt-1 text-[10px] text-red-400 px-0.5">Título obligatorio</p>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+        </motion.div>
+
+        {/* 5 — Contactos */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.26 }}
           className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
         >
           {/* Header — siempre visible */}
@@ -963,6 +1140,10 @@ export default function AgentSetupPage({
                 ? `${incompleteFaqs.length} pregunta${incompleteFaqs.length > 1 ? "s" : ""} sin respuesta`
                 : prompt.trim().length < PROMPT_MIN
                 ? `Prompt muy corto — mínimo ${PROMPT_MIN} caracteres (${PROMPT_MIN - prompt.trim().length} faltan)`
+                : imagesUploading
+                ? "Espera a que terminen de subir las imágenes"
+                : imagesMissingTitle.length > 0
+                ? `${imagesMissingTitle.length} imagen${imagesMissingTitle.length > 1 ? "es" : ""} sin título`
                 : !escalationPhone.trim()
                 ? "Agrega el número de escalamiento"
                 : "Agrega el número de administrador"}

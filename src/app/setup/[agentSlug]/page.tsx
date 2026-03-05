@@ -214,12 +214,25 @@ export default function AgentSetupPage({
 
   const agentMeta = AGENT_LABELS[agentSlug] ?? { name: agentSlug, color: "orange" };
 
+  const STORAGE_KEY = `lisa-contacts-${agentSlug}`;
+
+  function loadSavedContacts() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as { escalationPhone: string; adminPhone: string };
+    } catch { return null; }
+  }
+
+  const saved = loadSavedContacts();
+
   const [agentName, setAgentName] = useState(agentMeta.name);
   const [tone, setTone] = useState("friendly");
   const [faqs, setFaqs] = useState<Faq[]>([{ id: genId(), question: "", answer: "" }]);
   const [prompt, setPrompt] = useState("");
-  const [escalationPhone, setEscalationPhone] = useState("");
-  const [adminPhone, setAdminPhone] = useState("");
+  const [escalationPhone, setEscalationPhone] = useState(saved?.escalationPhone ?? "");
+  const [adminPhone, setAdminPhone] = useState(saved?.adminPhone ?? "");
+  const [contactsCollapsed, setContactsCollapsed] = useState(!!saved);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -324,6 +337,10 @@ export default function AgentSetupPage({
         const data = await res.json().catch(() => ({}));
         throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
       }
+      // Guardar contactos en localStorage para no tener que re-ingresarlos
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ escalationPhone: escalationPhone.trim(), adminPhone: adminPhone.trim() }));
+      } catch { /* ignore */ }
       setStatus("success");
     } catch (err: unknown) {
       setErrorMsg(
@@ -773,47 +790,105 @@ export default function AgentSetupPage({
           transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.23 }}
           className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
         >
-          <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/6">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15">
-              <Phone className="h-4 w-4 text-violet-400" />
+          {/* Header — siempre visible */}
+          <button
+            type="button"
+            onClick={() => setContactsCollapsed((v) => !v)}
+            className="flex w-full items-center gap-3 px-4 pt-4 pb-3 text-left transition-colors hover:bg-white/4"
+          >
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-colors ${contactsCollapsed ? "bg-emerald-500/15" : "bg-violet-500/15"}`}>
+              {contactsCollapsed
+                ? <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                : <Phone className="h-4 w-4 text-violet-400" />
+              }
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-[15px] font-semibold text-white leading-tight">
                 Contactos del sistema
               </p>
-              <p className="text-[12px] text-white/35">
-                Escalamiento y administración del agente
-              </p>
+              {contactsCollapsed ? (
+                <p className="text-[12px] text-emerald-400/70 mt-0.5">
+                  Configurado · toca para editar
+                </p>
+              ) : (
+                <p className="text-[12px] text-white/35">
+                  Escalamiento y administración del agente
+                </p>
+              )}
             </div>
-          </div>
-
-          <div className="px-4 py-4 space-y-4">
-            {/* Número de escalamiento */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 text-violet-400/60" />
-                <p className="text-[13px] font-semibold text-white/70">Número de escalamiento</p>
+            {contactsCollapsed && (
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="text-right">
+                  <p className="text-[11px] text-white/30">Escalamiento</p>
+                  <p className="text-[12px] text-white/55 font-medium tabular-nums">{escalationPhone.slice(0, 6)}···</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] text-white/30">Admin</p>
+                  <p className="text-[12px] text-white/55 font-medium tabular-nums">{adminPhone.slice(0, 6)}···</p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-white/25" />
               </div>
-              <p className="text-[12px] text-white/35 pl-5">
-                A este número se enviarán las notificaciones cuando el agente necesite escalar una conversación a un humano.
-              </p>
-              <PhoneField value={escalationPhone} onChange={setEscalationPhone} ringColor="ring-violet-500/50" />
-            </div>
+            )}
+            {!contactsCollapsed && escalationPhone && adminPhone && (
+              <ChevronUp className="h-4 w-4 text-white/25 shrink-0" />
+            )}
+          </button>
 
-            <div className="h-px bg-white/6" />
+          {/* Formulario — colapsable */}
+          <AnimatePresence initial={false}>
+            {!contactsCollapsed && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="overflow-hidden"
+              >
+                <div className="border-t border-white/6 px-4 py-4 space-y-4">
+                  {/* Número de escalamiento */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3.5 w-3.5 text-violet-400/60" />
+                      <p className="text-[13px] font-semibold text-white/70">Número de escalamiento</p>
+                    </div>
+                    <p className="text-[12px] text-white/35 pl-5">
+                      A este número se enviarán las notificaciones cuando el agente necesite escalar una conversación a un humano.
+                    </p>
+                    <PhoneField value={escalationPhone} onChange={setEscalationPhone} ringColor="ring-violet-500/50" />
+                  </div>
 
-            {/* Número de administrador */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400/60" />
-                <p className="text-[13px] font-semibold text-white/70">Número de administrador</p>
-              </div>
-              <p className="text-[12px] text-white/35 pl-5">
-                Solo este número tendrá acceso de administración al agente. Si el agente recibe un mensaje desde este número, activará los comandos de gestión y escalamiento.
-              </p>
-              <PhoneField value={adminPhone} onChange={setAdminPhone} ringColor="ring-emerald-500/50" />
-            </div>
-          </div>
+                  <div className="h-px bg-white/6" />
+
+                  {/* Número de administrador */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400/60" />
+                      <p className="text-[13px] font-semibold text-white/70">Número de administrador</p>
+                    </div>
+                    <p className="text-[12px] text-white/35 pl-5">
+                      Solo este número tendrá acceso de administración al agente. Si el agente recibe un mensaje desde este número, activará los comandos de gestión y escalamiento.
+                    </p>
+                    <PhoneField value={adminPhone} onChange={setAdminPhone} ringColor="ring-emerald-500/50" />
+                  </div>
+
+                  {/* Guardar y colapsar */}
+                  {escalationPhone && adminPhone && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ escalationPhone, adminPhone })); } catch { /* ignore */ }
+                        setContactsCollapsed(true);
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500/12 py-2.5 text-[14px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20 transition-all active:scale-[0.98] hover:bg-emerald-500/20"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Guardar contactos
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Error */}

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Bot } from "lucide-react";
+import { Plus, Bot, Zap } from "lucide-react";
 import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
+import { usePlanStore } from "@/stores/plan-store";
+import { PLAN_AGENT_LIMITS } from "@/lib/mock-data";
 import type { Agent } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/agents/agent-card";
@@ -18,19 +20,52 @@ const fadeUp = (delay: number) => ({
 export default function AgentsPage() {
   const { agents } = useAgentStore();
   const { t } = useLocaleStore();
+  const { currentPlan, canAddAgent } = usePlanStore();
+  const atLimit = !canAddAgent(agents.length);
+  const agentLimit = PLAN_AGENT_LIMITS[currentPlan];
+  const planName = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
 
   return (
     <div className="space-y-4 lg:max-w-[900px] lg:mx-auto">
       {agents.length > 0 ? (
         <>
-          <motion.div {...fadeUp(0)} className="flex items-center justify-end">
-            <Link
-              href="/agents/new"
-              className="flex items-center gap-1.5 rounded-full bg-muted px-3.5 h-8 text-[15px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          {atLimit && (
+            <motion.div
+              {...fadeUp(0)}
+              className="flex items-center justify-between gap-3 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-4 py-3"
             >
-              <Plus className="h-3.5 w-3.5" />
-              {t.agents.newAgent}
-            </Link>
+              <div className="flex items-center gap-2.5">
+                <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-[14px] text-amber-800 dark:text-amber-300">
+                  Has alcanzado el límite de <span className="font-semibold">{agentLimit} agentes</span> en tu plan <span className="font-semibold">{planName}</span>.
+                </p>
+              </div>
+              <Link
+                href="/billing"
+                className="shrink-0 text-[13px] font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap"
+              >
+                Ver planes →
+              </Link>
+            </motion.div>
+          )}
+          <motion.div {...fadeUp(atLimit ? 0.06 : 0)} className="flex items-center justify-end">
+            {atLimit ? (
+              <Link
+                href="/billing"
+                className="flex items-center gap-1.5 rounded-full bg-amber-100 dark:bg-amber-500/20 px-3.5 h-8 text-[15px] font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Límite alcanzado — Actualizar plan
+              </Link>
+            ) : (
+              <Link
+                href="/agents/new"
+                className="flex items-center gap-1.5 rounded-full bg-muted px-3.5 h-8 text-[15px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t.agents.newAgent}
+              </Link>
+            )}
           </motion.div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {agents.map((agent: Agent, i) => (

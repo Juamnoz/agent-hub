@@ -10,6 +10,7 @@ import {
   Crown,
   ChevronRight,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -311,6 +312,35 @@ export default function BillingPage() {
                     isUpgrade={PLAN_INTEGRATION_LIMITS[pendingPlan] >= PLAN_INTEGRATION_LIMITS[currentPlan]}
                   />
                 </div>
+
+                {/* Downgrade warnings */}
+                {!isUpgrade && pendingPlan && (() => {
+                  const newAgentLimit = PLAN_AGENT_LIMITS[pendingPlan];
+                  const newWaLimit = PLAN_WHATSAPP_LIMITS[pendingPlan];
+                  const agentOverflow = agentCount > newAgentLimit ? agentCount - newAgentLimit : 0;
+                  const waOverflow = whatsappCount > newWaLimit ? whatsappCount - newWaLimit : 0;
+                  if (agentOverflow === 0 && waOverflow === 0) return null;
+                  return (
+                    <div className="space-y-2">
+                      {agentOverflow > 0 && (
+                        <div className="flex gap-2.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-4 py-3">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <p className="text-[14px] text-amber-800 dark:text-amber-300">
+                            Tienes <span className="font-semibold">{agentCount} agentes activos</span>. El plan {t.billing.plans[pendingPlan].name} solo permite <span className="font-semibold">{newAgentLimit}</span>. Deberás eliminar <span className="font-semibold">{agentOverflow}</span> agente{agentOverflow > 1 ? "s" : ""} para que el plan funcione correctamente.
+                          </p>
+                        </div>
+                      )}
+                      {waOverflow > 0 && (
+                        <div className="flex gap-2.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-4 py-3">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <p className="text-[14px] text-amber-800 dark:text-amber-300">
+                            Tienes <span className="font-semibold">{whatsappCount} conexiones WhatsApp</span>. El plan {t.billing.plans[pendingPlan].name} solo permite <span className="font-semibold">{newWaLimit}</span>. Deberás desconectar <span className="font-semibold">{waOverflow}</span> número{waOverflow > 1 ? "s" : ""}.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Price */}
                 {pendingPlanData.price !== null && (

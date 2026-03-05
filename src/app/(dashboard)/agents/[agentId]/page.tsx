@@ -33,7 +33,8 @@ import {
 } from "lucide-react";
 import { IconWhatsApp, IconGmail, IconGoogleSheets, IconGoogleCalendar, IconWompi, IconBold, IconShopify, IconWooCommerce, IconMercadoPago } from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
-import { type Integration, type Agent, PLAN_INTEGRATION_LIMITS, CURRENT_PLAN, ALGORITHM_RECOMMENDED_INTEGRATIONS } from "@/lib/mock-data";
+import { type Integration, type Agent, PLAN_INTEGRATION_LIMITS, ALGORITHM_RECOMMENDED_INTEGRATIONS, MODULE_FEATURE_MAP } from "@/lib/mock-data";
+import { usePlanStore } from "@/stores/plan-store";
 import type { Translations } from "@/lib/i18n/types";
 import { useLocaleStore } from "@/stores/locale-store";
 import { SetupWizard } from "@/components/agents/setup-wizard";
@@ -62,6 +63,7 @@ export default function AgentDetailPage({
   const { agentId } = use(params);
   const { agents, faqs, products, integrations, conversations, deleteAgent, updateAgent, loadIntegrations, loadProducts, loadConversations, toggleIntegration } = useAgentStore();
   const { t } = useLocaleStore();
+  const { hasFeature } = usePlanStore();
   const router = useRouter();
   const agent = agents.find((a) => a.id === agentId);
   const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
@@ -186,21 +188,21 @@ export default function AgentDetailPage({
   const moduleSlots = (() => {
     switch (agent.algorithmType) {
       case "hotel":
-        return [{ id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" }];
+        return [{ id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue", requiredFeature: MODULE_FEATURE_MAP["reservations"] }];
       case "appointments":
-        return [{ id: "reservations", label: "Citas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "violet" }];
+        return [{ id: "reservations", label: "Citas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "violet", requiredFeature: MODULE_FEATURE_MAP["reservations"] }];
       case "restaurant":
         return [
-          { id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue" },
-          { id: "menu", label: "Menú", icon: UtensilsCrossed, href: `/agents/${agentId}/menu`, configured: true, stat: "", color: "red" },
+          { id: "reservations", label: "Reservas", icon: CalendarDays, href: `/agents/${agentId}/reservations`, configured: true, stat: "", color: "blue", requiredFeature: MODULE_FEATURE_MAP["reservations"] },
+          { id: "menu", label: "Menú", icon: UtensilsCrossed, href: `/agents/${agentId}/menu`, configured: true, stat: "", color: "red", requiredFeature: MODULE_FEATURE_MAP["menu"] },
         ];
       case "ecommerce":
       case "whatsapp-store":
-        return [{ id: "orders", label: "Pedidos", icon: ShoppingCart, href: `/agents/${agentId}/orders`, configured: true, stat: "", color: "violet" }];
+        return [{ id: "orders", label: "Pedidos", icon: ShoppingCart, href: `/agents/${agentId}/orders`, configured: true, stat: "", color: "violet", requiredFeature: MODULE_FEATURE_MAP["orders"] }];
       case "inmobiliaria":
-        return [{ id: "properties", label: "Propiedades", icon: Building2, href: `/agents/${agentId}/properties`, configured: true, stat: "", color: "teal" }];
+        return [{ id: "properties", label: "Propiedades", icon: Building2, href: `/agents/${agentId}/properties`, configured: true, stat: "", color: "teal", requiredFeature: MODULE_FEATURE_MAP["properties"] }];
       default:
-        return [{ id: "products", label: "Catálogo", icon: ShoppingBag, href: `/agents/${agentId}/products`, configured: hasProducts, stat: hasProducts ? `${agentProducts.length}` : "", color: "violet" }];
+        return [{ id: "products", label: "Catálogo", icon: ShoppingBag, href: `/agents/${agentId}/products`, configured: hasProducts, stat: hasProducts ? `${agentProducts.length}` : "", color: "violet", requiredFeature: undefined }];
     }
   })();
 
@@ -465,6 +467,8 @@ export default function AgentDetailPage({
           const StoryIcon = item.icon;
           const isNumericStat = item.stat !== "" && !isNaN(Number(item.stat));
           const isWhatsapp = item.id === "whatsapp";
+          const rf = (item as { requiredFeature?: string }).requiredFeature;
+          const isModuleLocked = !!rf && !hasFeature(rf as Parameters<typeof hasFeature>[0]);
           return (
             <motion.div
               key={item.id}
@@ -478,13 +482,18 @@ export default function AgentDetailPage({
             >
               <div className="relative">
                 <div
-                  className={`h-14 w-14 rounded-full flex items-center justify-center ${circleStyle}`}
+                  className={`h-14 w-14 rounded-full flex items-center justify-center ${isModuleLocked ? "bg-muted" : circleStyle}`}
                 >
                   {isWhatsapp ? (
-                    <IconWhatsApp className={`h-7 w-7 ${iconStyle}`} />
+                    <IconWhatsApp className={`h-7 w-7 ${isModuleLocked ? "text-muted-foreground" : iconStyle}`} />
                   ) : StoryIcon ? (
-                    <StoryIcon className={`h-6 w-6 ${iconStyle}`} />
+                    <StoryIcon className={`h-6 w-6 ${isModuleLocked ? "text-muted-foreground" : iconStyle}`} />
                   ) : null}
+                  {isModuleLocked && (
+                    <div className="absolute inset-0 rounded-full flex items-center justify-center bg-black/20">
+                      <Lock className="h-4 w-4 text-white drop-shadow" />
+                    </div>
+                  )}
                 </div>
                 {isNumericStat && (
                   <span className={`absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[12px] font-bold tabular-nums ring-2 ring-background ${
@@ -644,8 +653,9 @@ function IntegrationsSection({
   agent: Agent;
 }) {
   const router = useRouter();
+  const { currentPlan, hasFeature } = usePlanStore();
   const activeCount = integrations.filter((i) => i.enabled).length;
-  const limit = PLAN_INTEGRATION_LIMITS[CURRENT_PLAN];
+  const limit = PLAN_INTEGRATION_LIMITS[currentPlan];
   const limitLabel = limit === Infinity ? "∞" : limit;
 
   const categories = [
@@ -663,7 +673,7 @@ function IntegrationsSection({
     recommendedIntegrations.includes(integration.name);
 
   const isLocked = (integration: Integration) =>
-    PLAN_TIER_ORDER[integration.requiredPlan] > PLAN_TIER_ORDER[CURRENT_PLAN];
+    PLAN_TIER_ORDER[integration.requiredPlan] > PLAN_TIER_ORDER[currentPlan];
 
   const requiredPlanLabel = (integration: Integration) => {
     const labels: Record<string, string> = {

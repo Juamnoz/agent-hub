@@ -34,6 +34,19 @@ import {
   mockOrders,
   mockMenuItems,
 } from "@/lib/mock-data";
+import {
+  API_ENABLED,
+  agentsApi,
+  faqsApi,
+  productsApi,
+  conversationsApi,
+  reservationsApi,
+  ordersApi,
+  menuApi,
+  crmApi,
+  contactsApi,
+  analyticsApi,
+} from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
 import { sendWebhook } from "@/lib/webhook";
 
@@ -53,89 +66,71 @@ interface AgentStore {
   reservations: Reservation[];
   orders: Order[];
   menuItems: MenuItem[];
+  loadingAgents: boolean;
 
-  // Agent CRUD
+  // Loaders
+  loadAgents: () => Promise<void>;
   setCurrentAgent: (agent: Agent | null) => void;
-  addAgent: (
-    agent: Omit<
-      Agent,
-      "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "faqCount" | "productCount"
-    >
-  ) => string;
-  updateAgent: (id: string, updates: Partial<Agent>) => void;
-  deleteAgent: (id: string) => void;
+  addAgent: (agent: Omit<Agent, "id" | "userId" | "createdAt" | "updatedAt" | "messageCount" | "faqCount" | "productCount">) => Promise<string>;
+  updateAgent: (id: string, updates: Partial<Agent>) => Promise<void>;
+  deleteAgent: (id: string) => Promise<void>;
 
-  // Product CRUD
-  loadProducts: (agentId: string) => void;
-  addProduct: (product: Omit<Product, "id" | "sortOrder">) => void;
+  loadProducts: (agentId: string) => Promise<void>;
+  addProduct: (product: Omit<Product, "id" | "sortOrder">) => Promise<void>;
   importProducts: (agentId: string, source: string, newProducts: Omit<Product, "id" | "sortOrder">[]) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
 
-  // FAQ CRUD
-  loadFaqs: (agentId: string) => void;
-  addFaq: (faq: Omit<FAQ, "id" | "sortOrder">) => void;
-  updateFaq: (id: string, updates: Partial<FAQ>) => void;
-  deleteFaq: (id: string) => void;
+  loadFaqs: (agentId: string) => Promise<void>;
+  addFaq: (faq: Omit<FAQ, "id" | "sortOrder">) => Promise<void>;
+  updateFaq: (id: string, updates: Partial<FAQ>) => Promise<void>;
+  deleteFaq: (id: string) => Promise<void>;
 
-  // Contact CRUD
-  loadContacts: (agentId: string) => void;
-  addContact: (contact: Omit<HotelContact, "id">) => void;
-  updateContact: (id: string, updates: Partial<HotelContact>) => void;
-  deleteContact: (id: string) => void;
+  loadContacts: (agentId: string) => Promise<void>;
+  addContact: (contact: Omit<HotelContact, "id">) => Promise<void>;
+  updateContact: (id: string, updates: Partial<HotelContact>) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
 
-  // Conversations
-  loadConversations: (agentId: string) => void;
-  loadMessages: (conversationId: string) => void;
-  toggleConversationMode: (conversationId: string) => void;
+  loadConversations: (agentId: string) => Promise<void>;
+  loadMessages: (conversationId: string) => Promise<void>;
+  toggleConversationMode: (conversationId: string) => Promise<void>;
   setConversationStatus: (conversationId: string, status: import("@/lib/mock-data").ConversationStatus) => void;
-  resolveConversation: (conversationId: string) => void;
-  addMessageToConversation: (conversationId: string, content: string) => void;
+  resolveConversation: (conversationId: string) => Promise<void>;
+  addMessageToConversation: (conversationId: string, content: string) => Promise<void>;
   addTagToConversation: (conversationId: string, tag: string) => void;
   removeTagFromConversation: (conversationId: string, tag: string) => void;
 
-  // Conversation Tags
   loadConversationTags: (agentId: string) => void;
   addConversationTag: (agentId: string, name: string, color: string) => void;
 
-  // CRM Clients
-  loadClients: (agentId: string) => void;
+  loadClients: (agentId: string) => Promise<void>;
   updateClient: (id: string, updates: Partial<CRMClient>) => void;
 
-  // Integrations
   loadIntegrations: (agentId: string) => void;
   toggleIntegration: (integrationId: string) => void;
-  updateIntegrationConfig: (integrationId: string, config: {
-    environment?: "sandbox" | "production";
-    credentials: Record<string, string>;
-  }) => void;
+  updateIntegrationConfig: (integrationId: string, config: { environment?: "sandbox" | "production"; credentials: Record<string, string> }) => void;
 
-  // Reservations
-  loadReservations: (agentId: string) => void;
-  addReservation: (reservation: Omit<Reservation, "id" | "createdAt">) => void;
-  updateReservation: (id: string, updates: Partial<Reservation>) => void;
+  loadReservations: (agentId: string) => Promise<void>;
+  addReservation: (reservation: Omit<Reservation, "id" | "createdAt">) => Promise<void>;
+  updateReservation: (id: string, updates: Partial<Reservation>) => Promise<void>;
 
-  // Orders
-  loadOrders: (agentId: string) => void;
+  loadOrders: (agentId: string) => Promise<void>;
   updateOrder: (id: string, updates: Partial<Order>) => void;
 
-  // Menu
-  loadMenuItems: (agentId: string) => void;
-  addMenuItem: (item: Omit<MenuItem, "id">) => void;
-  updateMenuItem: (id: string, updates: Partial<MenuItem>) => void;
-  deleteMenuItem: (id: string) => void;
+  loadMenuItems: (agentId: string) => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
+  updateMenuItem: (id: string, updates: Partial<MenuItem>) => Promise<void>;
+  deleteMenuItem: (id: string) => Promise<void>;
 
-  // Training Chat
   trainingMessages: TrainingMessage[];
   addTrainingMessage: (agentId: string, content: string, toolType?: TrainingToolType, attachmentName?: string) => void;
   clearTrainingMessages: (agentId: string) => void;
 
-  // Stats
   loadStats: () => void;
 }
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
-  agents: mockAgents,
+  agents: [],
   currentAgent: null,
   faqs: [],
   products: [],
@@ -151,527 +146,426 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   reservations: [],
   orders: [],
   menuItems: [],
+  loadingAgents: false,
 
-  // -----------------------------------------------------------------------
-  // Agent CRUD
-  // -----------------------------------------------------------------------
+  // ── Agents ────────────────────────────────────────────────────────────────
+
+  loadAgents: async () => {
+    set({ loadingAgents: true });
+    try {
+      if (API_ENABLED) {
+        const agents = await agentsApi.list();
+        set({ agents: agents as Agent[], loadingAgents: false });
+      } else {
+        set({ agents: mockAgents, loadingAgents: false });
+      }
+    } catch {
+      set({ agents: mockAgents, loadingAgents: false });
+    }
+  },
 
   setCurrentAgent: (agent) => set({ currentAgent: agent }),
 
-  addAgent: (agentData) => {
+  addAgent: async (agentData) => {
+    if (API_ENABLED) {
+      const agent = await agentsApi.create(agentData as any);
+      set((state) => ({ agents: [...state.agents, agent as Agent] }));
+      return agent.id;
+    }
     const now = new Date().toISOString();
-    const newAgent: Agent = {
-      ...agentData,
-      id: crypto.randomUUID(),
-      userId: "user-001",
-      messageCount: 0,
-      faqCount: 0,
-      productCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const newAgent: Agent = { ...agentData, id: crypto.randomUUID(), userId: "user-001", messageCount: 0, faqCount: 0, productCount: 0, createdAt: now, updatedAt: now };
     set((state) => ({ agents: [...state.agents, newAgent] }));
     sendWebhook("agent.created", { agent: newAgent });
     return newAgent.id;
   },
 
-  updateAgent: (id, updates) => {
+  updateAgent: async (id, updates) => {
+    if (API_ENABLED) {
+      const updated = await agentsApi.update(id, updates as any);
+      set((state) => ({
+        agents: state.agents.map((a) => a.id === id ? { ...a, ...updated } : a),
+        currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updated } : state.currentAgent,
+      }));
+      return;
+    }
     set((state) => ({
-      agents: state.agents.map((agent) =>
-        agent.id === id
-          ? { ...agent, ...updates, updatedAt: new Date().toISOString() }
-          : agent
-      ),
-      currentAgent:
-        state.currentAgent?.id === id
-          ? {
-              ...state.currentAgent,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : state.currentAgent,
+      agents: state.agents.map((a) => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a),
+      currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updates, updatedAt: new Date().toISOString() } : state.currentAgent,
     }));
-    const updatedAgent = get().agents.find((a) => a.id === id);
-    sendWebhook("agent.updated", { agent: updatedAgent, updates });
   },
 
-  deleteAgent: (id) => {
-    const deletedAgent = get().agents.find((a) => a.id === id);
+  deleteAgent: async (id) => {
+    if (API_ENABLED) {
+      await agentsApi.delete(id);
+    }
     set((state) => ({
-      agents: state.agents.filter((agent) => agent.id !== id),
-      currentAgent:
-        state.currentAgent?.id === id ? null : state.currentAgent,
-      faqs:
-        state.currentAgent?.id === id
-          ? []
-          : state.faqs.filter((faq) => faq.agentId !== id),
-      contacts: state.contacts.filter((c) => c.agentId !== id),
-      products: state.products.filter((p) => p.agentId !== id),
+      agents: state.agents.filter((a) => a.id !== id),
+      currentAgent: state.currentAgent?.id === id ? null : state.currentAgent,
     }));
-    sendWebhook("agent.deleted", { agent: deletedAgent });
   },
 
-  // -----------------------------------------------------------------------
-  // Product CRUD
-  // -----------------------------------------------------------------------
+  // ── Products ──────────────────────────────────────────────────────────────
 
-  loadProducts: (agentId) => {
-    const products = mockProducts.filter((p) => p.agentId === agentId);
-    set({ products });
+  loadProducts: async (agentId) => {
+    if (API_ENABLED) {
+      const products = await productsApi.list(agentId);
+      set({ products: products as Product[] });
+    } else {
+      set({ products: mockProducts.filter((p) => p.agentId === agentId) });
+    }
   },
 
-  addProduct: (productData) => {
+  addProduct: async (productData) => {
+    if (API_ENABLED) {
+      const product = await productsApi.create(productData.agentId, productData as any);
+      set((state) => ({ products: [...state.products, product as Product] }));
+      return;
+    }
     const { products } = get();
-    const maxOrder = products.reduce(
-      (max, p) => Math.max(max, p.sortOrder),
-      0
-    );
-    const newProduct: Product = {
-      ...productData,
-      id: crypto.randomUUID(),
-      sortOrder: maxOrder + 1,
-    };
-    set((state) => ({
-      products: [...state.products, newProduct],
-      agents: state.agents.map((agent) =>
-        agent.id === productData.agentId
-          ? { ...agent, productCount: agent.productCount + 1 }
-          : agent
-      ),
-    }));
-    sendWebhook("product.created", { product: newProduct });
+    const newProduct: Product = { ...productData, id: crypto.randomUUID(), sortOrder: products.length };
+    set((state) => ({ products: [...state.products, newProduct] }));
   },
 
   importProducts: (agentId, source, newProducts) => {
     const { products } = get();
-    const maxOrder = products.reduce((max, p) => Math.max(max, p.sortOrder), 0);
-    const created: Product[] = newProducts.map((p, i) => ({
-      ...p,
-      id: crypto.randomUUID(),
-      sortOrder: maxOrder + 1 + i,
-    }));
-    set((state) => ({
-      products: [...state.products, ...created],
-      agents: state.agents.map((agent) =>
-        agent.id === agentId
-          ? { ...agent, productCount: agent.productCount + created.length }
-          : agent
-      ),
-    }));
-    sendWebhook("product.imported", { source, count: created.length, agentId });
+    const created: Product[] = newProducts.map((p, i) => ({ ...p, id: crypto.randomUUID(), sortOrder: products.length + i }));
+    set((state) => ({ products: [...state.products, ...created] }));
   },
 
-  updateProduct: (id, updates) => {
-    set((state) => ({
-      products: state.products.map((p) =>
-        p.id === id ? { ...p, ...updates } : p
-      ),
-    }));
-    const updatedProduct = get().products.find((p) => p.id === id);
-    sendWebhook("product.updated", { product: updatedProduct, updates });
+  updateProduct: async (id, updates) => {
+    const product = get().products.find((p) => p.id === id);
+    if (API_ENABLED && product) {
+      await productsApi.update(product.agentId, id, updates as any);
+    }
+    set((state) => ({ products: state.products.map((p) => p.id === id ? { ...p, ...updates } : p) }));
   },
 
-  deleteProduct: (id) => {
-    const productToDelete = get().products.find((p) => p.id === id);
-    set((state) => ({
-      products: state.products.filter((p) => p.id !== id),
-      agents: productToDelete
-        ? state.agents.map((agent) =>
-            agent.id === productToDelete.agentId
-              ? { ...agent, productCount: Math.max(0, agent.productCount - 1) }
-              : agent
-          )
-        : state.agents,
-    }));
-    sendWebhook("product.deleted", { product: productToDelete });
+  deleteProduct: async (id) => {
+    const product = get().products.find((p) => p.id === id);
+    if (API_ENABLED && product) {
+      await productsApi.delete(product.agentId, id);
+    }
+    set((state) => ({ products: state.products.filter((p) => p.id !== id) }));
   },
 
-  // -----------------------------------------------------------------------
-  // FAQ CRUD
-  // -----------------------------------------------------------------------
+  // ── FAQs ──────────────────────────────────────────────────────────────────
 
-  loadFaqs: (agentId) => {
-    const faqs = mockFaqs.filter((faq) => faq.agentId === agentId);
-    set({ faqs });
+  loadFaqs: async (agentId) => {
+    if (API_ENABLED) {
+      const faqs = await faqsApi.list(agentId);
+      set({ faqs: faqs as FAQ[] });
+    } else {
+      set({ faqs: mockFaqs.filter((f) => f.agentId === agentId) });
+    }
   },
 
-  addFaq: (faqData) => {
+  addFaq: async (faqData) => {
+    if (API_ENABLED) {
+      const faq = await faqsApi.create(faqData.agentId, faqData as any);
+      set((state) => ({ faqs: [...state.faqs, faq as FAQ] }));
+      return;
+    }
     const { faqs } = get();
-    const maxOrder = faqs.reduce(
-      (max, faq) => Math.max(max, faq.sortOrder),
-      0
-    );
-    const newFaq: FAQ = {
-      ...faqData,
-      id: crypto.randomUUID(),
-      sortOrder: maxOrder + 1,
-    };
-    set((state) => ({
-      faqs: [...state.faqs, newFaq],
-      agents: state.agents.map((agent) =>
-        agent.id === faqData.agentId
-          ? { ...agent, faqCount: agent.faqCount + 1 }
-          : agent
-      ),
-    }));
-    sendWebhook("faq.created", { faq: newFaq });
+    const newFaq: FAQ = { ...faqData, id: crypto.randomUUID(), sortOrder: faqs.length };
+    set((state) => ({ faqs: [...state.faqs, newFaq] }));
   },
 
-  updateFaq: (id, updates) => {
-    set((state) => ({
-      faqs: state.faqs.map((faq) =>
-        faq.id === id ? { ...faq, ...updates } : faq
-      ),
-    }));
-    const updatedFaq = get().faqs.find((f) => f.id === id);
-    sendWebhook("faq.updated", { faq: updatedFaq, updates });
+  updateFaq: async (id, updates) => {
+    const faq = get().faqs.find((f) => f.id === id);
+    if (API_ENABLED && faq) {
+      await faqsApi.update(faq.agentId, id, updates as any);
+    }
+    set((state) => ({ faqs: state.faqs.map((f) => f.id === id ? { ...f, ...updates } : f) }));
   },
 
-  deleteFaq: (id) => {
-    const faqToDelete = get().faqs.find((faq) => faq.id === id);
-    set((state) => ({
-      faqs: state.faqs.filter((faq) => faq.id !== id),
-      agents: faqToDelete
-        ? state.agents.map((agent) =>
-            agent.id === faqToDelete.agentId
-              ? { ...agent, faqCount: Math.max(0, agent.faqCount - 1) }
-              : agent
-          )
-        : state.agents,
-    }));
-    sendWebhook("faq.deleted", { faq: faqToDelete });
+  deleteFaq: async (id) => {
+    const faq = get().faqs.find((f) => f.id === id);
+    if (API_ENABLED && faq) {
+      await faqsApi.delete(faq.agentId, id);
+    }
+    set((state) => ({ faqs: state.faqs.filter((f) => f.id !== id) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Contact CRUD
-  // -----------------------------------------------------------------------
+  // ── Contacts ──────────────────────────────────────────────────────────────
 
-  loadContacts: (agentId) => {
-    const contacts = mockContacts.filter((c) => c.agentId === agentId);
-    set({ contacts });
+  loadContacts: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const contacts = await contactsApi.list(agentId);
+        set({ contacts: contacts as HotelContact[] });
+      } catch {
+        set({ contacts: mockContacts.filter((c) => c.agentId === agentId) });
+      }
+    } else {
+      set({ contacts: mockContacts.filter((c) => c.agentId === agentId) });
+    }
   },
 
-  addContact: (contactData) => {
-    const newContact: HotelContact = {
-      ...contactData,
-      id: crypto.randomUUID(),
-    };
-    set((state) => ({ contacts: [...state.contacts, newContact] }));
-    sendWebhook("settings.updated", { action: "contact.created", contact: newContact });
+  addContact: async (contactData) => {
+    if (API_ENABLED) {
+      const contact = await contactsApi.create(contactData.agentId, contactData as any);
+      set((state) => ({ contacts: [...state.contacts, contact as HotelContact] }));
+      return;
+    }
+    set((state) => ({ contacts: [...state.contacts, { ...contactData, id: crypto.randomUUID() }] }));
   },
 
-  updateContact: (id, updates) => {
-    set((state) => ({
-      contacts: state.contacts.map((c) =>
-        c.id === id ? { ...c, ...updates } : c
-      ),
-    }));
-    const updated = get().contacts.find((c) => c.id === id);
-    sendWebhook("settings.updated", { action: "contact.updated", contact: updated, updates });
+  updateContact: async (id, updates) => {
+    const contact = get().contacts.find((c) => c.id === id);
+    if (API_ENABLED && contact) {
+      await contactsApi.update(contact.agentId, id, updates as any);
+    }
+    set((state) => ({ contacts: state.contacts.map((c) => c.id === id ? { ...c, ...updates } : c) }));
   },
 
-  deleteContact: (id) => {
-    const toDelete = get().contacts.find((c) => c.id === id);
-    set((state) => ({
-      contacts: state.contacts.filter((c) => c.id !== id),
-    }));
-    sendWebhook("settings.updated", { action: "contact.deleted", contact: toDelete });
+  deleteContact: async (id) => {
+    const contact = get().contacts.find((c) => c.id === id);
+    if (API_ENABLED && contact) {
+      await contactsApi.delete(contact.agentId, id);
+    }
+    set((state) => ({ contacts: state.contacts.filter((c) => c.id !== id) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Conversations
-  // -----------------------------------------------------------------------
+  // ── Conversations ─────────────────────────────────────────────────────────
 
-  loadConversations: (agentId) => {
-    const conversations = mockConversations.filter((c) => c.agentId === agentId);
-    set({ conversations });
+  loadConversations: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const res = await conversationsApi.list(agentId);
+        set({ conversations: (res.data ?? res) as Conversation[] });
+      } catch {
+        set({ conversations: mockConversations.filter((c) => c.agentId === agentId) });
+      }
+    } else {
+      set({ conversations: mockConversations.filter((c) => c.agentId === agentId) });
+    }
   },
 
-  loadMessages: (conversationId) => {
-    const messages = mockMessages.filter((m) => m.conversationId === conversationId);
-    set({ messages });
+  loadMessages: async (conversationId) => {
+    if (API_ENABLED) {
+      try {
+        const msgs = await conversationsApi.messages(conversationId);
+        set({ messages: msgs as Message[] });
+      } catch {
+        set({ messages: mockMessages.filter((m) => m.conversationId === conversationId) });
+      }
+    } else {
+      set({ messages: mockMessages.filter((m) => m.conversationId === conversationId) });
+    }
   },
 
-  toggleConversationMode: (conversationId) => {
+  toggleConversationMode: async (conversationId) => {
+    if (API_ENABLED) {
+      try { await conversationsApi.toggleMode(conversationId); } catch {}
+    }
     set((state) => ({
       conversations: state.conversations.map((c) =>
         c.id === conversationId
-          ? {
-              ...c,
-              status: c.status === "bot_handling" ? "human_handling" as const : "bot_handling" as const,
-            }
+          ? { ...c, status: c.status === "bot_handling" ? "human_handling" as const : "bot_handling" as const }
           : c
       ),
     }));
   },
 
   setConversationStatus: (conversationId, status) => {
-    set((state) => ({
-      conversations: state.conversations.map((c) =>
-        c.id === conversationId ? { ...c, status } : c
-      ),
-    }));
+    set((state) => ({ conversations: state.conversations.map((c) => c.id === conversationId ? { ...c, status } : c) }));
   },
 
-  resolveConversation: (conversationId) => {
-    set((state) => ({
-      conversations: state.conversations.map((c) =>
-        c.id === conversationId ? { ...c, status: "resolved" as const } : c
-      ),
-    }));
+  resolveConversation: async (conversationId) => {
+    if (API_ENABLED) {
+      try { await conversationsApi.resolve(conversationId); } catch {}
+    }
+    set((state) => ({ conversations: state.conversations.map((c) => c.id === conversationId ? { ...c, status: "resolved" as const } : c) }));
   },
 
-  addMessageToConversation: (conversationId, content) => {
+  addMessageToConversation: async (conversationId, content) => {
+    if (API_ENABLED) {
+      try { await conversationsApi.sendMessage(conversationId, content); } catch {}
+    }
     const conv = get().conversations.find((c) => c.id === conversationId);
     if (!conv) return;
-    const newMessage: Message = {
-      id: crypto.randomUUID(),
-      conversationId,
-      agentId: conv.agentId,
-      role: "human",
-      content,
-      createdAt: new Date().toISOString(),
-    };
+    const newMessage: Message = { id: crypto.randomUUID(), conversationId, agentId: conv.agentId, role: "human", content, createdAt: new Date().toISOString() };
     set((state) => ({
       messages: [...state.messages, newMessage],
-      conversations: state.conversations.map((c) =>
-        c.id === conversationId
-          ? {
-              ...c,
-              messageCount: c.messageCount + 1,
-              lastMessage: content,
-              lastMessageAt: newMessage.createdAt,
-            }
-          : c
-      ),
+      conversations: state.conversations.map((c) => c.id === conversationId ? { ...c, messageCount: c.messageCount + 1, lastMessage: content, lastMessageAt: newMessage.createdAt } : c),
     }));
   },
 
   addTagToConversation: (conversationId, tag) => {
-    set((state) => ({
-      conversations: state.conversations.map((c) =>
-        c.id === conversationId && !c.tags.includes(tag)
-          ? { ...c, tags: [...c.tags, tag] }
-          : c
-      ),
-    }));
+    set((state) => ({ conversations: state.conversations.map((c) => c.id === conversationId && !c.tags.includes(tag) ? { ...c, tags: [...c.tags, tag] } : c) }));
   },
 
   removeTagFromConversation: (conversationId, tag) => {
-    set((state) => ({
-      conversations: state.conversations.map((c) =>
-        c.id === conversationId
-          ? { ...c, tags: c.tags.filter((t) => t !== tag) }
-          : c
-      ),
-    }));
+    set((state) => ({ conversations: state.conversations.map((c) => c.id === conversationId ? { ...c, tags: c.tags.filter((t) => t !== tag) } : c) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Conversation Tags
-  // -----------------------------------------------------------------------
+  // ── Conversation Tags ─────────────────────────────────────────────────────
 
   loadConversationTags: (agentId) => {
-    const tags = mockConversationTags.filter((t) => t.agentId === agentId);
-    set({ conversationTags: tags });
+    set({ conversationTags: mockConversationTags.filter((t) => t.agentId === agentId) });
   },
 
   addConversationTag: (agentId, name, color) => {
-    const newTag: ConversationTag = {
-      id: crypto.randomUUID(),
-      agentId,
-      name,
-      color,
-    };
-    set((state) => ({
-      conversationTags: [...state.conversationTags, newTag],
-    }));
+    set((state) => ({ conversationTags: [...state.conversationTags, { id: crypto.randomUUID(), agentId, name, color }] }));
   },
 
-  // -----------------------------------------------------------------------
-  // CRM Clients
-  // -----------------------------------------------------------------------
+  // ── CRM ───────────────────────────────────────────────────────────────────
 
-  loadClients: (agentId) => {
-    const clients = mockCRMClients.filter((c) => c.agentId === agentId);
-    set({ clients });
+  loadClients: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const clients = await crmApi.list(agentId);
+        set({ clients: clients as CRMClient[] });
+      } catch {
+        set({ clients: mockCRMClients.filter((c) => c.agentId === agentId) });
+      }
+    } else {
+      set({ clients: mockCRMClients.filter((c) => c.agentId === agentId) });
+    }
   },
 
   updateClient: (id, updates) => {
-    set((state) => ({
-      clients: state.clients.map((c) =>
-        c.id === id ? { ...c, ...updates } : c
-      ),
-    }));
+    set((state) => ({ clients: state.clients.map((c) => c.id === id ? { ...c, ...updates } : c) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Integrations
-  // -----------------------------------------------------------------------
+  // ── Integrations ──────────────────────────────────────────────────────────
 
   loadIntegrations: (agentId) => {
-    const integrations = mockIntegrations.filter((i) => i.agentId === agentId);
-    set({ integrations });
+    set({ integrations: mockIntegrations.filter((i) => i.agentId === agentId) });
   },
 
   toggleIntegration: (integrationId) => {
     const { integrations } = get();
     const integration = integrations.find((i) => i.id === integrationId);
     if (!integration) return;
-
-    // If enabling, check plan limit via plan-store
     if (!integration.enabled) {
       const activeCount = integrations.filter((i) => i.enabled).length;
-      const canAdd = usePlanStore.getState().canAddIntegration(activeCount);
-      if (!canAdd) return;
+      if (!usePlanStore.getState().canAddIntegration(activeCount)) return;
     }
-
-    set({
-      integrations: integrations.map((i) =>
-        i.id === integrationId ? { ...i, enabled: !i.enabled } : i
-      ),
-    });
+    set({ integrations: integrations.map((i) => i.id === integrationId ? { ...i, enabled: !i.enabled } : i) });
   },
 
   updateIntegrationConfig: (integrationId, config) => {
     set((state) => ({
       integrations: state.integrations.map((i) =>
-        i.id === integrationId
-          ? { ...i, ...(config.environment ? { environment: config.environment } : {}), credentials: config.credentials, configured: true }
-          : i
+        i.id === integrationId ? { ...i, ...(config.environment ? { environment: config.environment } : {}), credentials: config.credentials, configured: true } : i
       ),
     }));
   },
 
-  // -----------------------------------------------------------------------
-  // Reservations
-  // -----------------------------------------------------------------------
+  // ── Reservations ──────────────────────────────────────────────────────────
 
-  loadReservations: (agentId) => {
-    const reservations = mockReservations.filter((r) => r.agentId === agentId);
-    set({ reservations });
+  loadReservations: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const res = await reservationsApi.list(agentId);
+        set({ reservations: res as Reservation[] });
+      } catch {
+        set({ reservations: mockReservations.filter((r) => r.agentId === agentId) });
+      }
+    } else {
+      set({ reservations: mockReservations.filter((r) => r.agentId === agentId) });
+    }
   },
 
-  addReservation: (reservationData) => {
-    const newReservation: Reservation = {
-      ...reservationData,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    set((state) => ({ reservations: [...state.reservations, newReservation] }));
+  addReservation: async (reservationData) => {
+    if (API_ENABLED) {
+      const res = await reservationsApi.create(reservationData.agentId, reservationData as any);
+      set((state) => ({ reservations: [...state.reservations, res as Reservation] }));
+      return;
+    }
+    set((state) => ({ reservations: [...state.reservations, { ...reservationData, id: crypto.randomUUID(), createdAt: new Date().toISOString() }] }));
   },
 
-  updateReservation: (id, updates) => {
-    set((state) => ({
-      reservations: state.reservations.map((r) =>
-        r.id === id ? { ...r, ...updates } : r
-      ),
-    }));
+  updateReservation: async (id, updates) => {
+    const res = get().reservations.find((r) => r.id === id);
+    if (API_ENABLED && res) {
+      try { await reservationsApi.update(res.agentId, id, updates as any); } catch {}
+    }
+    set((state) => ({ reservations: state.reservations.map((r) => r.id === id ? { ...r, ...updates } : r) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Orders
-  // -----------------------------------------------------------------------
+  // ── Orders ────────────────────────────────────────────────────────────────
 
-  loadOrders: (agentId) => {
-    const orders = mockOrders.filter((o) => o.agentId === agentId);
-    set({ orders });
+  loadOrders: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const orders = await ordersApi.list(agentId);
+        set({ orders: orders as Order[] });
+      } catch {
+        set({ orders: mockOrders.filter((o) => o.agentId === agentId) });
+      }
+    } else {
+      set({ orders: mockOrders.filter((o) => o.agentId === agentId) });
+    }
   },
 
   updateOrder: (id, updates) => {
-    set((state) => ({
-      orders: state.orders.map((o) =>
-        o.id === id ? { ...o, ...updates } : o
-      ),
-    }));
+    set((state) => ({ orders: state.orders.map((o) => o.id === id ? { ...o, ...updates } : o) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Menu Items
-  // -----------------------------------------------------------------------
+  // ── Menu ──────────────────────────────────────────────────────────────────
 
-  loadMenuItems: (agentId) => {
-    const menuItems = mockMenuItems.filter((m) => m.agentId === agentId);
-    set({ menuItems });
+  loadMenuItems: async (agentId) => {
+    if (API_ENABLED) {
+      try {
+        const items = await menuApi.list(agentId);
+        set({ menuItems: items as MenuItem[] });
+      } catch {
+        set({ menuItems: mockMenuItems.filter((m) => m.agentId === agentId) });
+      }
+    } else {
+      set({ menuItems: mockMenuItems.filter((m) => m.agentId === agentId) });
+    }
   },
 
-  addMenuItem: (itemData) => {
-    const newItem: MenuItem = {
-      ...itemData,
-      id: crypto.randomUUID(),
-    };
-    set((state) => ({ menuItems: [...state.menuItems, newItem] }));
+  addMenuItem: async (itemData) => {
+    if (API_ENABLED) {
+      const item = await menuApi.create(itemData.agentId, itemData as any);
+      set((state) => ({ menuItems: [...state.menuItems, item as MenuItem] }));
+      return;
+    }
+    set((state) => ({ menuItems: [...state.menuItems, { ...itemData, id: crypto.randomUUID() }] }));
   },
 
-  updateMenuItem: (id, updates) => {
-    set((state) => ({
-      menuItems: state.menuItems.map((m) =>
-        m.id === id ? { ...m, ...updates } : m
-      ),
-    }));
+  updateMenuItem: async (id, updates) => {
+    const item = get().menuItems.find((m) => m.id === id);
+    if (API_ENABLED && item) {
+      await menuApi.update(item.agentId, id, updates as any);
+    }
+    set((state) => ({ menuItems: state.menuItems.map((m) => m.id === id ? { ...m, ...updates } : m) }));
   },
 
-  deleteMenuItem: (id) => {
-    set((state) => ({
-      menuItems: state.menuItems.filter((m) => m.id !== id),
-    }));
+  deleteMenuItem: async (id) => {
+    const item = get().menuItems.find((m) => m.id === id);
+    if (API_ENABLED && item) {
+      await menuApi.delete(item.agentId, id);
+    }
+    set((state) => ({ menuItems: state.menuItems.filter((m) => m.id !== id) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Training Chat
-  // -----------------------------------------------------------------------
+  // ── Training Chat ─────────────────────────────────────────────────────────
 
   addTrainingMessage: (agentId, content, toolType, attachmentName) => {
-    const userMsg: TrainingMessage = {
-      id: crypto.randomUUID(),
-      agentId,
-      role: "user",
-      content,
-      toolType,
-      attachmentName,
-    };
-    set((state) => ({
-      trainingMessages: [...state.trainingMessages, userMsg],
-    }));
-
-    // Simulate agent response after delay
+    const userMsg: TrainingMessage = { id: crypto.randomUUID(), agentId, role: "user", content, toolType, attachmentName };
+    set((state) => ({ trainingMessages: [...state.trainingMessages, userMsg] }));
     const responseKey = toolType && mockTrainingResponses[toolType] ? toolType : "general";
     const responses = mockTrainingResponses[responseKey];
     const response = responses[Math.floor(Math.random() * responses.length)];
-
     setTimeout(() => {
-      const agentMsg: TrainingMessage = {
-        id: crypto.randomUUID(),
-        agentId,
-        role: "agent",
-        content: response,
-        toolType,
-        knowledgeSaved: true,
-      };
-      set((state) => ({
-        trainingMessages: [...state.trainingMessages, agentMsg],
-      }));
+      const agentMsg: TrainingMessage = { id: crypto.randomUUID(), agentId, role: "agent", content: response, toolType, knowledgeSaved: true };
+      set((state) => ({ trainingMessages: [...state.trainingMessages, agentMsg] }));
     }, 1500);
   },
 
   clearTrainingMessages: (agentId) => {
-    set((state) => ({
-      trainingMessages: state.trainingMessages.filter((m) => m.agentId !== agentId),
-    }));
+    set((state) => ({ trainingMessages: state.trainingMessages.filter((m) => m.agentId !== agentId) }));
   },
 
-  // -----------------------------------------------------------------------
-  // Stats
-  // -----------------------------------------------------------------------
+  // ── Stats ─────────────────────────────────────────────────────────────────
 
   loadStats: () => {
     const { agents } = get();
-    set({
-      stats: {
-        ...mockDashboardStats,
-        totalAgents: agents.length,
-        activeAgents: agents.filter((a) => a.status === "active").length,
-      },
-    });
+    set({ stats: { ...mockDashboardStats, totalAgents: agents.length, activeAgents: agents.filter((a) => a.status === "active").length } });
   },
 }));

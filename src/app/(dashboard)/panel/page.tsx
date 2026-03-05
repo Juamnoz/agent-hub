@@ -15,6 +15,8 @@ import {
   Inbox,
 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
+import { usePlanStore } from "@/stores/plan-store";
+import { PLAN_AGENT_LIMITS } from "@/lib/mock-data";
 import { AgentCard } from "@/components/agents/agent-card";
 import type { Agent, Conversation } from "@/lib/mock-data";
 
@@ -100,6 +102,9 @@ function buildAlerts(agents: Agent[]): AgentAlert[] {
 
 export default function PanelPage() {
   const { agents, conversations, loadConversations } = useAgentStore();
+  const { currentPlan } = usePlanStore();
+  const agentLimit = PLAN_AGENT_LIMITS[currentPlan];
+  const agentLimitLabel = agentLimit === Infinity ? "∞" : agentLimit;
 
   // Cargar conversaciones de todos los agentes
   useEffect(() => {
@@ -145,7 +150,7 @@ export default function PanelPage() {
           <StatPill
             icon={<Bot className="h-3 w-3" />}
             label="Activos"
-            value={`${activeAgents.length}/${agents.length}`}
+            value={`${agents.length}/${agentLimitLabel}`}
           />
           <StatPill
             icon={<MessageSquare className="h-3 w-3" />}

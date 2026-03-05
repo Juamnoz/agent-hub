@@ -15,6 +15,7 @@ interface PlanStore {
   selectPlan: (plan: PlanTier) => void;
   canAddAgent: (currentCount: number) => boolean;
   canAddIntegration: (currentCount: number) => boolean;
+  canAddWhatsApp: (currentCount: number) => boolean;
   getAgentLimit: () => number;
   getIntegrationLimit: () => number;
   getMessageLimit: () => number;
@@ -36,6 +37,11 @@ export const usePlanStore = create<PlanStore>()(
 
       canAddIntegration: (currentCount) => {
         const limit = PLAN_INTEGRATION_LIMITS[get().currentPlan];
+        return currentCount < limit;
+      },
+
+      canAddWhatsApp: (currentCount) => {
+        const limit = PLAN_WHATSAPP_LIMITS[get().currentPlan];
         return currentCount < limit;
       },
 

@@ -1,13 +1,14 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
 import { PanelLeft, Plus } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
+import { useAuthStore } from "@/stores/auth-store";
 
 function usePageTitle(pathname: string): string {
   const { t } = useLocaleStore();
@@ -48,6 +49,14 @@ export default function DashboardLayout({
   const title = usePageTitle(pathname);
   const { collapsed, setMobileOpen } = useSidebarStore();
   const isLisa = pathname === "/lisa" || pathname.startsWith("/lisa/");
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/sign-in");
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen bg-background">

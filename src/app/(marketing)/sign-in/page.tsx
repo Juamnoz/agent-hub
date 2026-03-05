@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Eye, EyeOff, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuthStore } from "@/stores/auth-store";
 
 /* ── Brand-quality provider icons ─────────────────── */
 function GoogleIcon({ size = 18 }: { size?: number }) {
@@ -71,7 +73,10 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
+  const router = useRouter();
+  const { login, register } = useAuthStore();
   const isSignUp = mode === "signup";
 
   const handleProvider = (provider: string) => {
@@ -79,10 +84,22 @@ export default function SignInPage() {
     setTimeout(() => setLoading(null), 2200);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading("email");
-    setTimeout(() => setLoading(null), 2000);
+    try {
+      if (isSignUp) {
+        await register(name, email, password);
+      } else {
+        await login(email, password);
+      }
+      router.push("/agents");
+    } catch (err: any) {
+      setFormError(err.message ?? "Error. Intenta de nuevo.");
+    } finally {
+      setLoading(null);
+    }
   };
 
   const providers = [
@@ -265,6 +282,10 @@ export default function SignInPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {formError && (
+                <p className="text-xs text-red-500 text-center -mt-1">{formError}</p>
+              )}
 
               <motion.button
                 type="submit"

@@ -2,10 +2,11 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
+import { usePlanStore } from "@/stores/plan-store";
 import { Button } from "@/components/ui/button";
 import { ConnectionWizard } from "@/components/whatsapp/connection-wizard";
 
@@ -23,7 +24,18 @@ export default function AgentWhatsAppPage({
   const { agentId } = use(params);
   const { agents } = useAgentStore();
   const { t } = useLocaleStore();
+  const { currentPlan, canAddWhatsApp, getWhatsAppLimit } = usePlanStore();
   const agent = agents.find((a) => a.id === agentId);
+
+  // Count how many OTHER agents already have WhatsApp connected (excluding this one)
+  const whatsappConnectedCount = agents.filter(
+    (a) => a.whatsappConnected && a.id !== agentId
+  ).length;
+  // If this agent is already connected, we don't need to enforce (they can manage existing connection)
+  const isAlreadyConnected = agent?.whatsappConnected ?? false;
+  const whatsappLimitReached = !isAlreadyConnected && !canAddWhatsApp(whatsappConnectedCount);
+  const whatsappLimit = getWhatsAppLimit();
+  const planName = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
 
   if (!agent) {
     return (
@@ -63,7 +75,26 @@ export default function AgentWhatsAppPage({
       </motion.div>
 
       <motion.div {...fadeUp(0.1)}>
-        <ConnectionWizard agentId={agentId} isConnected={agent.whatsappConnected} />
+        {whatsappLimitReached ? (
+          <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-8 flex flex-col items-center text-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <Lock className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+              <h2 className="text-[20px] font-bold">Límite de conexiones WhatsApp</h2>
+              <p className="text-[15px] text-muted-foreground max-w-xs">
+                Tu plan <span className="font-semibold">{planName}</span> incluye{" "}
+                <span className="font-semibold">{whatsappLimit}</span> línea{whatsappLimit !== 1 ? "s" : ""} WhatsApp.
+                Actualiza para conectar más números.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/billing">Ver planes</Link>
+            </Button>
+          </div>
+        ) : (
+          <ConnectionWizard agentId={agentId} isConnected={agent.whatsappConnected} />
+        )}
       </motion.div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCookieToken } from "@/lib/setup-crypto";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   const token = req.cookies.get("setup_auth")?.value ?? "";
   const secret = process.env.SETUP_AUTH_SECRET ?? "changeme";
@@ -24,8 +26,9 @@ export async function POST(req: NextRequest) {
   if (name.endsWith(".txt") || name.endsWith(".md")) {
     text = buffer.toString("utf-8");
   } else if (name.endsWith(".pdf")) {
+    // Usar la lib directamente para evitar el error de archivos de test en Vercel
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require("pdf-parse");
+    const pdfParse = require("pdf-parse/lib/pdf-parse.js");
     const result = await pdfParse(buffer);
     text = result.text;
   } else if (name.endsWith(".docx")) {

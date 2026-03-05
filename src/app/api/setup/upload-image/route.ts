@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/setup-db";
 import { verifyCookieToken } from "@/lib/setup-crypto";
 
+export const runtime = "nodejs";
+
 const BUCKET = "agent-images";
 const MAX_MB = 5;
 

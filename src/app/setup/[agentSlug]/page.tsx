@@ -247,6 +247,7 @@ export default function AgentSetupPage({
   const [adminPhone, setAdminPhone] = useState(saved?.adminPhone ?? "");
   const [contactsCollapsed, setContactsCollapsed] = useState(!!saved);
   const [images, setImages] = useState<AgentImage[]>([]);
+  const [draggingImages, setDraggingImages] = useState(false);
   const imagesFileRef = useRef<HTMLInputElement>(null);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -322,24 +323,16 @@ export default function AgentSetupPage({
   const promptDrag = makeDragHandlers(setDraggingPrompt, processPromptFile);
   const faqsDrag = makeDragHandlers(setDraggingFaqs, processFaqsFile);
 
-  async function handleImagesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = "";
+  async function handleImageFiles(files: File[]) {
     const slots = MAX_IMAGES - images.length;
-    const toAdd = files.slice(0, slots);
+    const toAdd = files.filter((f) => f.type.startsWith("image/")).slice(0, slots);
     if (!toAdd.length) return;
 
     const newImgs: AgentImage[] = toAdd.map((f) => ({
-      id: genId(),
-      title: "",
-      url: "",
-      preview: URL.createObjectURL(f),
-      uploading: true,
-      error: "",
+      id: genId(), title: "", url: "", preview: URL.createObjectURL(f), uploading: true, error: "",
     }));
     setImages((prev) => [...prev, ...newImgs]);
 
-    // Upload each
     for (let i = 0; i < toAdd.length; i++) {
       const img = newImgs[i];
       const form = new FormData();
@@ -354,6 +347,24 @@ export default function AgentSetupPage({
         setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, uploading: false, error: err instanceof Error ? err.message : "Error" } : m));
       }
     }
+  }
+
+  const imagesDrag = {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); if (images.length < MAX_IMAGES) setDraggingImages(true); },
+    onDragEnter: (e: React.DragEvent) => { e.preventDefault(); if (images.length < MAX_IMAGES) setDraggingImages(true); },
+    onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDraggingImages(false); },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDraggingImages(false);
+      const files = Array.from(e.dataTransfer.files);
+      handleImageFiles(files);
+    },
+  };
+
+  async function handleImagesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    await handleImageFiles(files);
   }
 
   function removeImage(id: string) {
@@ -922,8 +933,16 @@ export default function AgentSetupPage({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.21 }}
-          className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
+          {...imagesDrag}
+          className={`relative rounded-2xl ring-1 overflow-hidden transition-all ${draggingImages ? "ring-pink-400/60 bg-pink-500/5" : "bg-[#1a1a1a] ring-white/8"}`}
         >
+          {draggingImages && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-pink-500/10 backdrop-blur-[2px]">
+              <ImagePlus className="h-8 w-8 text-pink-400" />
+              <p className="text-[15px] font-semibold text-pink-300">Suelta las imágenes aquí</p>
+              <p className="text-[12px] text-pink-400/60">JPG · PNG · WebP · máx. 5MB por imagen</p>
+            </div>
+          )}
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/6">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/15">
@@ -963,7 +982,7 @@ export default function AgentSetupPage({
               className="flex w-full flex-col items-center justify-center gap-2 py-10 text-white/25 transition-colors hover:text-white/40"
             >
               <ImagePlus className="h-8 w-8" />
-              <span className="text-[14px]">Toca para agregar imágenes</span>
+              <span className="text-[14px]">Arrastra o toca para agregar imágenes</span>
               <span className="text-[12px] text-white/20">JPG, PNG o WebP · máx. 5MB por imagen</span>
             </button>
           ) : (

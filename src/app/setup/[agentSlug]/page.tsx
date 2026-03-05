@@ -253,43 +253,23 @@ export default function AgentSetupPage({
   const [errorMsg, setErrorMsg] = useState("");
   const [uploadingPrompt, setUploadingPrompt] = useState(false);
   const [uploadingFaqs, setUploadingFaqs] = useState(false);
+  const [draggingPrompt, setDraggingPrompt] = useState(false);
+  const [draggingFaqs, setDraggingFaqs] = useState(false);
   const promptFileRef = useRef<HTMLInputElement>(null);
   const faqsFileRef = useRef<HTMLInputElement>(null);
 
   async function handlePromptFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingPrompt(true);
-    try {
-      const text = await parseDocument(file);
-      setPrompt(text);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error al leer el archivo");
-    } finally {
-      setUploadingPrompt(false);
-      e.target.value = "";
-    }
+    await processPromptFile(file);
+    e.target.value = "";
   }
 
   async function handleFaqsFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingFaqs(true);
-    try {
-      const text = await parseDocument(file);
-      const parsed = parseFaqsFromText(text);
-      if (parsed.length === 0) {
-        alert("No se encontraron preguntas en el documento. Verifica el formato.");
-        return;
-      }
-      setFaqs(parsed.map((f) => ({ ...f, id: genId() })));
-      setExpandedFaq(null);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error al leer el archivo");
-    } finally {
-      setUploadingFaqs(false);
-      e.target.value = "";
-    }
+    await processFaqsFile(file);
+    e.target.value = "";
   }
 
   // FAQs
@@ -298,6 +278,49 @@ export default function AgentSetupPage({
     setFaqs((prev) => [...prev, { id, question: "", answer: "" }]);
     setExpandedFaq(id);
   }
+
+  function makeDragHandlers(
+    setter: (v: boolean) => void,
+    onFile: (f: File) => void,
+  ) {
+    return {
+      onDragOver: (e: React.DragEvent) => { e.preventDefault(); setter(true); },
+      onDragEnter: (e: React.DragEvent) => { e.preventDefault(); setter(true); },
+      onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setter(false); },
+      onDrop: (e: React.DragEvent) => {
+        e.preventDefault();
+        setter(false);
+        const file = e.dataTransfer.files[0];
+        if (file) onFile(file);
+      },
+    };
+  }
+
+  async function processPromptFile(file: File) {
+    setUploadingPrompt(true);
+    try {
+      const text = await parseDocument(file);
+      setPrompt(text);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error al leer el archivo");
+    } finally { setUploadingPrompt(false); }
+  }
+
+  async function processFaqsFile(file: File) {
+    setUploadingFaqs(true);
+    try {
+      const text = await parseDocument(file);
+      const parsed = parseFaqsFromText(text);
+      if (parsed.length === 0) { alert("No se encontraron preguntas en el documento. Verifica el formato."); return; }
+      setFaqs(parsed.map((f) => ({ ...f, id: genId() })));
+      setExpandedFaq(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error al leer el archivo");
+    } finally { setUploadingFaqs(false); }
+  }
+
+  const promptDrag = makeDragHandlers(setDraggingPrompt, processPromptFile);
+  const faqsDrag = makeDragHandlers(setDraggingFaqs, processFaqsFile);
 
   async function handleImagesSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -683,8 +706,16 @@ export default function AgentSetupPage({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.13 }}
-          className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
+          {...faqsDrag}
+          className={`relative rounded-2xl bg-[#1a1a1a] ring-1 overflow-hidden transition-all ${draggingFaqs ? "ring-amber-400/60 bg-amber-500/5" : "ring-white/8"}`}
         >
+          {draggingFaqs && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-amber-500/10 backdrop-blur-[2px]">
+              <Upload className="h-8 w-8 text-amber-400" />
+              <p className="text-[15px] font-semibold text-amber-300">Suelta el documento aquí</p>
+              <p className="text-[12px] text-amber-400/60">Se importarán las preguntas automáticamente</p>
+            </div>
+          )}
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/6">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15">
@@ -855,16 +886,33 @@ export default function AgentSetupPage({
             </div>
           </div>
           <div className="px-4 py-3">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder={`Eres ${agentMeta.name}, el asistente virtual de [Empresa]. Tu misión es ayudar a los clientes con información sobre productos, horarios, precios y resolver dudas frecuentes.\n\nSiempre responde en español, de forma amable y profesional. Nunca inventes precios ni hagas promesas que no puedas cumplir.\n\nContexto del negocio:\n- Nombre: [Empresa]\n- Sector: [Industria]\n- Horario: [Horario de atención]\n\nTono: cercano, profesional, conciso.`}
-              rows={16}
-              className="w-full resize-none rounded-xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white placeholder-white/18 outline-none ring-1 ring-white/8 focus:ring-blue-500/35 transition-all font-mono"
-            />
+            <div
+              {...promptDrag}
+              className={`relative rounded-xl transition-all ${draggingPrompt ? "ring-2 ring-blue-400/60 bg-blue-500/8" : ""}`}
+            >
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={`Eres ${agentMeta.name}, el asistente virtual de [Empresa]. Tu misión es ayudar a los clientes con información sobre productos, horarios, precios y resolver dudas frecuentes.\n\nSiempre responde en español, de forma amable y profesional. Nunca inventes precios ni hagas promesas que no puedas cumplir.\n\nContexto del negocio:\n- Nombre: [Empresa]\n- Sector: [Industria]\n- Horario: [Horario de atención]\n\nTono: cercano, profesional, conciso.`}
+                rows={16}
+                className="w-full resize-none rounded-xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white placeholder-white/18 outline-none ring-1 ring-white/8 focus:ring-blue-500/35 transition-all font-mono"
+              />
+              {draggingPrompt && (
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-blue-500/10 backdrop-blur-[2px]">
+                  <Upload className="h-8 w-8 text-blue-400" />
+                  <p className="text-[15px] font-semibold text-blue-300">Suelta el documento aquí</p>
+                  <p className="text-[12px] text-blue-400/60">.txt · .pdf · .docx · .md</p>
+                </div>
+              )}
+              {uploadingPrompt && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                  <Loader2 className="h-7 w-7 animate-spin text-blue-400" />
+                </div>
+              )}
+            </div>
             <p className="mt-2 text-[12px] text-white/25 leading-relaxed">
               Incluye: rol, tono, contexto del negocio, limites de respuesta y
-              ejemplos de conversacion.
+              ejemplos de conversacion. · Arrastra un archivo o usa el botón ↑
             </p>
           </div>
         </motion.div>

@@ -16,7 +16,7 @@
     "mammoth": "^1.11.0",
     "motion": "^12.34.3",
     "next": "16.1.6",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.1",
     "postgres": "^3.4.8",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",

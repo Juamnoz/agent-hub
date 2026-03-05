@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     },
   ];
 
-  const { error } = await supabase.from("setup_agencies").insert({
+  const { error } = await (supabase as any).from("setup_agencies").insert({
     name: agencyName,
     passcode_hash,
     salt,

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("setup_agencies")
     .select("name, agents")
     .eq("id", agencyId)
@@ -21,5 +21,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Agencia no encontrada" }, { status: 404 });
   }
 
-  return NextResponse.json({ agencyName: data.name, agents: data.agents });
+  const row = data as { name: string; agents: unknown[] };
+  return NextResponse.json({ agencyName: row.name, agents: row.agents });
 }

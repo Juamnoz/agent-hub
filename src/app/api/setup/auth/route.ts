@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Credenciales incorrectas" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("setup_agencies")
     .select("id, name, passcode_hash, salt, username")
     .ilike("username", username.trim())
@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Agencia no configurada" }, { status: 503 });
   }
 
-  const valid = await verifyPasscode(passcode.trim(), data.salt, data.passcode_hash);
+  const row = data as { id: string; name: string; passcode_hash: string; salt: string };
+  const valid = await verifyPasscode(passcode.trim(), row.salt, row.passcode_hash);
 
   if (!valid) {
     await new Promise((r) => setTimeout(r, 400));
@@ -33,9 +34,9 @@ export async function POST(req: NextRequest) {
   }
 
   const secret = process.env.SETUP_AUTH_SECRET ?? "changeme";
-  const token = await buildCookieToken(data.id, secret);
+  const token = await buildCookieToken(row.id, secret);
 
-  const res = NextResponse.json({ ok: true, agencyName: data.name });
+  const res = NextResponse.json({ ok: true, agencyName: row.name });
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

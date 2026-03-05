@@ -365,10 +365,10 @@ export default function NewAgentPage() {
     else setStep((s) => s - 1);
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     // Step 1 → create agent, capture ID
     if (step === 1) {
-      const newId = addAgent({
+      const newId = await addAgent({
         name: name.trim(),
         hotelName: hotelName.trim(),
         language,

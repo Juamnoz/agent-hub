@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   Loader2,
   Upload,
+  Phone,
+  ShieldCheck,
+  MessageCircle,
 } from "lucide-react";
 
 async function parseDocument(file: File): Promise<string> {
@@ -62,6 +65,14 @@ const AGENT_LABELS: Record<string, { name: string; color: string }> = {
   max: { name: "max", color: "slate" },
 };
 
+const TONES = [
+  { id: "formal",      label: "Formal",      desc: "Profesional y serio" },
+  { id: "friendly",    label: "Amigable",    desc: "Cercano y cálido" },
+  { id: "casual",      label: "Casual",      desc: "Relajado y natural" },
+  { id: "empathic",    label: "Empático",    desc: "Comprensivo y paciente" },
+  { id: "enthusiastic",label: "Entusiasta",  desc: "Dinámico y motivador" },
+];
+
 interface Faq {
   id: string;
   question: string;
@@ -83,8 +94,11 @@ export default function AgentSetupPage({
   const agentMeta = AGENT_LABELS[agentSlug] ?? { name: agentSlug, color: "orange" };
 
   const [agentName, setAgentName] = useState(agentMeta.name);
+  const [tone, setTone] = useState("friendly");
   const [faqs, setFaqs] = useState<Faq[]>([{ id: genId(), question: "", answer: "" }]);
   const [prompt, setPrompt] = useState("");
+  const [escalationPhone, setEscalationPhone] = useState("");
+  const [adminPhone, setAdminPhone] = useState("");
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -155,7 +169,7 @@ export default function AgentSetupPage({
   }
 
   const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
-  const isValid = agentName.trim() && prompt.trim();
+  const isValid = agentName.trim() && prompt.trim() && escalationPhone.trim() && adminPhone.trim();
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -166,11 +180,14 @@ export default function AgentSetupPage({
     const payload = {
       agent_slug: agentSlug,
       agent_name: agentName.trim(),
+      tone,
       prompt: prompt.trim(),
       faqs: validFaqs.map(({ question, answer }) => ({
         question: question.trim(),
         answer: answer.trim(),
       })),
+      escalation_phone: escalationPhone.trim(),
+      admin_phone: adminPhone.trim(),
       created_at: new Date().toISOString(),
     };
 
@@ -365,11 +382,14 @@ export default function AgentSetupPage({
           transition={{ delay: 0.04 }}
           className="flex items-center gap-2 px-0.5"
         >
-          {["Nombre", "FAQs", "Prompt"].map((step, i) => {
+          {["Nombre", "FAQs", "Prompt", "Contactos"].map((step, i) => {
             const done =
-              i === 0 ? !!agentName.trim() : i === 1 ? validFaqs.length > 0 : !!prompt.trim();
+              i === 0 ? !!agentName.trim() :
+              i === 1 ? validFaqs.length > 0 :
+              i === 2 ? !!prompt.trim() :
+              !!(escalationPhone.trim() && adminPhone.trim());
             return (
-              <div key={step} className="flex items-center gap-1.5 flex-1">
+              <div key={step} className="flex items-center gap-1 flex-1">
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all ${
                     done
@@ -379,10 +399,10 @@ export default function AgentSetupPage({
                 >
                   {done ? "✓" : i + 1}
                 </div>
-                <span className={`text-[12px] font-medium ${done ? "text-white/60" : "text-white/25"}`}>
+                <span className={`text-[11px] font-medium ${done ? "text-white/60" : "text-white/25"}`}>
                   {step}
                 </span>
-                {i < 2 && <div className="flex-1 h-px bg-white/8" />}
+                {i < 3 && <div className="flex-1 h-px bg-white/8" />}
               </div>
             );
           })}
@@ -408,7 +428,7 @@ export default function AgentSetupPage({
               </p>
             </div>
           </div>
-          <div className="px-4 py-3">
+          <div className="px-4 pt-3 pb-4 space-y-4">
             <input
               type="text"
               value={agentName}
@@ -416,6 +436,31 @@ export default function AgentSetupPage({
               placeholder={`ej. ${agentMeta.name} — Asistente de Ventas`}
               className="w-full rounded-xl bg-white/6 px-4 py-3 text-[16px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-orange-500/50 transition-all"
             />
+
+            {/* Tono de conversación */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-3.5 w-3.5 text-white/30" />
+                <p className="text-[12px] font-medium text-white/40 uppercase tracking-wider">Tono de conversación</p>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {TONES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTone(t.id)}
+                    className={`flex flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-center transition-all ring-1 ${
+                      tone === t.id
+                        ? "bg-orange-500/15 ring-orange-500/40 text-orange-400"
+                        : "bg-white/5 ring-white/8 text-white/35 hover:bg-white/8"
+                    }`}
+                  >
+                    <span className="text-[12px] font-semibold leading-tight">{t.label}</span>
+                    <span className={`text-[10px] leading-tight ${tone === t.id ? "text-orange-400/70" : "text-white/20"}`}>{t.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -599,6 +644,71 @@ export default function AgentSetupPage({
           </div>
         </motion.div>
 
+        {/* 4 — Contactos */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.23 }}
+          className="rounded-2xl bg-[#1a1a1a] ring-1 ring-white/8 overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15">
+              <Phone className="h-4 w-4 text-violet-400" />
+            </div>
+            <div>
+              <p className="text-[15px] font-semibold text-white leading-tight">
+                Contactos del sistema
+              </p>
+              <p className="text-[12px] text-white/35">
+                Escalamiento y administración del agente
+              </p>
+            </div>
+          </div>
+
+          <div className="px-4 py-4 space-y-4">
+            {/* Número de escalamiento */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Phone className="h-3.5 w-3.5 text-violet-400/60" />
+                <p className="text-[13px] font-semibold text-white/70">Número de escalamiento</p>
+              </div>
+              <p className="text-[12px] text-white/35 pl-5">
+                A este número se enviarán las notificaciones cuando el agente necesite escalar una conversación a un humano.
+              </p>
+              <input
+                type="tel"
+                value={escalationPhone}
+                onChange={(e) => setEscalationPhone(e.target.value)}
+                placeholder="+52 1 55 1234 5678"
+                className="w-full rounded-xl bg-white/6 px-4 py-3 text-[16px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-violet-500/50 transition-all"
+              />
+            </div>
+
+            <div className="h-px bg-white/6" />
+
+            {/* Número de administrador */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400/60" />
+                <p className="text-[13px] font-semibold text-white/70">Número de administrador</p>
+              </div>
+              <p className="text-[12px] text-white/35 pl-5">
+                Solo este número tendrá acceso de administración al agente. Si el agente recibe un mensaje desde este número, activará los comandos de gestión y escalamiento.
+              </p>
+              <input
+                type="tel"
+                value={adminPhone}
+                onChange={(e) => setAdminPhone(e.target.value)}
+                placeholder="+52 1 55 1234 5678"
+                className="w-full rounded-xl bg-white/6 px-4 py-3 text-[16px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-emerald-500/50 transition-all"
+              />
+              <p className="text-[11px] text-white/25 pl-0.5">
+                Formato internacional: +[código país] [número] · ej. +521XXXXXXXXXX
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Error */}
         <AnimatePresence>
           {status === "error" && (
@@ -647,7 +757,11 @@ export default function AgentSetupPage({
             <p className="mt-2 text-center text-[13px] text-white/30">
               {!agentName.trim()
                 ? "Escribe el nombre del agente"
-                : "Agrega el prompt del agente"}
+                : !prompt.trim()
+                ? "Agrega el prompt del agente"
+                : !escalationPhone.trim()
+                ? "Agrega el número de escalamiento"
+                : "Agrega el número de administrador"}
             </p>
           )}
         </motion.div>

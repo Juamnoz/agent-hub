@@ -302,9 +302,18 @@ export default function AgentSetupPage({
     );
   }
 
-  const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
+  const PROMPT_MIN = 150;
 
-  const isValid = agentName.trim() && prompt.trim() && escalationPhone.trim() && adminPhone.trim();
+  const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
+  // FAQ inválida: tiene pregunta pero no tiene respuesta
+  const incompleteFaqs = faqs.filter((f) => f.question.trim() && !f.answer.trim());
+
+  const isValid =
+    agentName.trim() &&
+    prompt.trim().length >= PROMPT_MIN &&
+    incompleteFaqs.length === 0 &&
+    escalationPhone.trim() &&
+    adminPhone.trim();
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -708,15 +717,24 @@ export default function AgentSetupPage({
                           placeholder="¿Cuales son los horarios de atención?"
                           className="w-full rounded-xl bg-white/6 px-3.5 py-2.5 text-[14px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-amber-500/40 transition-all"
                         />
-                        <textarea
-                          value={faq.answer}
-                          onChange={(e) =>
-                            updateFaq(faq.id, "answer", e.target.value)
-                          }
-                          placeholder="Respondemos de lunes a viernes de 8am a 6pm…"
-                          rows={3}
-                          className="w-full resize-none rounded-xl bg-white/6 px-3.5 py-2.5 text-[14px] text-white placeholder-white/25 outline-none ring-1 ring-white/10 focus:ring-amber-500/40 transition-all"
-                        />
+                        <div className="relative">
+                          <textarea
+                            value={faq.answer}
+                            onChange={(e) =>
+                              updateFaq(faq.id, "answer", e.target.value)
+                            }
+                            placeholder="Respondemos de lunes a viernes de 8am a 6pm…"
+                            rows={3}
+                            className={`w-full resize-none rounded-xl bg-white/6 px-3.5 py-2.5 text-[14px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
+                              faq.question.trim() && !faq.answer.trim()
+                                ? "ring-red-500/40 bg-red-500/5"
+                                : "ring-white/10 focus:ring-amber-500/40"
+                            }`}
+                          />
+                          {faq.question.trim() && !faq.answer.trim() && (
+                            <p className="mt-1 text-[11px] text-red-400">Respuesta obligatoria</p>
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -756,7 +774,9 @@ export default function AgentSetupPage({
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[12px] text-white/30 tabular-nums">{prompt.length} car.</span>
+              <span className={`text-[12px] tabular-nums ${prompt.length >= PROMPT_MIN ? "text-emerald-400" : prompt.length > 0 ? "text-amber-400" : "text-white/30"}`}>
+                {prompt.length}/{PROMPT_MIN} mín.
+              </span>
               <input ref={promptFileRef} type="file" accept=".txt,.pdf,.docx,.md" className="hidden" onChange={handlePromptFile} />
               <button
                 onClick={() => promptFileRef.current?.click()}
@@ -939,8 +959,10 @@ export default function AgentSetupPage({
             <p className="mt-2 text-center text-[13px] text-white/30">
               {!agentName.trim()
                 ? "Escribe el nombre del agente"
-                : !prompt.trim()
-                ? "Agrega el prompt del agente"
+                : incompleteFaqs.length > 0
+                ? `${incompleteFaqs.length} pregunta${incompleteFaqs.length > 1 ? "s" : ""} sin respuesta`
+                : prompt.trim().length < PROMPT_MIN
+                ? `Prompt muy corto — mínimo ${PROMPT_MIN} caracteres (${PROMPT_MIN - prompt.trim().length} faltan)`
                 : !escalationPhone.trim()
                 ? "Agrega el número de escalamiento"
                 : "Agrega el número de administrador"}

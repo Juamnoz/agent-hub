@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useRef, useEffect } from "react";
+import { use, useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -24,6 +24,7 @@ import {
   BookOpen,
   FileCheck,
 } from "lucide-react";
+import { useDraft } from "@/hooks/use-draft";
 
 async function parseDocument(file: File): Promise<string> {
   const name = file.name.toLowerCase();
@@ -250,6 +251,17 @@ function genId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+const DEFAULT_FAQS: Faq[] = [
+  { id: genId(), question: "¿Cuáles son los horarios de atención?", answer: "" },
+  { id: genId(), question: "¿Cuáles son los métodos de pago?", answer: "" },
+  { id: genId(), question: "¿Hacen envíos? ¿Cuánto demoran?", answer: "" },
+  { id: genId(), question: "¿Dónde están ubicados?", answer: "" },
+  { id: genId(), question: "¿Tienen garantía o política de devoluciones?", answer: "" },
+  { id: genId(), question: "¿Cómo puedo hacer un pedido?", answer: "" },
+  { id: genId(), question: "¿Tienen servicio a domicilio?", answer: "" },
+  { id: genId(), question: "¿Ofrecen descuentos o promociones?", answer: "" },
+];
+
 function TrainingStep({ label, icon: Icon, delay, index, total }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -304,41 +316,42 @@ export default function AgentSetupPage({
 
   const agentMeta = AGENT_LABELS[agentSlug] ?? { name: agentSlug, color: "orange" };
 
-  const STORAGE_KEY = `lisa-contacts-${agentSlug}`;
+  // ── Persistent draft: auto-saves to localStorage on every change ──
+  const { value: draft, setValue: setDraft, hasDraft, clearDraft } = useDraft(
+    `setup-${agentSlug}`,
+    {
+      agentName: agentMeta.name,
+      tone: "friendly",
+      faqs: DEFAULT_FAQS,
+      prompt: "",
+      escalationPhone: "",
+      adminPhone: "",
+    },
+  );
 
-  function loadSavedContacts() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as { escalationPhone: string; adminPhone: string };
-    } catch { return null; }
-  }
+  // Convenience setters that update a single field in the draft
+  const agentName = draft.agentName;
+  const tone = draft.tone;
+  const faqs = draft.faqs;
+  const prompt = draft.prompt;
+  const escalationPhone = draft.escalationPhone;
+  const adminPhone = draft.adminPhone;
 
-  const saved = loadSavedContacts();
+  const setAgentName = useCallback((v: string) => setDraft((d) => ({ ...d, agentName: v })), [setDraft]);
+  const setTone = useCallback((v: string) => setDraft((d) => ({ ...d, tone: v })), [setDraft]);
+  const setFaqs = useCallback((v: Faq[] | ((prev: Faq[]) => Faq[])) => setDraft((d) => ({ ...d, faqs: typeof v === "function" ? v(d.faqs) : v })), [setDraft]);
+  const setPrompt = useCallback((v: string) => setDraft((d) => ({ ...d, prompt: v })), [setDraft]);
+  const setEscalationPhone = useCallback((v: string) => setDraft((d) => ({ ...d, escalationPhone: v })), [setDraft]);
+  const setAdminPhone = useCallback((v: string) => setDraft((d) => ({ ...d, adminPhone: v })), [setDraft]);
 
-  const [agentName, setAgentName] = useState(agentMeta.name);
-  const [tone, setTone] = useState("friendly");
-  const [faqs, setFaqs] = useState<Faq[]>([
-    { id: genId(), question: "¿Cuáles son los horarios de atención?", answer: "" },
-    { id: genId(), question: "¿Cuáles son los métodos de pago?", answer: "" },
-    { id: genId(), question: "¿Hacen envíos? ¿Cuánto demoran?", answer: "" },
-    { id: genId(), question: "¿Dónde están ubicados?", answer: "" },
-    { id: genId(), question: "¿Tienen garantía o política de devoluciones?", answer: "" },
-    { id: genId(), question: "¿Cómo puedo hacer un pedido?", answer: "" },
-    { id: genId(), question: "¿Tienen servicio a domicilio?", answer: "" },
-    { id: genId(), question: "¿Ofrecen descuentos o promociones?", answer: "" },
-  ]);
-  const [prompt, setPrompt] = useState("");
-  const [escalationPhone, setEscalationPhone] = useState(saved?.escalationPhone ?? "");
-  const [adminPhone, setAdminPhone] = useState(saved?.adminPhone ?? "");
-  const [contactsCollapsed, setContactsCollapsed] = useState(!!saved);
+  const [contactsCollapsed, setContactsCollapsed] = useState(!!hasDraft && !!draft.escalationPhone);
   const [images, setImages] = useState<AgentImage[]>([]);
   const [draggingImages, setDraggingImages] = useState(false);
   const imagesFileRef = useRef<HTMLInputElement>(null);
   const [catalogs, setCatalogs] = useState<AgentCatalog[]>([]);
   const [draggingCatalogs, setDraggingCatalogs] = useState(false);
   const catalogsFileRef = useRef<HTMLInputElement>(null);
-  const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
+  const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0]?.id ?? null);
   const [status, setStatus] = useState<"idle" | "loading" | "training" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [uploadingPrompt, setUploadingPrompt] = useState(false);
@@ -580,10 +593,8 @@ export default function AgentSetupPage({
         const data = await res.json().catch(() => ({}));
         throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
       }
-      // Guardar contactos en localStorage para no tener que re-ingresarlos
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ escalationPhone: escalationPhone.trim(), adminPhone: adminPhone.trim() }));
-      } catch { /* ignore */ }
+      // No limpiar draft aquí — se mantiene para que no se pierda si recargan
+      // El draft se limpia solo si quieren empezar de cero
       setStatus("training");
     } catch (err: unknown) {
       setErrorMsg(
@@ -876,6 +887,27 @@ export default function AgentSetupPage({
             );
           })}
         </motion.div>
+
+        {/* Borrador guardado indicator */}
+        {hasDraft && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-between rounded-xl bg-emerald-500/8 px-3.5 py-2 ring-1 ring-emerald-500/15"
+          >
+            <div className="flex items-center gap-2">
+              <FileCheck className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-[13px] text-emerald-400/80">Borrador guardado — tus datos se recuperaron</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { clearDraft(); window.location.reload(); }}
+              className="text-[12px] text-white/30 hover:text-white/60 transition-colors"
+            >
+              Limpiar
+            </button>
+          </motion.div>
+        )}
 
         {/* 1 — Nombre */}
         <motion.div
@@ -1477,7 +1509,6 @@ export default function AgentSetupPage({
                     <button
                       type="button"
                       onClick={() => {
-                        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ escalationPhone, adminPhone })); } catch { /* ignore */ }
                         setContactsCollapsed(true);
                       }}
                       className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500/12 py-2.5 text-[14px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20 transition-all active:scale-[0.98] hover:bg-emerald-500/20"

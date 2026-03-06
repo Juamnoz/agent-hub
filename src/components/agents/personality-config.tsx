@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useDraft } from "@/hooks/use-draft";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,18 +58,39 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
   const { updateAgent } = useAgentStore();
   const { t } = useLocaleStore();
 
-  const [name, setName] = useState(agent.name);
-  const [hotelName, setHotelName] = useState(agent.hotelName);
-  const [avatar, setAvatar] = useState(agent.avatar ?? "");
-  const [personality, setPersonality] = useState(agent.personality);
-  const [tone, setTone] = useState(agent.tone);
-  const [language, setLanguage] = useState(agent.language);
-  const [algorithmType, setAlgorithmType] = useState<AlgorithmType>(agent.algorithmType ?? "hotel");
-  const [region, setRegion] = useState<CommunicationRegion>(agent.communicationStyle?.region ?? "neutral");
-  const [register, setRegister] = useState<CommunicationRegister>(agent.communicationStyle?.register ?? "professional");
+  // Persistent draft — auto-saves to localStorage while editing
+  const initialDraft = useMemo(() => ({
+    name: agent.name,
+    hotelName: agent.hotelName,
+    avatar: agent.avatar ?? "",
+    personality: agent.personality,
+    tone: agent.tone,
+    language: agent.language,
+    algorithmType: (agent.algorithmType ?? "hotel") as AlgorithmType,
+    region: (agent.communicationStyle?.region ?? "neutral") as CommunicationRegion,
+    register: (agent.communicationStyle?.register ?? "professional") as CommunicationRegister,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [agent.id]);
+
+  const { value: draft, setValue: setDraft, hasDraft, clearDraft } = useDraft(
+    `personality-${agent.id}`,
+    initialDraft,
+  );
+
+  const { name, hotelName, avatar, personality, tone, language, algorithmType, region, register } = draft;
+  const setName = useCallback((v: string) => setDraft((d) => ({ ...d, name: v })), [setDraft]);
+  const setHotelName = useCallback((v: string) => setDraft((d) => ({ ...d, hotelName: v })), [setDraft]);
+  const setAvatar = useCallback((v: string) => setDraft((d) => ({ ...d, avatar: v })), [setDraft]);
+  const setPersonality = useCallback((v: string) => setDraft((d) => ({ ...d, personality: v })), [setDraft]);
+  const setTone = useCallback((v: typeof tone) => setDraft((d) => ({ ...d, tone: v })), [setDraft]);
+  const setLanguage = useCallback((v: string) => setDraft((d) => ({ ...d, language: v })), [setDraft]);
+  const setAlgorithmType = useCallback((v: AlgorithmType) => setDraft((d) => ({ ...d, algorithmType: v })), [setDraft]);
+  const setRegion = useCallback((v: CommunicationRegion) => setDraft((d) => ({ ...d, region: v })), [setDraft]);
+  const setRegister = useCallback((v: CommunicationRegister) => setDraft((d) => ({ ...d, register: v })), [setDraft]);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
-  const [displayedPersonality, setDisplayedPersonality] = useState(agent.personality);
+  const [displayedPersonality, setDisplayedPersonality] = useState(personality);
   const typewriterRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup typewriter on unmount
@@ -121,6 +143,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
       algorithmType,
       communicationStyle: { region, register },
     });
+    clearDraft();
     toast.success(t.agentSettings.settingsSaved);
   }
 
@@ -128,6 +151,26 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
 
   return (
     <div className="space-y-6">
+      {/* Draft recovered indicator */}
+      {hasDraft && (
+        <div className="flex items-center justify-between rounded-lg bg-orange-50 dark:bg-orange-500/10 px-4 py-2.5 ring-1 ring-orange-200 dark:ring-orange-500/20">
+          <p className="text-[13px] text-orange-600 dark:text-orange-400">
+            Tienes cambios sin guardar (borrador recuperado)
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { clearDraft(); window.location.reload(); }}
+              className="text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Descartar
+            </button>
+            <Button size="sm" variant="outline" onClick={handleSave}>
+              Guardar ahora
+            </Button>
+          </div>
+        </div>
+      )}
       {/* Basic Info */}
       <Card>
         <CardHeader>

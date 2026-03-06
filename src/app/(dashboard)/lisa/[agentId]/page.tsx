@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-static";
 
 import { use } from "react";
 import { LisaChat } from "@/components/lisa/lisa-chat";

@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-static";
 
 import { use, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";

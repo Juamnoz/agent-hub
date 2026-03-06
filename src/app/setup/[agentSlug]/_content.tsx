@@ -23,6 +23,7 @@ import {
   X,
   BookOpen,
   FileCheck,
+  RefreshCw,
 } from "lucide-react";
 import { useDraft } from "@/hooks/use-draft";
 
@@ -222,6 +223,7 @@ const TONES = [
 
 const MAX_IMAGES = 20;
 const MAX_CATALOGS = 10;
+const PROMPT_MIN = 150;
 
 interface Faq {
   id: string;
@@ -358,8 +360,38 @@ export default function AgentSetupPage({
   const [uploadingFaqs, setUploadingFaqs] = useState(false);
   const [draggingPrompt, setDraggingPrompt] = useState(false);
   const [draggingFaqs, setDraggingFaqs] = useState(false);
+  const [updatingPrompt, setUpdatingPrompt] = useState(false);
+  const [promptUpdated, setPromptUpdated] = useState(false);
   const promptFileRef = useRef<HTMLInputElement>(null);
   const faqsFileRef = useRef<HTMLInputElement>(null);
+
+  async function handleUpdatePrompt() {
+    if (prompt.trim().length < PROMPT_MIN) return;
+    setUpdatingPrompt(true);
+    try {
+      const res = await fetch("/api/setup/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agentSlug,
+          payload: {
+            update_type: "prompt",
+            agent_slug: agentSlug,
+            agent_name: agentName.trim(),
+            prompt: prompt.trim(),
+            updated_at: new Date().toISOString(),
+          },
+        }),
+      });
+      if (!res.ok) throw new Error("Error al actualizar");
+      setPromptUpdated(true);
+      setTimeout(() => setPromptUpdated(false), 3000);
+    } catch {
+      setErrorMsg("Error al actualizar el prompt");
+    } finally {
+      setUpdatingPrompt(false);
+    }
+  }
 
   async function handlePromptFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -540,7 +572,6 @@ export default function AgentSetupPage({
     );
   }
 
-  const PROMPT_MIN = 150;
 
   const validFaqs = faqs.filter((f) => f.question.trim() || f.answer.trim());
   const incompleteFaqs = faqs.filter((f) => f.question.trim() && !f.answer.trim());
@@ -1178,6 +1209,27 @@ export default function AgentSetupPage({
               Incluye: rol, tono, contexto del negocio, limites de respuesta y
               ejemplos de conversacion. · Arrastra un archivo o usa el botón ↑
             </p>
+            {/* Botón actualizar prompt */}
+            {prompt.trim().length >= PROMPT_MIN && (
+              <button
+                onClick={handleUpdatePrompt}
+                disabled={updatingPrompt}
+                className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[14px] font-semibold transition-all active:scale-[0.98] ${
+                  promptUpdated
+                    ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20"
+                    : "bg-blue-500/12 text-blue-400 ring-1 ring-blue-500/20 hover:bg-blue-500/20"
+                } disabled:opacity-50`}
+              >
+                {updatingPrompt ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : promptUpdated ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                {updatingPrompt ? "Actualizando..." : promptUpdated ? "Prompt actualizado" : "Actualizar prompt"}
+              </button>
+            )}
           </div>
         </motion.div>
 

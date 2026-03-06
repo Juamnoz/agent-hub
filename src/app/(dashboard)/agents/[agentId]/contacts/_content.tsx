@@ -1,22 +1,14 @@
 "use client";
-export const dynamic = "force-static";
 
 import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
-import { SocialLinksEditor } from "@/components/agents/social-links-editor";
+import { ContactsEditor } from "@/components/agents/contacts-editor";
 
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
-});
-
-export default function SocialLinksPage({
+export default function ContactsPage({
   params,
 }: {
   params: Promise<{ agentId: string }>;
@@ -45,25 +37,20 @@ export default function SocialLinksPage({
 
   return (
     <div className="space-y-6">
-      <motion.div {...fadeUp(0)}>
-        <Button variant="ghost" size="sm" asChild className="mb-4">
+      <div>
+        <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2 text-muted-foreground">
           <Link href={`/agents/${agentId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t.common.back}
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            {agent.name}
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">{t.socialLinks.title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t.contacts.title}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {agent.hotelName}
+          {t.contacts.description}
         </p>
-      </motion.div>
+      </div>
 
-      <motion.div {...fadeUp(0.1)}>
-        <SocialLinksEditor
-          agentId={agentId}
-          initialLinks={agent.socialLinks}
-        />
-      </motion.div>
+      <ContactsEditor agentId={agentId} />
     </div>
   );
 }

@@ -1,2 +1,2 @@
 export const dynamic = "force-static";
-export { default } from "./_content";
+export { default } from "./_router";

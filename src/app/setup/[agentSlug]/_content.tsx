@@ -250,6 +250,50 @@ function genId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+function TrainingStep({ label, icon: Icon, delay, index, total }: {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  delay: number;
+  index: number;
+  total: number;
+}) {
+  const [active, setActive] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setActive(true), delay * 1000);
+    const stepDuration = 20 / total;
+    const t2 = setTimeout(() => setDone(true), (delay + stepDuration) * 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [delay, total]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={active ? { opacity: 1, x: 0 } : {}}
+      transition={{ type: "spring", stiffness: 300, damping: 28 }}
+      className={`flex items-center gap-3 transition-opacity duration-500 ${!active ? "opacity-0" : ""}`}
+    >
+      <div className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-700 ${done ? "bg-emerald-500/20" : "bg-white/8"}`}>
+        {done ? (
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          </motion.div>
+        ) : active ? (
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
+            <Loader2 className="h-4 w-4 text-white/50" />
+          </motion.div>
+        ) : (
+          <Icon className="h-4 w-4 text-white/20" />
+        )}
+      </div>
+      <span className={`text-sm transition-colors duration-700 ${done ? "text-emerald-400" : active ? "text-white/70" : "text-white/20"}`}>
+        {label}
+      </span>
+    </motion.div>
+  );
+}
+
 export default function AgentSetupPage({
   params,
 }: {
@@ -295,7 +339,7 @@ export default function AgentSetupPage({
   const [draggingCatalogs, setDraggingCatalogs] = useState(false);
   const catalogsFileRef = useRef<HTMLInputElement>(null);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "training" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [uploadingPrompt, setUploadingPrompt] = useState(false);
   const [uploadingFaqs, setUploadingFaqs] = useState(false);
@@ -540,7 +584,7 @@ export default function AgentSetupPage({
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ escalationPhone: escalationPhone.trim(), adminPhone: adminPhone.trim() }));
       } catch { /* ignore */ }
-      setStatus("success");
+      setStatus("training");
     } catch (err: unknown) {
       setErrorMsg(
         err instanceof Error
@@ -549,6 +593,91 @@ export default function AgentSetupPage({
       );
       setStatus("error");
     }
+  }
+
+  // ── Training screen (20s animated) ──
+  const TRAINING_STEPS = [
+    { label: "Procesando datos del agente", icon: BrainCircuit },
+    { label: "Configurando tono de conversación", icon: MessageCircle },
+    { label: "Entrenando preguntas frecuentes", icon: HelpCircle },
+    { label: "Cargando catálogos y recursos", icon: BookOpen },
+    { label: "Optimizando respuestas", icon: Bot },
+    { label: "Finalizando entrenamiento", icon: CheckCircle2 },
+  ];
+
+  useEffect(() => {
+    if (status !== "training") return;
+    const timer = setTimeout(() => setStatus("success"), 20000);
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  if (status === "training") {
+    return (
+      <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center px-4">
+        {/* Outer glow ring */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 25 }}
+          className="relative mb-12"
+        >
+          {/* Rotating ring */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            className="h-32 w-32 rounded-full border-2 border-transparent"
+            style={{ borderTopColor: "#34d399", borderRightColor: "#34d39950" }}
+          />
+          {/* Center icon */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <BrainCircuit className="h-12 w-12 text-emerald-400" />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Title */}
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl md:text-3xl font-bold text-white mb-3 text-center"
+        >
+          Entrenando a {agentName}
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-white/40 text-sm mb-10 text-center"
+        >
+          Esto toma unos segundos, no cierres esta ventana
+        </motion.p>
+
+        {/* Animated steps */}
+        <div className="w-full max-w-xs space-y-4">
+          {TRAINING_STEPS.map((step, i) => {
+            const delay = (i * 20) / TRAINING_STEPS.length;
+            return (
+              <TrainingStep key={i} label={step.label} icon={step.icon} delay={delay} index={i} total={TRAINING_STEPS.length} />
+            );
+          })}
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full max-w-xs mt-10 h-1.5 bg-white/8 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 20, ease: "linear" }}
+            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+          />
+        </div>
+      </div>
+    );
   }
 
   // ── Success screen ──

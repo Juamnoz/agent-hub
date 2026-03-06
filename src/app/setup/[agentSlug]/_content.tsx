@@ -847,7 +847,7 @@ export default function AgentSetupPage({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.04 }}
-          className="flex items-center gap-2 px-0.5"
+          className="grid grid-cols-3 md:flex md:items-center gap-2 px-0.5"
         >
           {["Nombre", "FAQs", "Prompt", "Imágenes", "Catálogos", "Contactos"].map((step, i) => {
             const done =
@@ -858,7 +858,7 @@ export default function AgentSetupPage({
               i === 4 ? (catalogs.length > 0 && !catalogsUploading && catalogsMissingTitle.length === 0) :
               !!(escalationPhone.trim() && adminPhone.trim());
             return (
-              <div key={step} className="flex items-center gap-1 flex-1">
+              <div key={step} className="flex items-center gap-1 md:flex-1">
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all ${
                     done
@@ -871,7 +871,7 @@ export default function AgentSetupPage({
                 <span className={`text-[11px] font-medium ${done ? "text-white/60" : "text-white/25"}`}>
                   {step}
                 </span>
-                {i < 5 && <div className="flex-1 h-px bg-white/8" />}
+                <div className="hidden md:block flex-1 h-px bg-white/8" />
               </div>
             );
           })}

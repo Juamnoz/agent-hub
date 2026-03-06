@@ -21,6 +21,8 @@ import {
   MessageCircle,
   ImagePlus,
   X,
+  BookOpen,
+  FileCheck,
 } from "lucide-react";
 
 async function parseDocument(file: File): Promise<string> {
@@ -197,6 +199,7 @@ const TONES = [
 ];
 
 const MAX_IMAGES = 20;
+const MAX_CATALOGS = 10;
 
 interface Faq {
   id: string;
@@ -207,8 +210,17 @@ interface Faq {
 interface AgentImage {
   id: string;
   title: string;
-  url: string;       // URL pública tras subir
-  preview: string;   // blob URL local mientras sube
+  url: string;
+  preview: string;
+  uploading: boolean;
+  error: string;
+}
+
+interface AgentCatalog {
+  id: string;
+  title: string;
+  fileName: string;
+  url: string;
   uploading: boolean;
   error: string;
 }
@@ -249,6 +261,9 @@ export default function AgentSetupPage({
   const [images, setImages] = useState<AgentImage[]>([]);
   const [draggingImages, setDraggingImages] = useState(false);
   const imagesFileRef = useRef<HTMLInputElement>(null);
+  const [catalogs, setCatalogs] = useState<AgentCatalog[]>([]);
+  const [draggingCatalogs, setDraggingCatalogs] = useState(false);
+  const catalogsFileRef = useRef<HTMLInputElement>(null);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(faqs[0].id);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -379,6 +394,47 @@ export default function AgentSetupPage({
     setImages((prev) => prev.map((m) => m.id === id ? { ...m, title } : m));
   }
 
+  async function handleCatalogFiles(files: File[]) {
+    const slots = MAX_CATALOGS - catalogs.length;
+    const toAdd = files.filter((f) => f.name.toLowerCase().endsWith(".pdf")).slice(0, slots);
+    if (!toAdd.length) return;
+
+    const newCats: AgentCatalog[] = toAdd.map((f) => ({
+      id: genId(), title: f.name.replace(/\.pdf$/i, ""), fileName: f.name, url: "", uploading: true, error: "",
+    }));
+    setCatalogs((prev) => [...prev, ...newCats]);
+
+    for (let i = 0; i < toAdd.length; i++) {
+      const cat = newCats[i];
+      const form = new FormData();
+      form.append("file", toAdd[i]);
+      form.append("agentSlug", agentSlug);
+      try {
+        const res = await fetch("/api/setup/upload-catalog", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error al subir");
+        setCatalogs((prev) => prev.map((c) => c.id === cat.id ? { ...c, url: data.url, uploading: false } : c));
+      } catch (err) {
+        setCatalogs((prev) => prev.map((c) => c.id === cat.id ? { ...c, uploading: false, error: err instanceof Error ? err.message : "Error" } : c));
+      }
+    }
+  }
+
+  const catalogsDrag = {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); if (catalogs.length < MAX_CATALOGS) setDraggingCatalogs(true); },
+    onDragEnter: (e: React.DragEvent) => { e.preventDefault(); if (catalogs.length < MAX_CATALOGS) setDraggingCatalogs(true); },
+    onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDraggingCatalogs(false); },
+    onDrop: (e: React.DragEvent) => { e.preventDefault(); setDraggingCatalogs(false); handleCatalogFiles(Array.from(e.dataTransfer.files)); },
+  };
+
+  function removeCatalog(id: string) {
+    setCatalogs((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  function updateCatalogTitle(id: string, title: string) {
+    setCatalogs((prev) => prev.map((c) => c.id === id ? { ...c, title } : c));
+  }
+
   function removeFaq(id: string) {
     setFaqs((prev) => {
       const next = prev.filter((f) => f.id !== id);
@@ -403,6 +459,8 @@ export default function AgentSetupPage({
   const incompleteFaqs = faqs.filter((f) => f.question.trim() && !f.answer.trim());
   const imagesUploading = images.some((m) => m.uploading);
   const imagesMissingTitle = images.filter((m) => m.url && !m.title.trim());
+  const catalogsUploading = catalogs.some((c) => c.uploading);
+  const catalogsMissingTitle = catalogs.filter((c) => c.url && !c.title.trim());
 
   const isValid =
     agentName.trim() &&
@@ -410,6 +468,8 @@ export default function AgentSetupPage({
     incompleteFaqs.length === 0 &&
     !imagesUploading &&
     imagesMissingTitle.length === 0 &&
+    !catalogsUploading &&
+    catalogsMissingTitle.length === 0 &&
     escalationPhone.trim() &&
     adminPhone.trim();
 
@@ -431,6 +491,7 @@ export default function AgentSetupPage({
       escalation_phone: escalationPhone.trim(),
       admin_phone: adminPhone.trim(),
       images: images.filter((m) => m.url).map(({ title, url }) => ({ title: title.trim(), url })),
+      catalogs: catalogs.filter((c) => c.url).map(({ title, url, fileName }) => ({ title: title.trim(), url, fileName })),
       created_at: new Date().toISOString(),
     };
 
@@ -629,12 +690,13 @@ export default function AgentSetupPage({
           transition={{ delay: 0.04 }}
           className="flex items-center gap-2 px-0.5"
         >
-          {["Nombre", "FAQs", "Prompt", "Imágenes", "Contactos"].map((step, i) => {
+          {["Nombre", "FAQs", "Prompt", "Imágenes", "Catálogos", "Contactos"].map((step, i) => {
             const done =
               i === 0 ? !!agentName.trim() :
               i === 1 ? validFaqs.length > 0 :
               i === 2 ? prompt.trim().length >= PROMPT_MIN :
               i === 3 ? (images.length > 0 && !imagesUploading && imagesMissingTitle.length === 0) :
+              i === 4 ? (catalogs.length > 0 && !catalogsUploading && catalogsMissingTitle.length === 0) :
               !!(escalationPhone.trim() && adminPhone.trim());
             return (
               <div key={step} className="flex items-center gap-1 flex-1">
@@ -650,7 +712,7 @@ export default function AgentSetupPage({
                 <span className={`text-[11px] font-medium ${done ? "text-white/60" : "text-white/25"}`}>
                   {step}
                 </span>
-                {i < 4 && <div className="flex-1 h-px bg-white/8" />}
+                {i < 5 && <div className="flex-1 h-px bg-white/8" />}
               </div>
             );
           })}
@@ -1047,7 +1109,123 @@ export default function AgentSetupPage({
           )}
         </motion.div>
 
-        {/* 5 — Contactos */}
+        {/* 5 — Catálogos */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.24 }}
+          {...catalogsDrag}
+          className={`relative rounded-2xl ring-1 overflow-hidden transition-all ${draggingCatalogs ? "ring-teal-400/60 bg-teal-500/5" : "bg-[#1a1a1a] ring-white/8"}`}
+        >
+          {draggingCatalogs && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-teal-500/10 backdrop-blur-[2px]">
+              <BookOpen className="h-8 w-8 text-teal-400" />
+              <p className="text-[15px] font-semibold text-teal-300">Suelta los catálogos aquí</p>
+              <p className="text-[12px] text-teal-400/60">Solo archivos PDF · máx. 20MB por archivo</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-500/15">
+                <BookOpen className="h-4 w-4 text-teal-400" />
+              </div>
+              <div>
+                <p className="text-[15px] font-semibold text-white leading-tight">Catálogos PDF</p>
+                <p className="text-[12px] text-white/35">
+                  {catalogs.length}/{MAX_CATALOGS} catálogos — título obligatorio
+                </p>
+              </div>
+            </div>
+            {catalogs.length < MAX_CATALOGS && (
+              <>
+                <input
+                  ref={catalogsFileRef}
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => { handleCatalogFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }}
+                />
+                <button
+                  onClick={() => catalogsFileRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-xl bg-teal-500/15 px-3 py-1.5 text-[13px] font-semibold text-teal-400 ring-1 ring-teal-500/20 transition-all hover:bg-teal-500/25 active:scale-[0.97]"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Agregar
+                </button>
+              </>
+            )}
+          </div>
+
+          {catalogs.length === 0 ? (
+            <button
+              onClick={() => catalogsFileRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 py-10 text-white/25 transition-colors hover:text-white/40"
+            >
+              <BookOpen className="h-8 w-8" />
+              <span className="text-[14px]">Arrastra o toca para agregar catálogos</span>
+              <span className="text-[12px] text-white/20">Solo PDF · máx. 20MB por archivo</span>
+            </button>
+          ) : (
+            <div className="divide-y divide-white/5">
+              <AnimatePresence initial={false}>
+                {catalogs.map((cat) => (
+                  <motion.div
+                    key={cat.id}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {/* Icono */}
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${cat.uploading ? "bg-teal-500/10" : cat.error ? "bg-red-500/10" : "bg-teal-500/15"}`}>
+                        {cat.uploading
+                          ? <Loader2 className="h-5 w-5 animate-spin text-teal-400" />
+                          : cat.error
+                          ? <X className="h-5 w-5 text-red-400" />
+                          : <FileCheck className="h-5 w-5 text-teal-400" />
+                        }
+                      </div>
+
+                      {/* Título editable + nombre archivo */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <input
+                          type="text"
+                          value={cat.title}
+                          onChange={(e) => updateCatalogTitle(cat.id, e.target.value)}
+                          placeholder="Título del catálogo…"
+                          maxLength={80}
+                          className={`w-full rounded-lg bg-white/6 px-3 py-1.5 text-[14px] text-white placeholder-white/25 outline-none ring-1 transition-all ${
+                            cat.url && !cat.title.trim() ? "ring-red-500/50 bg-red-500/5" : "ring-white/10 focus:ring-teal-500/50"
+                          }`}
+                        />
+                        <p className="text-[11px] text-white/25 px-0.5 truncate">
+                          {cat.error ? cat.error : cat.uploading ? "Subiendo…" : cat.fileName}
+                        </p>
+                        {cat.url && !cat.title.trim() && (
+                          <p className="text-[11px] text-red-400 px-0.5">Título obligatorio</p>
+                        )}
+                      </div>
+
+                      {/* Eliminar */}
+                      <button
+                        onClick={() => removeCatalog(cat.id)}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/25 hover:text-red-400 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+        </motion.div>
+
+        {/* 6 — Contactos */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1211,6 +1389,10 @@ export default function AgentSetupPage({
                 ? "Espera a que terminen de subir las imágenes"
                 : imagesMissingTitle.length > 0
                 ? `${imagesMissingTitle.length} imagen${imagesMissingTitle.length > 1 ? "es" : ""} sin título`
+                : catalogsUploading
+                ? "Espera a que terminen de subir los catálogos"
+                : catalogsMissingTitle.length > 0
+                ? `${catalogsMissingTitle.length} catálogo${catalogsMissingTitle.length > 1 ? "s" : ""} sin título`
                 : !escalationPhone.trim()
                 ? "Agrega el número de escalamiento"
                 : "Agrega el número de administrador"}

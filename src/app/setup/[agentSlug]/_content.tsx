@@ -26,15 +26,36 @@ import {
 } from "lucide-react";
 
 async function parseDocument(file: File): Promise<string> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/setup/parse-doc", { method: "POST", body: form });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error((data as { error?: string }).error ?? "Error al procesar el documento");
+  const name = file.name.toLowerCase();
+
+  if (name.endsWith(".txt") || name.endsWith(".md")) {
+    return await file.text();
   }
-  const { text } = await res.json();
-  return text as string;
+
+  if (name.endsWith(".pdf")) {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pages.push(content.items.map((item: any) => item.str ?? "").join(" "));
+    }
+    return pages.join("\n");
+  }
+
+  if (name.endsWith(".docx")) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require("mammoth/mammoth.browser");
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+
+  throw new Error("Formato no soportado. Usa .txt, .pdf o .docx");
 }
 
 function parseFaqsFromText(text: string): { question: string; answer: string }[] {

@@ -274,7 +274,16 @@ export default function AgentSetupPage({
 
   const [agentName, setAgentName] = useState(agentMeta.name);
   const [tone, setTone] = useState("friendly");
-  const [faqs, setFaqs] = useState<Faq[]>([{ id: genId(), question: "", answer: "" }]);
+  const [faqs, setFaqs] = useState<Faq[]>([
+    { id: genId(), question: "¿Cuáles son los horarios de atención?", answer: "" },
+    { id: genId(), question: "¿Cuáles son los métodos de pago?", answer: "" },
+    { id: genId(), question: "¿Hacen envíos? ¿Cuánto demoran?", answer: "" },
+    { id: genId(), question: "¿Dónde están ubicados?", answer: "" },
+    { id: genId(), question: "¿Tienen garantía o política de devoluciones?", answer: "" },
+    { id: genId(), question: "¿Cómo puedo hacer un pedido?", answer: "" },
+    { id: genId(), question: "¿Tienen servicio a domicilio?", answer: "" },
+    { id: genId(), question: "¿Ofrecen descuentos o promociones?", answer: "" },
+  ]);
   const [prompt, setPrompt] = useState("");
   const [escalationPhone, setEscalationPhone] = useState(saved?.escalationPhone ?? "");
   const [adminPhone, setAdminPhone] = useState(saved?.adminPhone ?? "");

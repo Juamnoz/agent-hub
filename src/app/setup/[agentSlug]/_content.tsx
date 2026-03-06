@@ -371,18 +371,14 @@ export default function AgentSetupPage({
 
     for (let i = 0; i < toAdd.length; i++) {
       const img = newImgs[i];
-      const file = toAdd[i];
+      const form = new FormData();
+      form.append("file", toAdd[i]);
+      form.append("agentSlug", agentSlug);
       try {
-        const signRes = await fetch("/api/setup/sign-upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bucket: "agent-images", agentSlug, fileName: file.name, contentType: file.type, fileSize: file.size }),
-        });
-        const signData = await signRes.json();
-        if (!signRes.ok) throw new Error(signData.error ?? "Error al preparar subida");
-        const uploadRes = await fetch(signData.signedUrl, { method: "PUT", headers: { "Content-Type": signData.contentType }, body: file });
-        if (!uploadRes.ok) throw new Error("Error al subir la imagen");
-        setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, url: signData.publicUrl, uploading: false } : m));
+        const res = await fetch("/api/setup/upload-image", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error al subir");
+        setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, url: data.url, uploading: false } : m));
       } catch (err) {
         setImages((prev) => prev.map((m) => m.id === img.id ? { ...m, uploading: false, error: err instanceof Error ? err.message : "Error" } : m));
       }
@@ -431,18 +427,14 @@ export default function AgentSetupPage({
 
     for (let i = 0; i < toAdd.length; i++) {
       const cat = newCats[i];
-      const file = toAdd[i];
+      const form = new FormData();
+      form.append("file", toAdd[i]);
+      form.append("agentSlug", agentSlug);
       try {
-        const signRes = await fetch("/api/setup/sign-upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bucket: "agent-catalogs", agentSlug, fileName: file.name, contentType: "application/pdf", fileSize: file.size }),
-        });
-        const signData = await signRes.json();
-        if (!signRes.ok) throw new Error(signData.error ?? "Error al preparar subida");
-        const uploadRes = await fetch(signData.signedUrl, { method: "PUT", headers: { "Content-Type": "application/pdf" }, body: file });
-        if (!uploadRes.ok) throw new Error("Error al subir el catálogo");
-        setCatalogs((prev) => prev.map((c) => c.id === cat.id ? { ...c, url: signData.publicUrl, uploading: false } : c));
+        const res = await fetch("/api/setup/upload-catalog", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error al subir");
+        setCatalogs((prev) => prev.map((c) => c.id === cat.id ? { ...c, url: data.url, uploading: false } : c));
       } catch (err) {
         setCatalogs((prev) => prev.map((c) => c.id === cat.id ? { ...c, uploading: false, error: err instanceof Error ? err.message : "Error" } : c));
       }

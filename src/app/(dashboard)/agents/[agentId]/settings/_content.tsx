@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bot } from "lucide-react";
+import { ArrowLeft, Bot, Webhook, Copy, Check } from "lucide-react";
 import { motion } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -39,6 +39,8 @@ export default function AgentSettingsPage({
   const [avatar, setAvatar] = useState(agent?.avatar ?? "");
   const [tone, setTone] = useState(agent?.tone ?? "friendly");
   const [language, setLanguage] = useState(agent?.language ?? "es");
+  const [webhookUrl, setWebhookUrl] = useState(agent?.webhookUrl ?? "");
+  const [copiedIncoming, setCopiedIncoming] = useState(false);
 
   if (!agent) {
     return (
@@ -57,6 +59,17 @@ export default function AgentSettingsPage({
     );
   }
 
+  const incomingWebhookUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/api/webhooks/${agentId}`
+    : `/api/webhooks/${agentId}`;
+
+  function handleCopyIncoming() {
+    navigator.clipboard.writeText(incomingWebhookUrl);
+    setCopiedIncoming(true);
+    setTimeout(() => setCopiedIncoming(false), 2000);
+    toast.success("URL copiada");
+  }
+
   function handleSave() {
     updateAgent(agent!.id, {
       name: name.trim(),
@@ -64,6 +77,7 @@ export default function AgentSettingsPage({
       avatar: avatar.trim() || undefined,
       tone: tone as "formal" | "friendly" | "casual",
       language,
+      webhookUrl: webhookUrl.trim() || null,
     });
     toast.success(t.agentSettings.settingsSaved);
   }
@@ -204,7 +218,58 @@ export default function AgentSettingsPage({
         </div>
       </motion.div>
 
-      <motion.div {...fadeUp(0.2)}>
+      {/* Webhooks */}
+      <motion.div {...fadeUp(0.2)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Webhook className="h-5 w-5 text-orange-500" />
+            <h2 className="text-[17px] font-semibold">Webhooks</h2>
+          </div>
+          <p className="text-[15px] text-muted-foreground mt-1">
+            Configura los endpoints para enviar y recibir datos del agente.
+          </p>
+        </div>
+
+        {/* Outgoing webhook — where we SEND data */}
+        <div className="space-y-2">
+          <Label htmlFor="settings-webhook-url">Webhook de salida (envío de datos)</Label>
+          <Input
+            id="settings-webhook-url"
+            placeholder="https://tu-servidor.com/webhook/agente"
+            value={webhookUrl}
+            onChange={(e) => setWebhookUrl(e.target.value)}
+          />
+          <p className="text-[13px] text-muted-foreground">
+            URL a la que LISA enviará los datos del agente (mensajes, formularios, eventos). Generalmente es un endpoint de n8n, Make o tu backend.
+          </p>
+        </div>
+
+        {/* Incoming webhook — where we RECEIVE data */}
+        <div className="space-y-2">
+          <Label>Webhook de entrada (recepción de datos)</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              value={incomingWebhookUrl}
+              readOnly
+              className="flex-1 bg-muted/50 text-muted-foreground font-mono text-[13px]"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleCopyIncoming}
+              className="shrink-0"
+            >
+              {copiedIncoming ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="text-[13px] text-muted-foreground">
+            URL para que servicios externos envíen datos a este agente. Úsala en tu plataforma de automatización.
+          </p>
+        </div>
+      </motion.div>
+
+      <motion.div {...fadeUp(0.26)}>
         <Button onClick={handleSave} className="w-full">
           {t.common.save}
         </Button>

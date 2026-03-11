@@ -50,7 +50,7 @@ export const mockTrainingResponses: Record<string, string[]> = {
   ],
 };
 
-export type AgentStatus = "active" | "inactive" | "setup";
+export type AgentStatus = "active" | "inactive" | "setup" | "testing";
 
 export interface HotelContact {
   id: string;
@@ -81,6 +81,13 @@ export type CommunicationRegister = "corporate" | "professional" | "relaxed" | "
 export interface CommunicationStyle {
   region: CommunicationRegion;
   register: CommunicationRegister;
+  regionTemperature?: number;
+}
+
+export interface ConversationExample {
+  id: string;
+  userMessage: string;
+  agentResponse: string;
 }
 
 export interface Agent {
@@ -99,6 +106,13 @@ export interface Agent {
   socialLinks?: SocialLinks;
   algorithmType?: AlgorithmType;
   communicationStyle?: CommunicationStyle;
+  systemPrompt?: string;
+  knowledgeBase?: string;
+  webhookUrl?: string | null;
+  adminPhone?: string | null;
+  escalationPhone?: string | null;
+  trainedAt?: string | null;
+  conversationExamples?: ConversationExample[] | null;
   messageCount: number;
   faqCount: number;
   productCount: number;
@@ -130,7 +144,7 @@ export interface Product {
   imageUrl?: string;
   sku?: string;
   stock?: number;
-  variants: ProductVariant[];
+  variants?: ProductVariant[];
   isActive: boolean;
   sortOrder: number;
 }

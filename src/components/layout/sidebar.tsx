@@ -32,6 +32,7 @@ import { useSidebarStore } from "@/stores/sidebar-store";
 import { useChatHistoryStore, type ChatSession } from "@/stores/chat-history-store";
 import { useAgentStore } from "@/stores/agent-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -114,7 +115,13 @@ export function Sidebar() {
   const { sessions, deleteSession } = useChatHistoryStore();
   const { agents } = useAgentStore();
   const { hasFeature } = usePlanStore();
+  const { user, logout } = useAuthStore();
   const currentChatId = searchParams.get("chat");
+
+  const userName = user?.name ?? "Usuario";
+  const userEmail = user?.email ?? "";
+  const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const isSuperAdmin = user?.role === "superadmin";
 
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
@@ -172,11 +179,15 @@ export function Sidebar() {
     { label: t.nav.settings, href: "/settings", icon: Settings },
   ];
 
-  const navItems = [
-    { label: "Panel", href: "/panel", icon: LayoutDashboard, active: isPanelActive },
-    { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
-    { label: "Chats", href: "/chats", icon: MessagesSquare, active: isChatsActive },
-  ];
+  const navItems = isSuperAdmin
+    ? [
+        { label: "Panel", href: "/panel", icon: LayoutDashboard, active: isPanelActive },
+        { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
+        { label: "Chats", href: "/chats", icon: MessagesSquare, active: isChatsActive },
+      ]
+    : [
+        { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
+      ];
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -252,76 +263,118 @@ export function Sidebar() {
 
           {/* ── Nueva conversación ── */}
           <div className={cn("shrink-0 p-3", collapsed && "lg:flex lg:justify-center")}>
-            {collapsed ? (
-              <div className="hidden lg:block">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href="/lisa"
-                      aria-label="Nueva conversación"
-                      className="relative overflow-hidden flex h-9 w-9 items-center justify-center rounded-xl text-white transition-all active:scale-[0.93]"
-                      style={{
-                        backdropFilter: "blur(20px) saturate(180%)",
-                        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                        background: "linear-gradient(148deg, #fb923c 0%, #f97316 52%, #d64602 100%)",
-                        border: "1px solid rgba(255,255,255,0.22)",
-                        boxShadow: [
-                          "0 4px 18px rgba(249,115,22,0.28)",
-                          "0 1px 4px rgba(249,115,22,0.15)",
-                          "inset 0 1px 0 rgba(255,255,255,0.18)",
-                          "inset 0 -1px 0 rgba(0,0,0,0.10)",
-                        ].join(", "),
-                      }}
-                    >
-                      <div
-                        className="pointer-events-none absolute inset-x-0 top-0"
-                        style={{
-                          height: "52%",
-                          borderRadius: "0.75rem 0.75rem 0 0",
-                          background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)",
-                        }}
-                      />
-                      <Plus className="relative z-10 h-4 w-4" />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Nueva conversación</TooltipContent>
-                </Tooltip>
-              </div>
-            ) : null}
-            <Link
-              href="/lisa"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "relative overflow-hidden flex w-full items-center gap-2.5 rounded-2xl px-3 py-3 text-[15px] font-semibold text-white transition-all active:scale-[0.97]",
-                collapsed && "lg:hidden"
-              )}
-              style={{
-                backdropFilter: "blur(20px) saturate(180%)",
-                WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                background: "linear-gradient(148deg, #fb923c 0%, #f97316 52%, #d64602 100%)",
-                border: "1px solid rgba(255,255,255,0.22)",
-                boxShadow: [
-                  "0 4px 18px rgba(249,115,22,0.28)",
-                  "0 1px 4px rgba(249,115,22,0.15)",
-                  "inset 0 1px 0 rgba(255,255,255,0.18)",
-                  "inset 0 -1px 0 rgba(0,0,0,0.10)",
-                ].join(", "),
-              }}
-            >
-              {/* Top specular sheen */}
-              <div
-                className="pointer-events-none absolute inset-x-0 top-0"
-                style={{
-                  height: "52%",
-                  borderRadius: "1rem 1rem 0 0",
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)",
-                }}
-              />
-              <div className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 shrink-0 backdrop-blur-sm">
-                <Plus className="h-3.5 w-3.5 text-white" />
-              </div>
-              <span className="relative z-10">Nueva conversación</span>
-            </Link>
+            {isSuperAdmin ? (
+              <>
+                {collapsed ? (
+                  <div className="hidden lg:block">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href="/lisa"
+                          aria-label="Nueva conversación"
+                          className="relative overflow-hidden flex h-9 w-9 items-center justify-center rounded-xl text-white transition-all active:scale-[0.93]"
+                          style={{
+                            backdropFilter: "blur(20px) saturate(180%)",
+                            WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                            background: "linear-gradient(148deg, #fb923c 0%, #f97316 52%, #d64602 100%)",
+                            border: "1px solid rgba(255,255,255,0.22)",
+                            boxShadow: [
+                              "0 4px 18px rgba(249,115,22,0.28)",
+                              "0 1px 4px rgba(249,115,22,0.15)",
+                              "inset 0 1px 0 rgba(255,255,255,0.18)",
+                              "inset 0 -1px 0 rgba(0,0,0,0.10)",
+                            ].join(", "),
+                          }}
+                        >
+                          <div
+                            className="pointer-events-none absolute inset-x-0 top-0"
+                            style={{
+                              height: "52%",
+                              borderRadius: "0.75rem 0.75rem 0 0",
+                              background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)",
+                            }}
+                          />
+                          <Plus className="relative z-10 h-4 w-4" />
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Nueva conversación</TooltipContent>
+                    </Tooltip>
+                  </div>
+                ) : null}
+                <Link
+                  href="/lisa"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "relative overflow-hidden flex w-full items-center gap-2.5 rounded-2xl px-3 py-3 text-[15px] font-semibold text-white transition-all active:scale-[0.97]",
+                    collapsed && "lg:hidden"
+                  )}
+                  style={{
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    background: "linear-gradient(148deg, #fb923c 0%, #f97316 52%, #d64602 100%)",
+                    border: "1px solid rgba(255,255,255,0.22)",
+                    boxShadow: [
+                      "0 4px 18px rgba(249,115,22,0.28)",
+                      "0 1px 4px rgba(249,115,22,0.15)",
+                      "inset 0 1px 0 rgba(255,255,255,0.18)",
+                      "inset 0 -1px 0 rgba(0,0,0,0.10)",
+                    ].join(", "),
+                  }}
+                >
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0"
+                    style={{
+                      height: "52%",
+                      borderRadius: "1rem 1rem 0 0",
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)",
+                    }}
+                  />
+                  <div className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 shrink-0 backdrop-blur-sm">
+                    <Plus className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="relative z-10">Nueva conversación</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                {collapsed ? (
+                  <div className="hidden lg:block">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="relative overflow-hidden flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground/50 cursor-not-allowed"
+                          style={{
+                            background: "hsl(var(--muted))",
+                            border: "1px solid hsl(var(--border))",
+                          }}
+                        >
+                          <Lock className="relative z-10 h-3.5 w-3.5" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Próximamente</TooltipContent>
+                    </Tooltip>
+                  </div>
+                ) : null}
+                <div
+                  className={cn(
+                    "relative overflow-hidden flex w-full items-center justify-between rounded-2xl px-3 py-3 text-[15px] font-semibold text-muted-foreground/50 cursor-not-allowed",
+                    collapsed && "lg:hidden"
+                  )}
+                  style={{
+                    background: "hsl(var(--muted))",
+                    border: "1px solid hsl(var(--border))",
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted-foreground/10 shrink-0">
+                      <Plus className="h-3.5 w-3.5" />
+                    </div>
+                    <span>Nueva conversación</span>
+                  </div>
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/40">Próximamente</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* ── Main nav ── */}
@@ -559,18 +612,18 @@ export function Sidebar() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-accent transition-colors text-left">
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback className="text-[13px] font-semibold bg-orange-500 text-white">JD</AvatarFallback>
+                      <AvatarFallback className="text-[13px] font-semibold bg-orange-500 text-white">{userInitials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-semibold truncate leading-tight">John Doe</p>
-                      <p className="text-[13px] text-muted-foreground truncate leading-tight">john@hotel.com</p>
+                      <p className="text-[15px] font-semibold truncate leading-tight">{userName}</p>
+                      <p className="text-[13px] text-muted-foreground truncate leading-tight">{userEmail}</p>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="top" align="start" className="w-52 rounded-xl mb-1">
                   <div className="px-2 py-1.5">
-                    <p className="text-[15px] font-semibold">John Doe</p>
-                    <p className="text-[13px] text-muted-foreground">john@hotel.com</p>
+                    <p className="text-[15px] font-semibold">{userName}</p>
+                    <p className="text-[13px] text-muted-foreground">{userEmail}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -580,7 +633,7 @@ export function Sidebar() {
                     <Link href="/billing">{t.nav.billing}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => { logout(); router.replace("/sign-in"); }}>
                     <LogOut className="h-4 w-4 mr-2" />
                     {t.common.signOut}
                   </DropdownMenuItem>

@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useLocaleStore } from "@/stores/locale-store";
 import { usePlanStore } from "@/stores/plan-store";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { toast } from "sonner";
 import type { PlanTier } from "@/lib/mock-data";
 import {
@@ -46,6 +47,8 @@ export default function BillingPage() {
   const { t } = useLocaleStore();
   const { currentPlan, selectPlan } = usePlanStore();
   const { agents, integrations } = useAgentStore();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "superadmin";
 
   const [pendingPlan, setPendingPlan] = useState<PlanTier | null>(null);
 
@@ -77,6 +80,80 @@ export default function BillingPage() {
   // Determine upgrade vs downgrade
   const tierOrder: Record<PlanTier, number> = { starter: 0, pro: 1, business: 2, enterprise: 3 };
   const isUpgrade = pendingPlan ? tierOrder[pendingPlan] > tierOrder[currentPlan] : false;
+
+  // Non-superadmin: show simplified client billing view
+  if (!isSuperAdmin) {
+    return (
+      <div className="space-y-5 pb-4 lg:max-w-[720px] lg:mx-auto">
+        {/* Active plan banner */}
+        <motion.div
+          {...fadeUp(0)}
+          className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-orange-500/20 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-4 pt-4 pb-3">
+            <div>
+              <p className="text-[14px] font-medium text-white/40">Plan actual</p>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <h2 className="text-[24px] font-bold text-white">Pro</h2>
+                <span className="text-[15px] text-white/40">$200.000 COP / mes</span>
+              </div>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/20">
+              <Star className="h-6 w-6 text-orange-400" />
+            </div>
+          </div>
+          <div className="px-4 pb-4 space-y-2.5 border-t border-white/8 pt-3 bg-white/3">
+            <div className="flex items-center justify-between text-[14px]">
+              <span className="text-white/60">Agentes de IA incluidos</span>
+              <span className="text-white font-semibold">2</span>
+            </div>
+            <div className="flex items-center justify-between text-[14px]">
+              <span className="text-white/60">Periodo activo</span>
+              <span className="text-white font-semibold">9 mar 2026 — 9 abr 2026</span>
+            </div>
+            <div className="flex items-center justify-between text-[14px]">
+              <span className="text-white/60">Estado</span>
+              <span className="text-emerald-400 font-semibold">Activo</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Plan details */}
+        <motion.div
+          {...fadeUp(0.08)}
+          className="rounded-2xl bg-card ring-1 ring-orange-400 dark:ring-orange-500 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"
+        >
+          <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/15">
+              <Star className="h-5 w-5 text-orange-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[18px] font-bold leading-tight">Pro</span>
+                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[12px] font-semibold text-white">
+                  Plan actual
+                </span>
+              </div>
+              <p className="text-[15px] text-muted-foreground">
+                <span className="text-[20px] font-bold text-foreground">$200.000</span> COP / mes
+              </p>
+            </div>
+          </div>
+          <div className="px-4 pb-3 grid grid-cols-1 gap-1.5">
+            {["2 agentes de IA", "Mensajes ilimitados", "Conexión WhatsApp", "Entrenamiento personalizado", "Soporte prioritario"].map((feature, i) => (
+              <div key={i} className="flex items-center gap-2 text-[15px] text-muted-foreground">
+                <Check className="h-3.5 w-3.5 shrink-0 text-orange-500" />
+                {feature}
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+            <p className="text-[15px] text-muted-foreground text-center">Tu plan actual</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 pb-4 lg:max-w-[720px] lg:mx-auto">

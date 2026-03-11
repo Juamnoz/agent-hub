@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, Settings, MessageSquare, CalendarDays, ShoppingCart, Building2 } from "lucide-react";
+import { Bot, Settings, MessageSquare, CalendarDays, ShoppingCart, Building2, Hotel, Store, Calendar, Home } from "lucide-react";
 import type { Agent } from "@/lib/mock-data";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { IconWhatsApp } from "@/components/icons/brand-icons";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -40,14 +41,42 @@ const statusDot: Record<string, string> = {
   setup: "bg-amber-500",
 };
 
+function businessTypeLabel(type?: string | null): string {
+  const labels: Record<string, string> = {
+    hotel: "Hotel",
+    restaurant: "Restaurante",
+    ecommerce: "E-commerce",
+    "whatsapp-store": "Tienda WA",
+    appointments: "Citas",
+    inmobiliaria: "Inmobiliaria",
+  };
+  return labels[type ?? ""] ?? "Negocio";
+}
+
+function businessTypeIcon(type?: string | null) {
+  const cls = "h-[18px] w-[18px]";
+  switch (type) {
+    case "hotel": return <Hotel className={`${cls} text-blue-500`} />;
+    case "restaurant": return <Store className={`${cls} text-amber-500`} />;
+    case "ecommerce":
+    case "whatsapp-store": return <ShoppingCart className={`${cls} text-violet-500`} />;
+    case "appointments": return <Calendar className={`${cls} text-teal-500`} />;
+    case "inmobiliaria": return <Home className={`${cls} text-emerald-500`} />;
+    default: return <Building2 className={`${cls} text-muted-foreground`} />;
+  }
+}
+
 interface AgentCardProps {
   agent: Agent;
   className?: string;
+  disabled?: boolean;
 }
 
-export function AgentCard({ agent, className }: AgentCardProps) {
+export function AgentCard({ agent, className, disabled }: AgentCardProps) {
   const { t } = useLocaleStore();
   const { updateAgent } = useAgentStore();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "superadmin";
   const moduleSlot = getModuleSlot(agent);
   const score = getQualityScore(agent);
 
@@ -64,6 +93,35 @@ export function AgentCard({ agent, className }: AgentCardProps) {
     score >= 80 ? "text-emerald-500" :
     score >= 50 ? "text-amber-500" :
     "text-rose-400";
+
+  if (disabled) {
+    return (
+      <div className={cn("relative", className)}>
+        <div className="rounded-2xl bg-card p-3 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] opacity-50 pointer-events-none select-none">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-sm grayscale">
+              {agent.avatar ? (
+                <img src={agent.avatar} alt={agent.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-neutral-700 dark:bg-neutral-600">
+                  <Bot className="h-[18px] w-[18px] text-neutral-400" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-[15px] font-semibold truncate">{agent.name}</h3>
+              <p className="text-[13px] text-muted-foreground truncate">{agent.hotelName}</p>
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="rounded-full bg-muted/90 backdrop-blur-sm px-3 py-1 text-[13px] font-semibold text-muted-foreground ring-1 ring-border">
+            Próximamente
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("relative group", className)}>
@@ -118,17 +176,26 @@ export function AgentCard({ agent, className }: AgentCardProps) {
               <span className="text-[12px] text-muted-foreground/60">Calidad</span>
             </div>
 
-            {/* Mensajes */}
-            <Link
-              href={`/agents/${agent.id}/conversations`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex flex-col items-center justify-between gap-1 px-1.5 py-1.5"
-            >
-              <span className="flex items-center justify-center">
-                <MessageSquare className="h-[18px] w-[18px] text-blue-500" />
-              </span>
-              <span className="text-[12px] text-muted-foreground/60">Mensajes</span>
-            </Link>
+            {/* Mensajes (superadmin) / Tipo de negocio (cliente) */}
+            {isSuperAdmin ? (
+              <Link
+                href={`/agents/${agent.id}/conversations`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex flex-col items-center justify-between gap-1 px-1.5 py-1.5"
+              >
+                <span className="flex items-center justify-center">
+                  <MessageSquare className="h-[18px] w-[18px] text-blue-500" />
+                </span>
+                <span className="text-[12px] text-muted-foreground/60">Mensajes</span>
+              </Link>
+            ) : (
+              <div className="flex flex-col items-center justify-between gap-1 px-1.5 py-1.5">
+                <span className="flex items-center justify-center">
+                  {businessTypeIcon(agent.algorithmType)}
+                </span>
+                <span className="text-[12px] text-muted-foreground/60">{businessTypeLabel(agent.algorithmType)}</span>
+              </div>
+            )}
 
             {/* Módulo principal */}
             {moduleSlot ? (

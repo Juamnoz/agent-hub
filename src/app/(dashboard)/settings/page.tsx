@@ -12,6 +12,7 @@ import {
 import { motion } from "motion/react";
 import { Switch } from "@/components/ui/switch";
 import { useLocaleStore } from "@/stores/locale-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { toast } from "sonner";
 
 const CURRENCIES = [
@@ -33,8 +34,10 @@ const fadeUp = (delay: number) => ({
 
 export default function SettingsPage() {
   const { t } = useLocaleStore();
-  const [name, setName] = useState("Juan Garcia");
-  const [email, setEmail] = useState("juan@hotelplayaazul.com");
+  const { user } = useAuthStore();
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const isSuperAdmin = user?.role === "superadmin";
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(true);
   const [agentAlerts, setAgentAlerts] = useState(false);
@@ -107,29 +110,31 @@ export default function SettingsPage() {
             <CreditCard className="h-5 w-5 shrink-0 text-orange-500" />
             <div className="flex-1">
               <p className="text-[16px] font-medium">Planes y facturación</p>
-              <p className="text-[14px] text-muted-foreground">Plan Pro · $80/mes</p>
+              <p className="text-[14px] text-muted-foreground">Plan {user?.planTier ?? "starter"}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
         </Section>
       </motion.div>
 
-      {/* Notificaciones */}
-      <motion.div {...fadeUp(0.21)}>
-        <Section label={t.settingsPage.notifications}>
-          <FieldRow label={t.settingsPage.emailNotifications}>
-            <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-          </FieldRow>
-          <Divider />
-          <FieldRow label={t.settingsPage.weeklyReports}>
-            <Switch checked={weeklyReports} onCheckedChange={setWeeklyReports} />
-          </FieldRow>
-          <Divider />
-          <FieldRow label={t.settingsPage.agentAlerts}>
-            <Switch checked={agentAlerts} onCheckedChange={setAgentAlerts} />
-          </FieldRow>
-        </Section>
-      </motion.div>
+      {/* Notificaciones — solo para superadmin */}
+      {isSuperAdmin && (
+        <motion.div {...fadeUp(0.21)}>
+          <Section label={t.settingsPage.notifications}>
+            <FieldRow label={t.settingsPage.emailNotifications}>
+              <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+            </FieldRow>
+            <Divider />
+            <FieldRow label={t.settingsPage.weeklyReports}>
+              <Switch checked={weeklyReports} onCheckedChange={setWeeklyReports} />
+            </FieldRow>
+            <Divider />
+            <FieldRow label={t.settingsPage.agentAlerts}>
+              <Switch checked={agentAlerts} onCheckedChange={setAgentAlerts} />
+            </FieldRow>
+          </Section>
+        </motion.div>
+      )}
 
       {/* Eliminar cuenta */}
       <motion.div {...fadeUp(0.28)}>

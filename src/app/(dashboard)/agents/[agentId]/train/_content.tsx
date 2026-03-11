@@ -1,33 +1,54 @@
 "use client";
 
-import { use, useState, useEffect, useRef } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Loader2, Bot, Lock, CheckCircle2 } from "lucide-react";
-import { motion } from "motion/react";
+import {
+  ArrowLeft,
+  Lock,
+  CheckCircle2,
+  Plus,
+  Trash2,
+  MessageCircle,
+  User,
+  Bot,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
-import { TrainingChat } from "@/components/agents/training-chat";
-import type { AlgorithmType, CommunicationRegion, CommunicationRegister } from "@/lib/mock-data";
+import type {
+  AlgorithmType,
+  CommunicationRegion,
+  CommunicationRegister,
+  CommunicationStyle,
+} from "@/lib/mock-data";
 import {
   ALGORITHM_ICONS,
   ALGORITHM_KEYS,
   REGION_KEYS,
   REGISTER_KEYS,
   REGION_FLAGS,
-  generateEnhancedPrompt,
-  getPreview,
 } from "@/lib/agent-training";
 import { toast } from "sonner";
 
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { type: "spring" as const, stiffness: 380, damping: 30, delay },
+  transition: {
+    type: "spring" as const,
+    stiffness: 380,
+    damping: 30,
+    delay,
+  },
 });
+
+interface ConversationExample {
+  id: string;
+  userMessage: string;
+  agentResponse: string;
+}
 
 export default function TrainPage({
   params,
@@ -48,24 +69,32 @@ export default function TrainPage({
   const [register, setRegister] = useState<CommunicationRegister>(
     agent?.communicationStyle?.register ?? "professional"
   );
-  const [personality, setPersonality] = useState(agent?.personality ?? "");
-  const [displayedPersonality, setDisplayedPersonality] = useState(
-    agent?.personality ?? ""
+  const [regionTemp, setRegionTemp] = useState<number>(
+    agent?.communicationStyle?.regionTemperature ?? 2
   );
-  const [advancedMode, setAdvancedMode] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (typewriterRef.current) clearTimeout(typewriterRef.current);
-    };
-  }, []);
+  // Conversation examples
+  const saved = agent?.conversationExamples as
+    | ConversationExample[]
+    | undefined;
+  const [examples, setExamples] = useState<ConversationExample[]>(
+    saved && saved.length > 0
+      ? saved
+      : [
+          {
+            id: crypto.randomUUID(),
+            userMessage: "",
+            agentResponse: "",
+          },
+        ]
+  );
 
   if (!agent) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h2 className="mb-2 text-xl font-semibold">{t.agents.agentNotFound}</h2>
+        <h2 className="mb-2 text-xl font-semibold">
+          {t.agents.agentNotFound}
+        </h2>
         <p className="mb-4 text-sm text-muted-foreground">
           {t.agents.agentNotFoundDescription}
         </p>
@@ -79,10 +108,6 @@ export default function TrainPage({
     );
   }
 
-  const hasSocial = agent.socialLinks
-    ? Object.values(agent.socialLinks).some((v) => v && v.trim())
-    : false;
-
   const algorithmTranslationKeys: Record<
     AlgorithmType,
     keyof typeof t.personalityBuilder.algorithms
@@ -92,51 +117,44 @@ export default function TrainPage({
     "whatsapp-store": "whatsappStore",
     hotel: "hotel",
     restaurant: "restaurant",
-    inmobiliaria: "hotel",
+    inmobiliaria: "inmobiliaria",
   };
 
-  async function handleGenerate() {
-    setIsGenerating(true);
-    setDisplayedPersonality("");
+  function addExample() {
+    setExamples((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), userMessage: "", agentResponse: "" },
+    ]);
+  }
 
-    await new Promise((r) => setTimeout(r, 1500));
+  function removeExample(id: string) {
+    setExamples((prev) => prev.filter((e) => e.id !== id));
+  }
 
-    const generated = generateEnhancedPrompt(
-      agent!,
-      agent!.faqCount,
-      agent!.productCount,
-      hasSocial,
-      algorithmType,
-      region,
-      register
+  function updateExample(
+    id: string,
+    field: "userMessage" | "agentResponse",
+    value: string
+  ) {
+    setExamples((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))
     );
-    setPersonality(generated);
-    setIsGenerating(false);
-
-    let i = 0;
-    const typewrite = () => {
-      if (i <= generated.length) {
-        setDisplayedPersonality(generated.slice(0, i));
-        i++;
-        typewriterRef.current = setTimeout(typewrite, 12);
-      }
-    };
-    typewrite();
   }
 
   function handleSave() {
+    const validExamples = examples.filter(
+      (e) => e.userMessage.trim() && e.agentResponse.trim()
+    );
     updateAgent(agent!.id, {
-      personality: personality.trim(),
       algorithmType,
-      communicationStyle: { region, register },
+      communicationStyle: { region, register, regionTemperature: regionTemp },
+      conversationExamples: validExamples,
     });
     toast.success(t.agentSettings.settingsSaved);
   }
 
-  const preview = getPreview(agent.hotelName, algorithmType, region);
-
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-6 pb-10 lg:max-w-[800px] lg:mx-auto">
       {/* Header */}
       <motion.div {...fadeUp(0)}>
         <Link
@@ -147,15 +165,18 @@ export default function TrainPage({
           {agent.name}
         </Link>
         <h1 className="text-2xl font-bold tracking-tight">
-          Campo de entrenamiento
+          Personalidad del agente
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Define cómo piensa y habla tu agente
+          Define cómo se comporta y habla tu agente con los clientes
         </p>
       </motion.div>
 
       {/* Section 1: Algorithm type */}
-      <motion.div {...fadeUp(0.08)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
+      <motion.div
+        {...fadeUp(0.08)}
+        className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3"
+      >
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-[17px] font-semibold">
@@ -184,8 +205,16 @@ export default function TrainPage({
               <motion.button
                 key={key}
                 initial={{ opacity: 0, scale: 0.88 }}
-                animate={{ opacity: isLocked && !selected ? 0.4 : 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.12 + i * 0.05 }}
+                animate={{
+                  opacity: isLocked && !selected ? 0.4 : 1,
+                  scale: 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 28,
+                  delay: 0.12 + i * 0.05,
+                }}
                 onClick={() => !isLocked && setAlgorithmType(key)}
                 disabled={isLocked && !selected}
                 className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all duration-200 ring-1 ${
@@ -198,11 +227,17 @@ export default function TrainPage({
               >
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                    selected ? "bg-orange-100 dark:bg-orange-500/20" : "bg-muted"
+                    selected
+                      ? "bg-orange-100 dark:bg-orange-500/20"
+                      : "bg-muted"
                   }`}
                 >
                   <Icon
-                    className={`h-5 w-5 ${selected ? "text-orange-500" : "text-muted-foreground"}`}
+                    className={`h-5 w-5 ${
+                      selected
+                        ? "text-orange-500"
+                        : "text-muted-foreground"
+                    }`}
                   />
                 </div>
                 <span
@@ -224,13 +259,17 @@ export default function TrainPage({
         </div>
         {agent.algorithmType && (
           <p className="text-[13px] text-muted-foreground/60 text-center pt-1">
-            El tipo de negocio define el núcleo del algoritmo y no puede modificarse, igual que el objetivo de una campaña publicitaria.
+            El tipo de negocio define el núcleo del algoritmo y no puede
+            modificarse.
           </p>
         )}
       </motion.div>
 
       {/* Section 2: Communication style */}
-      <motion.div {...fadeUp(0.16)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-5">
+      <motion.div
+        {...fadeUp(0.16)}
+        className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-5"
+      >
         <div>
           <h2 className="text-[17px] font-semibold">
             {t.personalityBuilder.title}
@@ -253,7 +292,12 @@ export default function TrainPage({
                   key={key}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.2 + i * 0.05 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 28,
+                    delay: 0.2 + i * 0.05,
+                  }}
                   onClick={() => setRegion(key)}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
@@ -270,13 +314,65 @@ export default function TrainPage({
                     {t.personalityBuilder.regions[key]}
                   </span>
                   <span className="text-[13px] text-muted-foreground leading-tight italic">
-                    &ldquo;{t.personalityBuilder.regionDescriptions[key]}&rdquo;
+                    &ldquo;{t.personalityBuilder.regionDescriptions[key]}
+                    &rdquo;
                   </span>
                 </motion.button>
               );
             })}
           </div>
         </div>
+
+        {/* Region temperature */}
+        {region !== "neutral" && (
+          <div className="space-y-3">
+            <Label className="text-[16px] font-semibold">
+              Intensidad regional
+            </Label>
+            <p className="text-[13px] text-muted-foreground -mt-1">
+              Qué tan marcado será el acento y las expresiones regionales
+            </p>
+            <div className="flex items-center gap-3">
+              {[1, 2, 3].map((level) => {
+                const selected = regionTemp === level;
+                const labels = ["Suave", "Medio", "Intenso"];
+                const descriptions = [
+                  "Pocas expresiones regionales, más neutro",
+                  "Balance entre neutro y regional",
+                  "Muy marcado, usa muchas expresiones locales",
+                ];
+                return (
+                  <motion.button
+                    key={level}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.22 + level * 0.04 }}
+                    onClick={() => setRegionTemp(level)}
+                    className={`flex-1 flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
+                      selected
+                        ? "ring-2 ring-orange-500 bg-orange-500/10 dark:bg-orange-500/15"
+                        : "ring-border bg-card hover:bg-muted/60"
+                    }`}
+                  >
+                    <span className="text-lg">
+                      {"🔥".repeat(level)}
+                    </span>
+                    <span
+                      className={`text-[14px] font-semibold ${
+                        selected ? "text-orange-500" : "text-foreground"
+                      }`}
+                    >
+                      {labels[level - 1]}
+                    </span>
+                    <span className="text-[12px] text-muted-foreground leading-tight">
+                      {descriptions[level - 1]}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Register */}
         <div className="space-y-3">
@@ -291,7 +387,12 @@ export default function TrainPage({
                   key={key}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 28, delay: 0.24 + i * 0.05 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 28,
+                    delay: 0.24 + i * 0.05,
+                  }}
                   onClick={() => setRegister(key)}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-all duration-200 ring-1 active:scale-[0.97] ${
                     selected
@@ -316,111 +417,149 @@ export default function TrainPage({
         </div>
       </motion.div>
 
-      {/* Section 3: System prompt */}
-      <motion.div {...fadeUp(0.24)} className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4">
+      {/* Section 3: Conversation examples */}
+      <motion.div
+        {...fadeUp(0.24)}
+        className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[17px] font-semibold">
-              {t.agents.systemPrompt}
+              Ejemplos de conversación
             </h2>
             <p className="text-[15px] text-muted-foreground">
-              {t.agents.systemPromptDescription}
+              Agrega ejemplos de cómo quieres que el agente responda a tus
+              clientes. Esto le enseña el tono y estilo.
             </p>
           </div>
           <Button
-            onClick={handleGenerate}
-            disabled={isGenerating}
+            onClick={addExample}
             size="sm"
+            variant="outline"
             className="gap-1.5 shrink-0"
           >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t.personalityBuilder.generating}
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                {personality
-                  ? t.personalityBuilder.regenerate
-                  : t.personalityBuilder.generateButton}
-              </>
-            )}
+            <Plus className="h-4 w-4" />
+            Agregar
           </Button>
         </div>
 
-        {/* WhatsApp-style preview bubble */}
-        <div className="rounded-2xl bg-[#e8f5e9] dark:bg-emerald-950/30 p-3">
-          <div className="flex items-start gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500">
-              <Bot className="h-4 w-4 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-orange-600 mb-1">
-                {agent.name}
-              </p>
-              <div className="rounded-2xl rounded-tl-sm bg-white dark:bg-card px-3 py-2 shadow-sm ring-1 ring-black/5">
-                <p className="text-[15px] text-foreground leading-relaxed">
-                  {preview}
-                </p>
-              </div>
-            </div>
+        <div className="space-y-3">
+          <AnimatePresence mode="popLayout">
+            {examples.map((example, idx) => (
+              <motion.div
+                key={example.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                className="rounded-xl bg-muted/30 ring-1 ring-border p-3 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-[13px] font-medium text-muted-foreground">
+                      Ejemplo {idx + 1}
+                    </span>
+                  </div>
+                  {examples.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeExample(example.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* User message */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-blue-500" />
+                    <Label className="text-[13px] font-medium text-blue-600 dark:text-blue-400">
+                      Cliente dice:
+                    </Label>
+                  </div>
+                  <Textarea
+                    value={example.userMessage}
+                    onChange={(e) =>
+                      updateExample(
+                        example.id,
+                        "userMessage",
+                        e.target.value
+                      )
+                    }
+                    rows={2}
+                    placeholder="Ej: Hola, ¿tienen habitaciones disponibles para este fin de semana?"
+                    className="text-[14px] resize-none"
+                  />
+                </div>
+
+                {/* Agent response */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Bot className="h-3.5 w-3.5 text-orange-500" />
+                    <Label className="text-[13px] font-medium text-orange-600 dark:text-orange-400">
+                      Agente responde:
+                    </Label>
+                  </div>
+                  <Textarea
+                    value={example.agentResponse}
+                    onChange={(e) =>
+                      updateExample(
+                        example.id,
+                        "agentResponse",
+                        e.target.value
+                      )
+                    }
+                    rows={3}
+                    placeholder="Ej: ¡Hola! 😊 Claro que sí, tenemos disponibilidad. ¿Para cuántas personas sería y qué tipo de habitación prefieres?"
+                    className="text-[14px] resize-none"
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {examples.length === 0 && (
+          <div className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-center">
+            <MessageCircle className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-[14px] text-muted-foreground">
+              Agrega ejemplos de conversación para entrenar el tono de tu
+              agente
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={addExample}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Agregar ejemplo
+            </Button>
           </div>
-        </div>
-
-        <Textarea
-          value={
-            advancedMode ? personality : displayedPersonality || personality
-          }
-          onChange={(e) => {
-            if (advancedMode) {
-              setPersonality(e.target.value);
-              setDisplayedPersonality(e.target.value);
-            }
-          }}
-          readOnly={!advancedMode}
-          rows={5}
-          placeholder={t.agents.personalityPlaceholder}
-          className={`transition-colors ${
-            !advancedMode ? "bg-gray-50/50 cursor-default dark:bg-muted/30" : ""
-          }`}
-        />
-
-        <div className="flex items-center gap-2">
-          <Switch
-            id="advanced-mode-train"
-            checked={advancedMode}
-            onCheckedChange={setAdvancedMode}
-          />
-          <Label
-            htmlFor="advanced-mode-train"
-            className="text-[15px] text-muted-foreground cursor-pointer"
-          >
-            {t.personalityBuilder.advancedMode}
-          </Label>
-        </div>
-      </motion.div>
-
-      {/* Section 4: Test before saving */}
-      <motion.div {...fadeUp(0.32)} className="space-y-3">
-        <div className="relative flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-[14px] font-semibold text-foreground whitespace-nowrap">
-            Probar y corregir antes de guardar
-          </span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-        <p className="text-[14px] text-muted-foreground text-center -mt-1 px-2">
-          Último paso obligatorio — prueba el algoritmo con mensajes reales y ajusta el prompt si algo no responde como esperas.
-        </p>
-        <TrainingChat agentId={agentId} />
+        )}
       </motion.div>
 
       {/* Save button */}
-      <motion.div {...fadeUp(0.4)}>
-        <Button onClick={handleSave} className="w-full">
-          {t.common.save}
-        </Button>
+      <motion.div {...fadeUp(0.32)}>
+        {(() => {
+          const hasValidExample = examples.some(
+            (e) => e.userMessage.trim() && e.agentResponse.trim()
+          );
+          return (
+            <Button
+              onClick={handleSave}
+              disabled={!hasValidExample}
+              className="w-full"
+              title={!hasValidExample ? "Agrega al menos un ejemplo de conversación completo" : undefined}
+            >
+              {!hasValidExample ? "Completa al menos un ejemplo para guardar" : "Guardar personalidad"}
+            </Button>
+          );
+        })()}
       </motion.div>
     </div>
   );

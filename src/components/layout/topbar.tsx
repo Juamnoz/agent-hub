@@ -12,6 +12,8 @@ import {
 import Link from "next/link";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { useLocaleStore } from "@/stores/locale-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 interface TopbarProps {
@@ -20,6 +22,11 @@ interface TopbarProps {
 
 export function Topbar({ title }: TopbarProps) {
   const { t } = useLocaleStore();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
+  const userName = user?.name ?? "Usuario";
+  const userEmail = user?.email ?? "";
+  const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const dark = localStorage.getItem("lisa-theme") === "dark";
@@ -60,15 +67,15 @@ export function Topbar({ title }: TopbarProps) {
               <button className="rounded-full outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-ring">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="text-xs font-medium bg-orange-500 text-white">
-                    JD
+                    {userInitials}
                   </AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 rounded-xl">
               <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">john@hotel.com</p>
+                <p className="text-sm font-medium">{userName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
@@ -78,7 +85,7 @@ export function Topbar({ title }: TopbarProps) {
                 <Link href="/billing">{t.nav.billing}</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>{t.common.signOut}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { logout(); router.replace("/sign-in"); }}>{t.common.signOut}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -106,7 +106,7 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
     "whatsapp-store": "whatsappStore",
     hotel: "hotel",
     restaurant: "restaurant",
-    inmobiliaria: "hotel", // fallback hasta que se agregue traducción propia
+    inmobiliaria: "inmobiliaria",
   };
 
   async function handleGenerate() {

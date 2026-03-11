@@ -14,8 +14,10 @@ import {
   Plus,
   Inbox,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAgentStore } from "@/stores/agent-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { PLAN_AGENT_LIMITS } from "@/lib/mock-data";
 import { AgentCard } from "@/components/agents/agent-card";
 import type { Agent, Conversation } from "@/lib/mock-data";
@@ -103,17 +105,28 @@ function buildAlerts(agents: Agent[]): AgentAlert[] {
 export default function PanelPage() {
   const { agents, conversations, loadConversations } = useAgentStore();
   const { currentPlan } = usePlanStore();
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const isSuperAdmin = user?.role === "superadmin";
   const agentLimit = PLAN_AGENT_LIMITS[currentPlan];
   const agentLimitLabel = agentLimit === Infinity ? "∞" : agentLimit;
+
+  // Non-superadmin: redirect to agents page
+  useEffect(() => {
+    if (!isSuperAdmin) router.replace("/agents");
+  }, [isSuperAdmin, router]);
 
   // Cargar conversaciones de todos los agentes
   useEffect(() => {
     agents.forEach((agent) => loadConversations(agent.id));
   }, [agents, loadConversations]);
 
+  if (!isSuperAdmin) return null;
+
   const activeAgents = agents.filter((a) => a.status === "active");
   const totalMessages = agents.reduce((sum, a) => sum + a.messageCount, 0);
-  const alerts = buildAlerts(agents);
+  const alertableAgents = isSuperAdmin ? agents : agents.filter((a) => a.status !== "inactive");
+  const alerts = buildAlerts(alertableAgents);
 
   // Bandeja: escaladas primero, luego recientes, máx 5
   const inboxConvs = useMemo(() => {
@@ -146,23 +159,25 @@ export default function PanelPage() {
           <p className="text-[15px] text-muted-foreground">{greeting}</p>
           <h1 className="text-[22px] font-bold leading-tight">Panel de control</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <StatPill
-            icon={<Bot className="h-3 w-3" />}
-            label="Activos"
-            value={`${agents.length}/${agentLimitLabel}`}
-          />
-          <StatPill
-            icon={<MessageSquare className="h-3 w-3" />}
-            label="Mensajes"
-            value={totalMessages.toLocaleString()}
-          />
-          <StatPill
-            icon={<TrendingUp className="h-3 w-3" />}
-            label="Semana"
-            value="+22%"
-          />
-        </div>
+        {isSuperAdmin && (
+          <div className="flex items-center gap-4">
+            <StatPill
+              icon={<Bot className="h-3 w-3" />}
+              label="Activos"
+              value={`${agents.length}/${agentLimitLabel}`}
+            />
+            <StatPill
+              icon={<MessageSquare className="h-3 w-3" />}
+              label="Mensajes"
+              value={totalMessages.toLocaleString()}
+            />
+            <StatPill
+              icon={<TrendingUp className="h-3 w-3" />}
+              label="Semana"
+              value="+22%"
+            />
+          </div>
+        )}
       </motion.div>
 
       {/* ── Bandeja de entrada ── */}
@@ -213,13 +228,15 @@ export default function PanelPage() {
         <motion.div {...fadeUp(0.18)} className="space-y-2">
           <div className="flex items-center justify-between px-0.5">
             <p className="text-[15px] font-semibold">Tus agentes</p>
-            <Link
-              href="/agents/new"
-              className="flex items-center gap-1 text-[14px] font-medium text-orange-500"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Nuevo
-            </Link>
+            {isSuperAdmin && (
+              <Link
+                href="/agents/new"
+                className="flex items-center gap-1 text-[14px] font-medium text-orange-500"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Nuevo
+              </Link>
+            )}
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 py-2">
             {agents.map((agent) => (
@@ -227,6 +244,7 @@ export default function PanelPage() {
                 key={agent.id}
                 agent={agent}
                 className="w-[240px] shrink-0"
+                disabled={!isSuperAdmin && agent.status === "inactive"}
               />
             ))}
           </div>

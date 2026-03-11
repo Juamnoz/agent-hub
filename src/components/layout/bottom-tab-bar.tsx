@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard } from "lucide-react";
+import { Bot, LayoutDashboard, Settings } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -17,8 +18,10 @@ function isTabActive(href: string, pathname: string): boolean {
 export function BottomTabBar() {
   const pathname = usePathname();
   const conversations = useAgentStore((s) => s.conversations);
+  const { user } = useAuthStore();
   const mobileOpen = useSidebarStore((s) => s.mobileOpen);
   const modalOpen = useSidebarStore((s) => s.modalOpen);
+  const isSuperAdmin = user?.role === "superadmin";
   const pendingHuman = conversations.filter((c) => c.status === "human_handling").length;
 
   if (pathname === "/agents/new" || pathname.startsWith("/agents/new/")) return null;
@@ -197,52 +200,83 @@ export function BottomTabBar() {
           </motion.div>
         </Link>
 
-        {/* ── Panel ──────────────────────────────────────────── */}
-        <Link
-          href="/panel"
-          className="relative flex items-center justify-center px-5"
-        >
-          <div className="relative">
-            <motion.div
-              animate={{ scale: panelActive ? 1.1 : 1 }}
-              whileTap={{ scale: 0.84 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              <LayoutDashboard
-                className={`h-[27px] w-[27px] transition-colors duration-200 ${
-                  panelActive ? "text-orange-500" : "text-foreground/40"
-                }`}
-                strokeWidth={1.4}
-              />
-            </motion.div>
-            {/* Active dot */}
-            <AnimatePresence>
-              {panelActive && (
-                <motion.span
-                  key="dot-panel"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-orange-500"
+        {/* ── Panel (superadmin) / Configuración (cliente) ── */}
+        {isSuperAdmin ? (
+          <Link
+            href="/panel"
+            className="relative flex items-center justify-center px-5"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ scale: panelActive ? 1.1 : 1 }}
+                whileTap={{ scale: 0.84 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <LayoutDashboard
+                  className={`h-[27px] w-[27px] transition-colors duration-200 ${
+                    panelActive ? "text-orange-500" : "text-foreground/40"
+                  }`}
+                  strokeWidth={1.4}
                 />
-              )}
-            </AnimatePresence>
-            {/* Notification badge */}
-            <AnimatePresence>
-              {pendingHuman > 0 && (
-                <motion.span
-                  key="badge"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-0.5 text-[11px] font-bold text-white"
-                >
-                  {pendingHuman}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
-        </Link>
+              </motion.div>
+              <AnimatePresence>
+                {panelActive && (
+                  <motion.span
+                    key="dot-panel"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-orange-500"
+                  />
+                )}
+              </AnimatePresence>
+              <AnimatePresence>
+                {pendingHuman > 0 && (
+                  <motion.span
+                    key="badge"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-0.5 text-[11px] font-bold text-white"
+                  >
+                    {pendingHuman}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+          </Link>
+        ) : (
+          <Link
+            href="/settings"
+            className="relative flex items-center justify-center px-5"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ scale: pathname === "/settings" ? 1.1 : 1 }}
+                whileTap={{ scale: 0.84 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              >
+                <Settings
+                  className={`h-[27px] w-[27px] transition-colors duration-200 ${
+                    pathname === "/settings" ? "text-orange-500" : "text-foreground/40"
+                  }`}
+                  strokeWidth={1.4}
+                />
+              </motion.div>
+              <AnimatePresence>
+                {pathname === "/settings" && (
+                  <motion.span
+                    key="dot-settings"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-orange-500"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </Link>
+        )}
       </div>
     </motion.div>
       )}

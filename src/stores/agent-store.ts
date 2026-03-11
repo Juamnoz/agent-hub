@@ -154,13 +154,17 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     set({ loadingAgents: true });
     try {
       if (API_ENABLED) {
-        const agents = await agentsApi.list();
-        set({ agents: agents as Agent[], loadingAgents: false });
+        const raw = await agentsApi.list();
+        const agents = (raw as Agent[]).map(a => ({
+          ...a,
+          whatsappConnected: a.whatsappConnected || !!a.webhookUrl,
+        }));
+        set({ agents, loadingAgents: false });
       } else {
         set({ agents: mockAgents, loadingAgents: false });
       }
     } catch {
-      set({ agents: mockAgents, loadingAgents: false });
+      set({ agents: API_ENABLED ? [] : mockAgents, loadingAgents: false });
     }
   },
 
@@ -180,18 +184,23 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   },
 
   updateAgent: async (id, updates) => {
-    if (API_ENABLED) {
-      const updated = await agentsApi.update(id, updates as any);
-      set((state) => ({
-        agents: state.agents.map((a) => a.id === id ? { ...a, ...updated } : a),
-        currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updated } : state.currentAgent,
-      }));
-      return;
-    }
+    // Optimistic: actualizar estado local inmediatamente
     set((state) => ({
       agents: state.agents.map((a) => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a),
       currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updates, updatedAt: new Date().toISOString() } : state.currentAgent,
     }));
+    if (API_ENABLED) {
+      try {
+        const updated = await agentsApi.update(id, updates as any);
+        // Merge: API response + nuestros updates (para que campos como trainedAt no se pierdan)
+        set((state) => ({
+          agents: state.agents.map((a) => a.id === id ? { ...a, ...updated, ...updates } : a),
+          currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updated, ...updates } : state.currentAgent,
+        }));
+      } catch {
+        // API falló — estado local optimista se mantiene
+      }
+    }
   },
 
   deleteAgent: async (id) => {

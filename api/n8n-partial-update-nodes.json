@@ -1,0 +1,249 @@
+{
+  "_comment": "INSTRUCCIONES: Importar estos nodos en el workflow 'lisa' de n8n",
+  "_steps": [
+    "1. Eliminar el nodo 'Respond to Webhook' huérfano (el que sale directo del webhook sin conectar al flujo)",
+    "2. Desconectar TODAS las conexiones directas del 'Webhook omghat1' hacia los nodos actuales",
+    "3. Conectar 'Webhook omghat1' → 'Router Update Type' (este Switch)",
+    "4. Conectar las salidas del Switch según el mapa de abajo",
+    "5. Importar los nodos de este JSON (copiar y pegar en el canvas)"
+  ],
+  "_connection_map": {
+    "Webhook omghat1 → Router Update Type": "output 0 (main)",
+    "Router Update Type - output 0 (full)": [
+      "→ Asegurar colección Qdrant",
+      "→ Agente 1 - Few Shot Generator",
+      "→ Agente 2 - Prompt Orquestador",
+      "→ Separar imagenes",
+      "→ Telefonos",
+      "→ Guardar Social Links"
+    ],
+    "Router Update Type - output 1 (prompt)": "→ Chunker Parcial Prompt",
+    "Router Update Type - output 2 (faqs)": "→ Chunker Parcial FAQs",
+    "Router Update Type - output 3 (products)": [
+      "→ Chunker Parcial Productos",
+      "→ Separar imagenes"
+    ],
+    "Router Update Type - output 4 (phones)": "→ Update Phones Parcial",
+    "Router Update Type - output 5 (social_links)": "→ Guardar Social Links",
+    "Chunker Parcial Prompt → Borrar Chunks Tipo + Qdrant Parcial": "re-vectoriza solo chunks de prompt",
+    "Chunker Parcial FAQs → Borrar Chunks Tipo + Qdrant Parcial": "re-vectoriza solo chunks de FAQs",
+    "Chunker Parcial Productos → Borrar Chunks Tipo + Qdrant Parcial": "re-vectoriza solo chunks de productos"
+  },
+  "nodes": [
+    {
+      "name": "Router Update Type",
+      "type": "n8n-nodes-base.switch",
+      "position": [2800, 3040],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.update_type }}",
+        "rules": {
+          "rules": [
+            { "value2": "full", "output": 0 },
+            { "value2": "prompt", "output": 1 },
+            { "value2": "faqs", "output": 2 },
+            { "value2": "products", "output": 3 },
+            { "value2": "phones", "output": 4 },
+            { "value2": "social_links", "output": 5 }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Chunker Parcial Prompt",
+      "type": "n8n-nodes-base.code",
+      "position": [3100, 3200],
+      "parameters": {
+        "jsCode": "// Re-genera SOLO los chunks de prompt/personalidad/conocimiento\nconst body = $('Webhook omghat1').item.json.body;\nconst slug = body.agent_id;\nconst agentName = body.agent_name;\nconst tone = body.tone;\nconst prompt = body.prompt || '';\n\nfunction splitText(texto, maxLen) {\n  const partes = [];\n  let inicio = 0;\n  while (inicio < texto.length) {\n    let fin = inicio + maxLen;\n    if (fin >= texto.length) { partes.push(texto.substring(inicio).trim()); break; }\n    let corte = texto.lastIndexOf(' ', fin);\n    if (corte <= inicio) corte = fin;\n    partes.push(texto.substring(inicio, corte).trim());\n    inicio = corte + 1;\n  }\n  return partes.filter(p => p.length > 0);\n}\n\nconst chunks = [];\n\n// Identidad\nchunks.push({\n  text: `IDENTIDAD DEL NEGOCIO: ${agentName}. ${prompt.substring(0, 300).replace(/\\n/g, ' ')}`,\n  id: `identidad_${slug}_001`,\n  tipo: 'identidad',\n  categoria: 'identidad',\n  relevancia: 1.0\n});\n\n// Secciones del prompt\nconst seccionRegex = /(?:🟢\\s*)?\\d+\\.\\s*([^\\n]+)([\\s\\S]*?)(?=(?:🟢\\s*)?\\d+\\.|$)/g;\nlet secMatch;\nconst secciones = [];\nwhile ((secMatch = seccionRegex.exec(prompt)) !== null) {\n  secciones.push({ titulo: secMatch[1].trim(), contenido: secMatch[2].trim() });\n}\n\nif (secciones.length > 0) {\n  secciones.forEach((sec, i) => {\n    if (sec.contenido.length < 20) return;\n    splitText(sec.contenido, 600).forEach((parte, k) => {\n      chunks.push({\n        text: `${sec.titulo.toUpperCase()}: ${parte}`,\n        id: `conocimiento_${slug}_sec${String(i+1).padStart(2,'0')}_${String(k+1).padStart(2,'0')}`,\n        tipo: 'conocimiento',\n        categoria: 'conocimiento',\n        relevancia: 0.95\n      });\n    });\n  });\n} else {\n  const parrafos = prompt.split(/\\n{2,}/).map(s => s.trim()).filter(s => s.length > 30);\n  parrafos.forEach((parr, i) => {\n    splitText(parr, 600).forEach((parte, k) => {\n      chunks.push({\n        text: parte,\n        id: `conocimiento_${slug}_p${String(i+1).padStart(2,'0')}_${String(k+1).padStart(2,'0')}`,\n        tipo: 'conocimiento',\n        categoria: 'conocimiento',\n        relevancia: 0.9\n      });\n    });\n  });\n}\n\n// Tono\nconst tonoDesc = {\n  friendly: 'Tutea, sé cálido y cercano. Emojis con moderación.',\n  formal: 'Trata de usted, profesional. Sin emojis.',\n  casual: 'Relajado, emojis, coloquial.',\n};\nchunks.push({\n  text: `PERSONALIDAD Y TONO: ${tone}. ${tonoDesc[tone] || tonoDesc.friendly}`,\n  id: `personalidad_${slug}_001`,\n  tipo: 'personalidad',\n  categoria: 'personalidad',\n  relevancia: 1.0\n});\n\n// Conversation examples\nconst examples = body.conversation_examples || [];\nexamples.forEach((ex, i) => {\n  if (!ex.userMessage || !ex.agentResponse) return;\n  chunks.push({\n    text: `EJEMPLO DE CONVERSACIÓN: Cliente: ${ex.userMessage} / Agente: ${ex.agentResponse}`,\n    id: `ejemplo_${slug}_${String(i+1).padStart(3,'0')}`,\n    tipo: 'ejemplo_positivo',\n    categoria: 'ejemplo_positivo',\n    relevancia: 0.95\n  });\n});\n\nreturn chunks.map(c => ({ json: { ...c, _chunk_types: ['identidad','conocimiento','personalidad','ejemplo_positivo'] } }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Chunker Parcial FAQs",
+      "type": "n8n-nodes-base.code",
+      "position": [3100, 3400],
+      "parameters": {
+        "jsCode": "// Re-genera SOLO los chunks de FAQs\nconst body = $('Webhook omghat1').item.json.body;\nconst slug = body.agent_id;\nconst faqs = body.faqs || [];\n\nif (faqs.length === 0) {\n  return [{ json: { text: 'Sin FAQs configuradas', id: `faq_${slug}_empty`, tipo: 'faq', categoria: 'faq', relevancia: 0.5, _chunk_types: ['faq'] } }];\n}\n\nreturn faqs.filter(f => f.question && f.answer && f.answer.length > 2).map((faq, i) => ({\n  json: {\n    text: `PREGUNTA FRECUENTE: ${faq.question} RESPUESTA: ${faq.answer}`,\n    id: `faq_${slug}_${String(i+1).padStart(3,'0')}`,\n    tipo: 'faq',\n    categoria: 'faq',\n    relevancia: 0.9,\n    trigger_keywords: faq.question.toLowerCase().replace(/[¿?]/g, '').substring(0, 60),\n    _chunk_types: ['faq']\n  }\n}));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Chunker Parcial Productos",
+      "type": "n8n-nodes-base.code",
+      "position": [3100, 3600],
+      "parameters": {
+        "jsCode": "// Re-genera SOLO los chunks de productos/rooms/menu\nconst body = $('Webhook omghat1').item.json.body;\nconst slug = body.agent_id;\nconst catalogType = body.catalog_type || 'products';\nconst items = body[catalogType] || body.products || body.rooms || body.menu || body.services || body.properties || [];\nconst images = body.images || [];\n\nconst chunks = [];\n\n// Resumen de tarifas\nif (items.length > 0) {\n  const resumen = items.map(p => `${p.name}: $${p.price?.toLocaleString?.() ?? p.price}`).join('. ');\n  chunks.push({\n    text: `TARIFAS Y PRECIOS: ${resumen}`,\n    id: `producto_tarifas_${slug}_001`,\n    tipo: 'producto',\n    categoria: 'producto',\n    relevancia: 1.0,\n    trigger_keywords: 'precio,tarifa,cuánto,cuesta,valor'\n  });\n}\n\n// Chunk por item\nitems.forEach((item, i) => {\n  let text = `${catalogType.toUpperCase()}: ${item.name}`;\n  if (item.description) text += `. ${item.description}`;\n  if (item.price) text += `. Precio: $${item.price?.toLocaleString?.() ?? item.price}`;\n  if (item.category) text += `. Categoría: ${item.category}`;\n  \n  chunks.push({\n    text,\n    id: `producto_${slug}_${String(i+1).padStart(3,'0')}`,\n    tipo: 'producto',\n    categoria: 'producto',\n    relevancia: 0.95,\n    trigger_keywords: item.name.toLowerCase()\n  });\n\n  // Imagen principal\n  if (item.image_url) {\n    chunks.push({\n      text: `IMAGEN DISPONIBLE: ${item.name}. Para enviar: [IMG:${item.image_url}]`,\n      id: `media_img_${slug}_${String(i+1).padStart(3,'0')}`,\n      tipo: 'media',\n      categoria: 'media_imagen',\n      relevancia: 0.9,\n      trigger_keywords: `${item.name.toLowerCase()},foto,imagen,ver`\n    });\n  }\n\n  // Variantes (imágenes adicionales)\n  if (item.variants && Array.isArray(item.variants)) {\n    item.variants.forEach((v, vi) => {\n      if (!v.url) return;\n      chunks.push({\n        text: `IMAGEN ${v.title || 'adicional'} de ${item.name}. Para enviar: [IMG:${v.url}]`,\n        id: `media_var_${slug}_${String(i+1).padStart(3,'0')}_${String(vi+1).padStart(2,'0')}`,\n        tipo: 'media',\n        categoria: 'media_imagen',\n        relevancia: 0.85,\n        trigger_keywords: `${(v.title || '').toLowerCase()},${item.name.toLowerCase()},foto`\n      });\n    });\n  }\n});\n\nconst chunkTypes = ['producto','media'];\nreturn chunks.map(c => ({ json: { ...c, _chunk_types: chunkTypes } }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Borrar Chunks Por Tipo",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [3400, 3400],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://devqdrant.automatesolutions.tech/collections/{{ $('Webhook omghat1').item.json.body.agent_id }}/points/delete",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "api-key", "value": "8b2a0237d8dbcb95bcb4f3960180083b" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"filter\": {\n    \"should\": [\n      {{ $json._chunk_types.map(t => `{\"key\": \"metadata.tipo\", \"match\": {\"value\": \"${t}\"}}`).join(',\\n      ') }}\n    ]\n  }\n}",
+        "options": {}
+      },
+      "typeVersion": 4
+    },
+    {
+      "name": "Qdrant Parcial",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [3700, 3400],
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "={{ $('Webhook omghat1').item.json.body.agent_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "qdrantApi": { "id": "TXqr8yifl95bmy3y", "name": "QdrantApi account" }
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Embeddings Parcial",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [3600, 3600],
+      "parameters": { "options": {} },
+      "credentials": {
+        "openAiApi": { "id": "XrIlSDlaUJgC5q2a", "name": "OpenAi account" }
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Loader Parcial",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [3800, 3600],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "name": "Update Phones Parcial",
+      "type": "n8n-nodes-base.code",
+      "position": [3100, 3800],
+      "parameters": {
+        "jsCode": "const body = $('Webhook omghat1').item.json.body;\nreturn [{\n  json: {\n    agent_id: body.agent_id,\n    escalation_phone: body.escalation_phone ?? '',\n    admin_phone: body.admin_phone ?? '',\n    phones_list: [body.escalation_phone, body.admin_phone].filter((v, i, a) => v && a.indexOf(v) === i)\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Guardar Phones Parcial",
+      "type": "n8n-nodes-base.postgres",
+      "position": [3400, 3800],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_phones (agent_id, escalation_phone, admin_phone, phones_list)\nVALUES (\n  '{{ $json.agent_id }}',\n  '{{ $json.escalation_phone }}',\n  '{{ $json.admin_phone }}',\n  '{{ JSON.stringify($json.phones_list) }}'::jsonb\n)\nON CONFLICT (agent_id)\nDO UPDATE SET\n  escalation_phone = EXCLUDED.escalation_phone,\n  admin_phone = EXCLUDED.admin_phone,\n  phones_list = EXCLUDED.phones_list,\n  updated_at = NOW();",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "CKPxQ5aeL7WnRpPE", "name": "Postgres account" }
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Guardar Social Links",
+      "type": "n8n-nodes-base.postgres",
+      "position": [3400, 4000],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO agent_social_links (agent_id, website, facebook, instagram, google_maps, trip_advisor, updated_at)\nVALUES (\n  '{{ $('Webhook omghat1').item.json.body.agent_id }}',\n  '{{ ($('Webhook omghat1').item.json.body.social_links || {}).website || '' }}',\n  '{{ ($('Webhook omghat1').item.json.body.social_links || {}).facebook || '' }}',\n  '{{ ($('Webhook omghat1').item.json.body.social_links || {}).instagram || '' }}',\n  '{{ ($('Webhook omghat1').item.json.body.social_links || {}).googleMaps || '' }}',\n  '{{ ($('Webhook omghat1').item.json.body.social_links || {}).tripAdvisor || '' }}',\n  NOW()\n)\nON CONFLICT (agent_id)\nDO UPDATE SET\n  website = EXCLUDED.website,\n  facebook = EXCLUDED.facebook,\n  instagram = EXCLUDED.instagram,\n  google_maps = EXCLUDED.google_maps,\n  trip_advisor = EXCLUDED.trip_advisor,\n  updated_at = NOW();",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "CKPxQ5aeL7WnRpPE", "name": "Postgres account" }
+      },
+      "typeVersion": 2
+    },
+    {
+      "name": "Respuesta Parcial OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [3900, 3400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"updated\",\n  \"update_type\": \"{{ $('Webhook omghat1').item.json.body.update_type }}\",\n  \"agent_id\": \"{{ $('Webhook omghat1').item.json.body.agent_id }}\"\n}"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections_to_create": {
+    "Webhook omghat1": {
+      "main": [[
+        { "node": "Router Update Type", "type": "main", "index": 0 }
+      ]]
+    },
+    "Router Update Type": {
+      "main": [
+        [
+          { "node": "Asegurar colección Qdrant", "type": "main", "index": 0 },
+          { "node": "Agente 1 - Few Shot Generator", "type": "main", "index": 0 },
+          { "node": "Agente 2 - Prompt Orquestador", "type": "main", "index": 0 },
+          { "node": "Separar imagenes", "type": "main", "index": 0 },
+          { "node": "Telefonos", "type": "main", "index": 0 },
+          { "node": "Guardar Social Links", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Chunker Parcial Prompt", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Chunker Parcial FAQs", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Chunker Parcial Productos", "type": "main", "index": 0 },
+          { "node": "Separar imagenes", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Update Phones Parcial", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Guardar Social Links", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Chunker Parcial Prompt": {
+      "main": [[ { "node": "Borrar Chunks Por Tipo", "type": "main", "index": 0 } ]]
+    },
+    "Chunker Parcial FAQs": {
+      "main": [[ { "node": "Borrar Chunks Por Tipo", "type": "main", "index": 0 } ]]
+    },
+    "Chunker Parcial Productos": {
+      "main": [[ { "node": "Borrar Chunks Por Tipo", "type": "main", "index": 0 } ]]
+    },
+    "Borrar Chunks Por Tipo": {
+      "main": [[ { "node": "Qdrant Parcial", "type": "main", "index": 0 } ]]
+    },
+    "Embeddings Parcial": {
+      "ai_embedding": [[ { "node": "Qdrant Parcial", "type": "ai_embedding", "index": 0 } ]]
+    },
+    "Loader Parcial": {
+      "ai_document": [[ { "node": "Qdrant Parcial", "type": "ai_document", "index": 0 } ]]
+    },
+    "Qdrant Parcial": {
+      "main": [[ { "node": "Respuesta Parcial OK", "type": "main", "index": 0 } ]]
+    },
+    "Update Phones Parcial": {
+      "main": [[ { "node": "Guardar Phones Parcial", "type": "main", "index": 0 } ]]
+    },
+    "Guardar Phones Parcial": {
+      "main": [[ { "node": "Respuesta Parcial OK", "type": "main", "index": 0 } ]]
+    },
+    "Guardar Social Links": {
+      "main": [[ { "node": "Respuesta Parcial OK", "type": "main", "index": 0 } ]]
+    }
+  }
+}

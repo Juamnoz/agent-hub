@@ -14,6 +14,7 @@ import Properties from "../properties/_content";
 import Reservations from "../reservations/_content";
 import Settings from "../settings/_content";
 import Social from "../social/_content";
+import Prompt from "../prompt/_content";
 import Train from "../train/_content";
 import Whatsapp from "../whatsapp/_content";
 
@@ -26,6 +27,7 @@ const TAB_MAP: Record<string, React.ComponentType<{ params: Promise<{ agentId: s
   menu: Menu,
   orders: Orders,
   products: Products,
+  prompt: Prompt,
   properties: Properties,
   reservations: Reservations,
   settings: Settings,

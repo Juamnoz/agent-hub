@@ -85,7 +85,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     setSku(product.sku ?? "");
     setStock(product.stock != null ? String(product.stock) : "");
     setImageUrl(product.imageUrl ?? "");
-    setVariants(product.variants.map((v) => ({ ...v, options: [...v.options] })));
+    setVariants((product.variants ?? []).map((v) => ({ ...v, options: [...v.options] })));
     setDialogOpen(true);
   }
 

@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { ShoppingCart, CalendarCheck, MessageCircle, Building2, UtensilsCrossed } from "lucide-react";
+import { ShoppingCart, CalendarCheck, MessageCircle, Building2, UtensilsCrossed, Landmark } from "lucide-react";
 import type { AlgorithmType, CommunicationRegion, CommunicationRegister, Agent } from "@/lib/mock-data";
 
 export const ALGORITHM_ICONS: Record<AlgorithmType, ComponentType<{ className?: string }>> = {
@@ -8,7 +8,7 @@ export const ALGORITHM_ICONS: Record<AlgorithmType, ComponentType<{ className?: 
   "whatsapp-store": MessageCircle,
   hotel: Building2,
   restaurant: UtensilsCrossed,
-  inmobiliaria: Building2,
+  inmobiliaria: Landmark,
 };
 
 export const ALGORITHM_KEYS: AlgorithmType[] = [

@@ -566,6 +566,7 @@ export const en: Translations = {
       whatsappStore: { name: "WhatsApp Store", description: "Direct sales via WhatsApp with catalog and orders" },
       hotel: { name: "Hotels", description: "Guest support, reservations and hotel services" },
       restaurant: { name: "Restaurants", description: "Menu, table reservations and delivery orders" },
+      inmobiliaria: { name: "Real Estate", description: "Properties, rentals, sales and real estate management" },
     },
     regions: { neutral: "Neutral", paisa: "Paisa", rolo: "Rolo", costeno: "Costeño" },
     registers: { corporate: "Corporate", professional: "Friendly professional", relaxed: "Casual relaxed", genz: "Youth / Gen-Z" },
@@ -588,6 +589,7 @@ export const en: Translations = {
       whatsappStore: "Store name",
       hotel: "Hotel name",
       restaurant: "Restaurant name",
+      inmobiliaria: "Real estate agency name",
     },
   },
   lisa: {

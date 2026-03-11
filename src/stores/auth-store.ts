@@ -61,11 +61,16 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "lisa-auth",
-      partialState: (state: AuthStore) => ({
+      partialize: (state: AuthStore) => ({
         user: state.user,
         token: state.token,
         refreshToken: state.refreshToken,
       }),
+      onRehydrateStorage: () => (state?: AuthStore) => {
+        if (state?.token) {
+          setToken(state.token);
+        }
+      },
     } as any,
   )
 );

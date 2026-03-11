@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
@@ -22,7 +22,11 @@ export default function AgentFaqsPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { agents, faqs } = useAgentStore();
+  const { agents, faqs, loadFaqs } = useAgentStore();
+
+  useEffect(() => {
+    loadFaqs(agentId);
+  }, [agentId, loadFaqs]);
   const { t } = useLocaleStore();
   const agent = agents.find((a) => a.id === agentId);
 
@@ -58,10 +62,10 @@ export default function AgentFaqsPage({
         </Button>
 
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">{t.faqEditor.title}</h1>
+          <h1 className="text-2xl font-bold">{t.faqEditor.title}</h1>
           <Badge variant="secondary">{agentFaqCount}</Badge>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {t.faqEditor.noFaqsDescription}
         </p>
       </motion.div>

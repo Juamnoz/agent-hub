@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useChatHistoryStore } from "@/stores/chat-history-store";
+import { useAuthStore } from "@/stores/auth-store";
 import type { Agent, TrainingMessage, TrainingToolType } from "@/lib/mock-data";
 
 // ─── Response bank ─────────────────────────────────────────────────────────────
@@ -750,8 +751,8 @@ export function LisaChat({ agentId, conversationId, className }: LisaChatProps) 
 
   if (isTrainingMode && !agent) return null;
 
-  // User name for greeting — replace with user auth when available
-  const userName = "Juan";
+  const { user: authUser } = useAuthStore();
+  const userName = authUser?.name?.split(" ")[0] ?? "Usuario";
 
   return (
     <div className={className ?? "flex h-[calc(100dvh-16rem)] flex-col overflow-hidden"}>

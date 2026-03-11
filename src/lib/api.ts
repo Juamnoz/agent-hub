@@ -41,7 +41,23 @@ const TOKEN_KEY = "lisa_token";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  // Primary: direct key
+  const direct = localStorage.getItem(TOKEN_KEY);
+  if (direct) return direct;
+  // Fallback: read from Zustand persisted store
+  try {
+    const raw = localStorage.getItem("lisa-auth");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const token = parsed?.state?.token;
+      if (token) {
+        // Sync it back so next call is fast
+        localStorage.setItem(TOKEN_KEY, token);
+        return token;
+      }
+    }
+  } catch {}
+  return null;
 }
 
 export function setToken(token: string) {
@@ -119,12 +135,22 @@ export interface PaginatedResponse<T> {
 // Auth — POST /auth/*
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface UserOrganization {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string | null;
+  role: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
   avatarUrl?: string;
   planTier: "starter" | "pro" | "business" | "enterprise";
+  role: "superadmin" | "owner" | "admin" | "member";
+  organizations: UserOrganization[];
   createdAt: string;
 }
 
@@ -206,8 +232,8 @@ export const agentsApi = {
   delete: (id: string) =>
     apiFetch<void>(`/agents/${id}`, { method: "DELETE" }),
 
-  /** Activar / desactivar agente */
-  setStatus: (id: string, status: "active" | "inactive") =>
+  /** Cambiar estado del agente */
+  setStatus: (id: string, status: "active" | "inactive" | "testing" | "setup") =>
     apiFetch<Agent>(`/agents/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
@@ -607,6 +633,25 @@ export const trainApi = {
       },
       body: JSON.stringify({ message }),
     }),
+
+  deploy: (agentId: string) =>
+    apiFetch<{ success: boolean; trainedAt: string; agent_id: string }>(
+      `/agents/${agentId}/train/deploy`,
+      { method: "POST" }
+    ),
+
+  changeMode: (agentId: string, status: "active" | "inactive" | "testing") =>
+    apiFetch<{ success: boolean; status: string; mode: string }>(
+      `/agents/${agentId}/train/mode`,
+      { method: "POST", body: JSON.stringify({ status }) }
+    ),
+
+  /** Partial update — only re-processes the changed section in n8n */
+  update: (agentId: string, updateType: "prompt" | "faqs" | "products" | "phones" | "social_links") =>
+    apiFetch<{ success: boolean; update_type: string; agent_id: string }>(
+      `/agents/${agentId}/train/update`,
+      { method: "POST", body: JSON.stringify({ update_type: updateType }) }
+    ),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

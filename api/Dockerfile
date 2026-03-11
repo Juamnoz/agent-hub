@@ -5,16 +5,10 @@ FROM base AS deps
 COPY package*.json ./
 RUN npm ci
 
-FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
-
 FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY package.json ./
+COPY . .
 
 EXPOSE 3001
-CMD ["node", "dist/index.js"]
+CMD ["npx", "tsx", "src/index.ts"]

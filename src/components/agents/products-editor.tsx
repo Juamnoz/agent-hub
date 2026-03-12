@@ -27,6 +27,7 @@ import { useLocaleStore } from "@/stores/locale-store";
 import type { Product, ProductVariant } from "@/lib/mock-data";
 import { mockImportProducts } from "@/lib/mock-data";
 import { toast } from "sonner";
+import { trainApi } from "@/lib/api";
 
 const MAX_CATALOGS = 10;
 
@@ -214,12 +215,19 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     await updateAgent(agentId, { catalogs: newCatalogs } as any);
     setCatalogUploading(false);
     toast.success(`${newCatalogs.length - catalogs.length} catálogo(s) subido(s)`);
+    if (agent?.trainedAt) {
+      trainApi.update(agentId, "catalogs").catch(console.error);
+      toast.info("Actualizando catálogos del agente...");
+    }
   }
 
   function removeCatalog(idx: number) {
     const updated = catalogs.filter((_, i) => i !== idx);
     updateAgent(agentId, { catalogs: updated.length > 0 ? updated : null } as any);
     toast.success("Catálogo eliminado");
+    if (agent?.trainedAt) {
+      trainApi.update(agentId, "catalogs").catch(console.error);
+    }
   }
 
   function updateCatalogTitle(idx: number, title: string) {

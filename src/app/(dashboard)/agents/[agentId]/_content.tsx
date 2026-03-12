@@ -449,10 +449,39 @@ export default function AgentDetailPage({
     }
   }
 
+  async function extractTextFromFile(file: File): Promise<string> {
+    const name = file.name.toLowerCase();
+
+    if (name.endsWith(".docx")) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mammoth = require("mammoth/mammoth.browser");
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value;
+    }
+
+    if (name.endsWith(".pdf")) {
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pages.push(content.items.map((item: any) => item.str ?? "").join(" "));
+      }
+      return pages.join("\n");
+    }
+
+    return await file.text();
+  }
+
   async function handleFaqFileUpload(file: File) {
     setQvFaqParsing(true);
     try {
-      const text = await file.text();
+      const text = await extractTextFromFile(file);
       const lines = text.split(/\r?\n/).filter((l) => l.trim());
       const parsed: Array<{ id: string; question: string; answer: string }> = [];
 
@@ -1459,11 +1488,11 @@ export default function AgentDetailPage({
                             <p className="text-[13px] font-medium text-white/60">
                               {qvFaqDragging ? "Suelta el archivo aquí" : qvFaqParsing ? "Procesando archivo..." : "Sube un documento con preguntas"}
                             </p>
-                            <p className="text-[11px] text-white/25 mt-0.5">TXT, CSV — arrastra o toca para seleccionar</p>
+                            <p className="text-[11px] text-white/25 mt-0.5">TXT, CSV, DOCX, PDF — arrastra o toca para seleccionar</p>
                           </div>
                           <input
                             type="file"
-                            accept=".txt,.csv,.tsv"
+                            accept=".txt,.csv,.tsv,.docx,.pdf"
                             className="hidden"
                             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFaqFileUpload(f); e.target.value = ""; }}
                           />

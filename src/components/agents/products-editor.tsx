@@ -508,7 +508,9 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                         headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
                         body: JSON.stringify({ url }),
                       });
-                      const data = await res.json();
+                      const text = await res.text();
+                      let data: any;
+                      try { data = JSON.parse(text); } catch { toast.error("Error del servidor al extraer productos"); return; }
                       if (!res.ok) { toast.error(data.error || "Error al extraer"); return; }
                       const scraped = data.products ?? [];
                       if (scraped.length === 0) { toast.error("No se encontraron productos"); return; }

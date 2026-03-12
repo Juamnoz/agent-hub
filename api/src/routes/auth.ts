@@ -106,11 +106,33 @@ auth.post(
       return c.json({ message: "El email ya está registrado" }, 409);
     }
 
+    // Generate username from name (slug)
+    const username = name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "")
+      .slice(0, 30);
+
     const passwordHash = await bcrypt.hash(password, 12);
     const [user] = await db
       .insert(users)
-      .values({ name, email, passwordHash })
+      .values({ name, email, username, passwordHash, role: "owner", planTier: "business" })
       .returning();
+
+    // Create organization for the new user
+    const orgSlug = username || user.id.slice(0, 8);
+    const [org] = await db
+      .insert(organizations)
+      .values({ slug: orgSlug, name })
+      .returning();
+
+    // Link user → organization as owner
+    await db.insert(memberships).values({
+      userId: user.id,
+      organizationId: org.id,
+      role: "owner",
+    });
 
     const { token, refreshToken } = await signTokensForUser(user);
     const userData = await buildUserResponse(user);

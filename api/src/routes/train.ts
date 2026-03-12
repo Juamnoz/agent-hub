@@ -407,9 +407,9 @@ trainRoute.post(
     });
     if (!agent) return c.json({ message: "Agente no encontrado" }, 404);
 
-    // Block mode changes for agents still in setup
-    if (agent.status === "setup") {
-      return c.json({ message: "El agente aún está en configuración" }, 400);
+    // Block mode changes for agents not yet trained
+    if (agent.status === "setup" && !agent.trainedAt) {
+      return c.json({ message: "El agente aún no ha sido entrenado" }, 400);
     }
 
     // Update status in DB

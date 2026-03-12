@@ -1113,10 +1113,10 @@ export default function AgentDetailPage({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: "50%", scale: 0.97 }}
               transition={{ type: "spring", stiffness: 300, damping: 32 }}
-              className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:max-w-[520px] lg:w-full lg:rounded-3xl"
+              className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:max-w-[520px] lg:w-full lg:rounded-3xl"
             >
               <div
-                className="rounded-t-3xl lg:rounded-3xl overflow-hidden border border-white/[0.12] shadow-[0_8px_60px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.2)]"
+                className="rounded-t-3xl lg:rounded-3xl overflow-y-auto max-h-[85vh] overscroll-contain border border-white/[0.12] shadow-[0_8px_60px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.2)]"
                 style={{
                   background: "linear-gradient(180deg, rgba(60,60,67,0.72) 0%, rgba(30,30,32,0.82) 100%)",
                   WebkitBackdropFilter: "blur(80px) saturate(200%)",

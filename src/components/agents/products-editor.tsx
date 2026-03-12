@@ -25,7 +25,6 @@ import { useAgentStore } from "@/stores/agent-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import type { Product, ProductVariant } from "@/lib/mock-data";
-import { mockImportProducts } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { trainApi } from "@/lib/api";
 
@@ -74,10 +73,10 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
   const ecommerceIntegration = integrations.find(
     (i) => i.agentId === agentId && (i.name === "woocommerce" || i.name === "shopify") && i.enabled && i.configured
   );
-  const sheetsIntegration = integrations.find(
-    (i) => i.agentId === agentId && i.name === "google-sheets" && i.enabled && i.configured
-  );
   const hasWebsite = !!agent?.socialLinks?.website;
+  const csvFileRef = useRef<HTMLInputElement>(null);
+  const [csvDragging, setCsvDragging] = useState(false);
+  const [csvImporting, setCsvImporting] = useState(false);
 
   function resetForm() {
     setName(""); setDescription(""); setPrice("");
@@ -138,13 +137,9 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     updateProduct(product.id, { isActive: !product.isActive });
   }
 
-  function handleImport(source: "ecommerce" | "sheets" | "scraping") {
-    if (source === "ecommerce" && !ecommerceIntegration) {
-      toast.error(t.products.requiresIntegration);
-      return;
-    }
-    if (source === "sheets" && !sheetsIntegration) {
-      toast.error(t.products.requiresIntegration);
+  async function handleImport(source: "ecommerce" | "scraping") {
+    if (source === "ecommerce") {
+      toast.error("Próximamente");
       return;
     }
     if (source === "scraping" && !hasWebsite) {
@@ -152,12 +147,146 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
       return;
     }
     setImportingSource(source);
-    setTimeout(() => {
-      const items = mockImportProducts[source].map((p) => ({ ...p, agentId }));
-      importProducts(agentId, source, items);
-      setImportingSource(null);
-      toast.success(`${mockImportProducts[source].length} ${t.products.productsImported}`);
-    }, 2500);
+
+    if (source === "scraping") {
+      try {
+        const websiteUrl = agent?.socialLinks?.website;
+        const token = useAuthStore.getState().token;
+        const res = await fetch("/api/scrape-products", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ url: websiteUrl }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.error || "Error al scrapear");
+          setImportingSource(null);
+          return;
+        }
+        const scraped = data.products ?? [];
+        if (scraped.length === 0) {
+          toast.error("No se encontraron productos en el sitio");
+          setImportingSource(null);
+          return;
+        }
+        for (const p of scraped) {
+          addProduct({
+            agentId,
+            name: p.name,
+            description: p.description || undefined,
+            price: p.price,
+            category: p.category || "General",
+            imageUrl: p.imageUrl || undefined,
+            isActive: true,
+          });
+        }
+        toast.success(`${scraped.length} ${t.products.productsImported}`);
+      } catch (err: any) {
+        toast.error(err.message || "Error al scrapear");
+      } finally {
+        setImportingSource(null);
+      }
+      return;
+    }
+  }
+
+  async function handleFileImport(files: FileList | File[]) {
+    const file = Array.from(files)[0];
+    if (!file) return;
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".csv") && !name.endsWith(".tsv") && !name.endsWith(".xlsx") && !name.endsWith(".xls")) {
+      toast.error("Formato no soportado. Usa CSV, TSV o Excel.");
+      return;
+    }
+    setCsvImporting(true);
+    try {
+      let rows: string[][];
+      if (name.endsWith(".csv") || name.endsWith(".tsv")) {
+        const text = await file.text();
+        const sep = name.endsWith(".tsv") ? "\t" : ",";
+        rows = text.split(/\r?\n/).filter(Boolean).map((line) => {
+          // Simple CSV parse respecting quotes
+          const result: string[] = [];
+          let current = "";
+          let inQuotes = false;
+          for (const ch of line) {
+            if (ch === '"') { inQuotes = !inQuotes; continue; }
+            if (ch === sep && !inQuotes) { result.push(current.trim()); current = ""; continue; }
+            current += ch;
+          }
+          result.push(current.trim());
+          return result;
+        });
+      } else {
+        // Excel files - read as CSV via basic parsing
+        toast.error("Para archivos Excel, expórtalos primero como CSV");
+        setCsvImporting(false);
+        return;
+      }
+
+      if (rows.length < 2) {
+        toast.error("El archivo está vacío o solo tiene encabezados");
+        setCsvImporting(false);
+        return;
+      }
+
+      // Detect columns by header names
+      const headers = rows[0].map((h) => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+      const nameIdx = headers.findIndex((h) => ["nombre", "name", "producto", "product", "titulo", "title"].includes(h));
+      const priceIdx = headers.findIndex((h) => ["precio", "price", "valor", "value"].includes(h));
+      const descIdx = headers.findIndex((h) => ["descripcion", "description", "detalle", "detail"].includes(h));
+      const catIdx = headers.findIndex((h) => ["categoria", "category", "cat", "tipo", "type"].includes(h));
+      const imgIdx = headers.findIndex((h) => ["imagen", "image", "img", "image_url", "imageurl", "foto", "photo", "url_imagen"].includes(h));
+      const skuIdx = headers.findIndex((h) => ["sku", "codigo", "code", "ref", "referencia"].includes(h));
+
+      if (nameIdx === -1) {
+        toast.error("No se encontró columna de nombre (nombre, name, producto, title)");
+        setCsvImporting(false);
+        return;
+      }
+
+      let count = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const pName = row[nameIdx]?.trim();
+        if (!pName) continue;
+        const rawPrice = priceIdx >= 0 ? row[priceIdx]?.trim() ?? "0" : "0";
+        // Parse price: handle 280.000 or 280,000 (Colombian) and normal decimals
+        let price = 0;
+        const cleaned = rawPrice.replace(/[^0-9.,]/g, "");
+        if (cleaned.match(/^\d{1,3}([.,]\d{3})+$/)) {
+          price = parseInt(cleaned.replace(/[.,]/g, ""), 10);
+        } else {
+          price = parseFloat(cleaned.replace(",", ".")) || 0;
+        }
+
+        addProduct({
+          agentId,
+          name: pName,
+          description: descIdx >= 0 ? row[descIdx]?.trim() || undefined : undefined,
+          price: Math.round(price),
+          category: catIdx >= 0 ? row[catIdx]?.trim() || "General" : "General",
+          imageUrl: imgIdx >= 0 ? row[imgIdx]?.trim() || undefined : undefined,
+          sku: skuIdx >= 0 ? row[skuIdx]?.trim() || undefined : undefined,
+          isActive: true,
+        });
+        count++;
+      }
+
+      if (count === 0) {
+        toast.error("No se encontraron productos válidos en el archivo");
+      } else {
+        toast.success(`${count} ${t.products.productsImported}`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Error al procesar el archivo");
+    } finally {
+      setCsvImporting(false);
+      if (csvFileRef.current) csvFileRef.current.value = "";
+    }
   }
 
   function addVariantRow() {
@@ -242,15 +371,8 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
       iconColor: "text-orange-600",
       label: "WooCommerce / Shopify",
       sublabel: t.products.importFromEcommerce,
-      ready: !!ecommerceIntegration,
-    },
-    {
-      id: "sheets" as const,
-      icon: Table2,
-      iconColor: "text-green-600",
-      label: "Google Sheets",
-      sublabel: t.products.importFromSheets,
-      ready: !!sheetsIntegration,
+      ready: false,
+      comingSoon: true,
     },
     {
       id: "scraping" as const,
@@ -386,45 +508,84 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
         </button>
 
         {importOpen && (
-          <div className="border-t border-border divide-y divide-border">
-            {importSources.map((src) => {
-              const Icon = src.icon;
-              const isImporting = importingSource === src.id;
-              return (
-                <div key={src.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <Icon className={`h-4 w-4 ${src.iconColor}`} />
+          <div className="border-t border-border">
+            {/* CSV / file drop zone */}
+            <div className="px-4 py-3">
+              <input
+                ref={csvFileRef}
+                type="file"
+                accept=".csv,.tsv"
+                className="hidden"
+                onChange={(e) => e.target.files && handleFileImport(e.target.files)}
+              />
+              <div
+                onDragOver={(e) => { e.preventDefault(); setCsvDragging(true); }}
+                onDragLeave={() => setCsvDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setCsvDragging(false); handleFileImport(e.dataTransfer.files); }}
+                onClick={() => csvFileRef.current?.click()}
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-colors ${
+                  csvDragging
+                    ? "border-orange-400 bg-orange-50 dark:bg-orange-500/10"
+                    : "border-border hover:border-muted-foreground/40 hover:bg-accent/30"
+                }`}
+              >
+                {csvImporting ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-orange-500 mb-2" />
+                ) : (
+                  <Table2 className="h-6 w-6 text-muted-foreground mb-2" />
+                )}
+                <p className="text-[14px] font-medium text-center">
+                  {csvImporting ? "Importando productos..." : "Arrastra un archivo CSV o haz clic para subir"}
+                </p>
+                <p className="text-[12px] text-muted-foreground mt-1">
+                  Columnas: nombre, precio, descripción, categoría, imagen, sku
+                </p>
+              </div>
+            </div>
+
+            {/* Other import sources */}
+            <div className="divide-y divide-border border-t border-border">
+              {importSources.map((src) => {
+                const Icon = src.icon;
+                const isImporting = importingSource === src.id;
+                return (
+                  <div key={src.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Icon className={`h-4 w-4 ${src.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[15px] font-medium leading-tight">{src.label}</p>
+                      <p className="text-[13px] text-muted-foreground">{src.sublabel}</p>
+                    </div>
+                    {(src as any).comingSoon ? (
+                      <Badge variant="secondary" className="text-[12px] shrink-0">Próximamente</Badge>
+                    ) : src.ready ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[14px] rounded-full px-3 shrink-0"
+                        disabled={importingSource !== null}
+                        onClick={() => handleImport(src.id)}
+                      >
+                        {isImporting ? (
+                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t.products.importing}</>
+                        ) : (
+                          <><CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />Sincronizar</>
+                        )}
+                      </Button>
+                    ) : (
+                      <Link
+                        href={`/agents/${agentId}/settings`}
+                        className="flex items-center gap-1 text-[14px] font-medium text-orange-600 hover:text-orange-700 shrink-0"
+                      >
+                        Conectar
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-medium leading-tight">{src.label}</p>
-                    <p className="text-[13px] text-muted-foreground">{src.sublabel}</p>
-                  </div>
-                  {src.ready ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-[14px] rounded-full px-3 shrink-0"
-                      disabled={importingSource !== null}
-                      onClick={() => handleImport(src.id)}
-                    >
-                      {isImporting ? (
-                        <><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t.products.importing}</>
-                      ) : (
-                        <><CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />Sincronizar</>
-                      )}
-                    </Button>
-                  ) : (
-                    <Link
-                      href={`/agents/${agentId}/settings`}
-                      className="flex items-center gap-1 text-[14px] font-medium text-orange-600 hover:text-orange-700 shrink-0"
-                    >
-                      Conectar
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

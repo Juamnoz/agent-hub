@@ -235,7 +235,7 @@ export default function AgentDetailPage({
     score += Math.min(a.faqCount / 10, 1) * 20;                                 // FAQs (20)
     if (a.webhookUrl) score += 10;                                               // Webhook (10)
     if (a.socialLinks && Object.values(a.socialLinks).some(Boolean)) score += 10;// Social (10)
-    if (a.productCount > 0) score += 10;                                         // Productos (10)
+    if (a.productCount > 0 || (a.catalogs as any[])?.length > 0) score += 10;     // Productos (10)
     return Math.round(score);
   }
   const qualityScore = getQualityScore(agent);
@@ -285,7 +285,7 @@ export default function AgentDetailPage({
         return [{ id: "menu", title: "Menú", description: "Configura los platos del restaurante", done: true, href: `/agents/${agentId}/menu` }];
       case "ecommerce":
       case "whatsapp-store":
-        return [{ id: "products", title: "Catálogo de productos", description: hasProducts ? `${agentProducts.length} productos` : "Agrega tus productos", done: hasProducts, href: `/agents/${agentId}/products` }];
+        return [{ id: "products", title: "Catálogo de productos", description: hasProducts ? `${agentProducts.length} productos` : (agent.catalogs as any[])?.length > 0 ? `${(agent.catalogs as any[]).length} catálogo(s) PDF` : "Agrega tus productos", done: hasProducts || ((agent.catalogs as any[])?.length ?? 0) > 0, href: `/agents/${agentId}/products` }];
       default:
         return [];
     }

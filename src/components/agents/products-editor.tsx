@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Plus, Pencil, Trash2, Package, X, Upload,
-  ShoppingCart, Table2, Globe, Loader2, CheckCircle2,
-  ChevronDown, ChevronRight, ArrowRight, FileText,
+  ShoppingCart, Table2, Globe, Loader2,
+  ChevronDown, ChevronRight, FileText,
   BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import Link from "next/link";
 import { useAgentStore } from "@/stores/agent-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLocaleStore } from "@/stores/locale-store";
@@ -73,7 +72,6 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
   const ecommerceIntegration = integrations.find(
     (i) => i.agentId === agentId && (i.name === "woocommerce" || i.name === "shopify") && i.enabled && i.configured
   );
-  const hasWebsite = !!agent?.socialLinks?.website;
   const csvFileRef = useRef<HTMLInputElement>(null);
   const [csvDragging, setCsvDragging] = useState(false);
   const [csvImporting, setCsvImporting] = useState(false);
@@ -135,62 +133,6 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
 
   function handleToggle(product: Product) {
     updateProduct(product.id, { isActive: !product.isActive });
-  }
-
-  async function handleImport(source: "ecommerce" | "scraping") {
-    if (source === "ecommerce") {
-      toast.error("Próximamente");
-      return;
-    }
-    if (source === "scraping" && !hasWebsite) {
-      toast.error(t.products.requiresWebsite);
-      return;
-    }
-    setImportingSource(source);
-
-    if (source === "scraping") {
-      try {
-        const websiteUrl = agent?.socialLinks?.website;
-        const token = useAuthStore.getState().token;
-        const res = await fetch("/api/scrape-products", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ url: websiteUrl }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          toast.error(data.error || "Error al scrapear");
-          setImportingSource(null);
-          return;
-        }
-        const scraped = data.products ?? [];
-        if (scraped.length === 0) {
-          toast.error("No se encontraron productos en el sitio");
-          setImportingSource(null);
-          return;
-        }
-        for (const p of scraped) {
-          addProduct({
-            agentId,
-            name: p.name,
-            description: p.description || undefined,
-            price: p.price,
-            category: p.category || "General",
-            imageUrl: p.imageUrl || undefined,
-            isActive: true,
-          });
-        }
-        toast.success(`${scraped.length} ${t.products.productsImported}`);
-      } catch (err: any) {
-        toast.error(err.message || "Error al scrapear");
-      } finally {
-        setImportingSource(null);
-      }
-      return;
-    }
   }
 
   async function handleFileImport(files: FileList | File[]) {
@@ -364,6 +306,8 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     updateAgent(agentId, { catalogs: updated } as any);
   }
 
+  const [scrapeUrl, setScrapeUrl] = useState(agent?.socialLinks?.website ?? "");
+
   const importSources = [
     {
       id: "ecommerce" as const,
@@ -373,14 +317,6 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
       sublabel: t.products.importFromEcommerce,
       ready: false,
       comingSoon: true,
-    },
-    {
-      id: "scraping" as const,
-      icon: Globe,
-      iconColor: "text-blue-600",
-      label: "Web Scraping",
-      sublabel: t.products.importFromWeb,
-      ready: hasWebsite,
     },
   ];
 
@@ -543,11 +479,71 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
               </div>
             </div>
 
+            {/* Web Scraping — inline URL + button */}
+            <div className="border-t border-border px-4 py-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="h-4 w-4 text-blue-600" />
+                <span className="text-[15px] font-medium">Web Scraping</span>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="url"
+                  placeholder="https://tu-sitio.com"
+                  value={scrapeUrl}
+                  onChange={(e) => setScrapeUrl(e.target.value)}
+                  className="h-9 text-[14px] flex-1"
+                />
+                <Button
+                  size="sm"
+                  className="h-9 rounded-full px-4 text-[14px] font-medium lisa-btn text-white border-0 shrink-0"
+                  disabled={importingSource === "scraping" || !scrapeUrl.trim()}
+                  onClick={async () => {
+                    const url = scrapeUrl.trim();
+                    if (!url) return;
+                    setImportingSource("scraping");
+                    try {
+                      const tk = useAuthStore.getState().token;
+                      const res = await fetch("/api/scrape-products", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
+                        body: JSON.stringify({ url }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { toast.error(data.error || "Error al extraer"); return; }
+                      const scraped = data.products ?? [];
+                      if (scraped.length === 0) { toast.error("No se encontraron productos"); return; }
+                      for (const p of scraped) {
+                        addProduct({
+                          agentId,
+                          name: p.name,
+                          description: p.description || undefined,
+                          price: p.price,
+                          category: p.category || "General",
+                          imageUrl: p.imageUrl || undefined,
+                          isActive: true,
+                        });
+                      }
+                      toast.success(`${scraped.length} ${t.products.productsImported}`);
+                    } catch (err: any) {
+                      toast.error(err.message || "Error al extraer");
+                    } finally {
+                      setImportingSource(null);
+                    }
+                  }}
+                >
+                  {importingSource === "scraping" ? (
+                    <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Extrayendo...</>
+                  ) : (
+                    <><Globe className="h-3.5 w-3.5 mr-1" />Extraer</>
+                  )}
+                </Button>
+              </div>
+            </div>
+
             {/* Other import sources */}
             <div className="divide-y divide-border border-t border-border">
               {importSources.map((src) => {
                 const Icon = src.icon;
-                const isImporting = importingSource === src.id;
                 return (
                   <div key={src.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -557,31 +553,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                       <p className="text-[15px] font-medium leading-tight">{src.label}</p>
                       <p className="text-[13px] text-muted-foreground">{src.sublabel}</p>
                     </div>
-                    {(src as any).comingSoon ? (
-                      <Badge variant="secondary" className="text-[12px] shrink-0">Próximamente</Badge>
-                    ) : src.ready ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-[14px] rounded-full px-3 shrink-0"
-                        disabled={importingSource !== null}
-                        onClick={() => handleImport(src.id)}
-                      >
-                        {isImporting ? (
-                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" />{t.products.importing}</>
-                        ) : (
-                          <><CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />Sincronizar</>
-                        )}
-                      </Button>
-                    ) : (
-                      <Link
-                        href={`/agents/${agentId}/settings`}
-                        className="flex items-center gap-1 text-[14px] font-medium text-orange-600 hover:text-orange-700 shrink-0"
-                      >
-                        Conectar
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    )}
+                    <Badge variant="secondary" className="text-[12px] shrink-0">Próximamente</Badge>
                   </div>
                 );
               })}

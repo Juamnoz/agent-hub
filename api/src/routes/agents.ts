@@ -148,6 +148,11 @@ agentsRoute.patch(
       adminPhone: z.string().nullable().optional(),
       escalationPhone: z.string().nullable().optional(),
       trainedAt: z.string().nullable().optional(),
+      catalogs: z.array(z.object({
+        title: z.string(),
+        url: z.string(),
+        fileName: z.string(),
+      })).nullable().optional(),
       conversationExamples: z.array(z.object({
         id: z.string(),
         userMessage: z.string(),

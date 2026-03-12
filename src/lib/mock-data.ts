@@ -108,6 +108,7 @@ export interface Agent {
   communicationStyle?: CommunicationStyle;
   systemPrompt?: string;
   knowledgeBase?: string;
+  catalogs?: Array<{ title: string; url: string; fileName: string }> | null;
   webhookUrl?: string | null;
   adminPhone?: string | null;
   escalationPhone?: string | null;

@@ -166,6 +166,7 @@ export const agents = pgTable("agents", {
   adminPhone: text("admin_phone"),
   escalationPhone: text("escalation_phone"),
   trainedAt: timestamp("trained_at"),
+  catalogs: jsonb("catalogs"),
   conversationExamples: jsonb("conversation_examples"),
   messageCount: integer("message_count").notNull().default(0),
   faqCount: integer("faq_count").notNull().default(0),

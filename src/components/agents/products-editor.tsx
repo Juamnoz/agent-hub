@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import {
   Plus, Pencil, Trash2, Package, X, Upload,
   ShoppingCart, Table2, Globe, Loader2, CheckCircle2,
-  ChevronDown, ChevronRight, ArrowRight,
+  ChevronDown, ChevronRight, ArrowRight, FileText,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,22 +22,35 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import type { Product, ProductVariant } from "@/lib/mock-data";
 import { mockImportProducts } from "@/lib/mock-data";
 import { toast } from "sonner";
+
+const MAX_CATALOGS = 10;
+
+interface CatalogItem {
+  title: string;
+  url: string;
+  fileName: string;
+}
 
 interface ProductsEditorProps {
   agentId: string;
 }
 
 export function ProductsEditor({ agentId }: ProductsEditorProps) {
-  const { products, loadProducts, addProduct, importProducts, updateProduct, deleteProduct, integrations, agents } = useAgentStore();
+  const { products, loadProducts, addProduct, importProducts, updateProduct, deleteProduct, integrations, agents, updateAgent } = useAgentStore();
+  const { token } = useAuthStore();
   const { t } = useLocaleStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [importingSource, setImportingSource] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [catalogsOpen, setCatalogsOpen] = useState(false);
+  const [catalogUploading, setCatalogUploading] = useState(false);
+  const catalogFileRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [name, setName] = useState("");
@@ -160,6 +174,57 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
     const updated = [...variants];
     updated[index] = { ...updated[index], options: value.split(",").map((o) => o.trim()).filter(Boolean) };
     setVariants(updated);
+  }
+
+  // ── Catalogs ──────────────────────────────────────────────────
+  const catalogs: CatalogItem[] = (agent?.catalogs as CatalogItem[] | null) ?? [];
+
+  async function handleCatalogUpload(files: File[]) {
+    const pdfs = files.filter((f) => f.name.toLowerCase().endsWith(".pdf"));
+    if (!pdfs.length) { toast.error("Solo se permiten archivos PDF"); return; }
+    const slots = MAX_CATALOGS - catalogs.length;
+    const toUpload = pdfs.slice(0, slots);
+    if (!toUpload.length) { toast.error("Límite de catálogos alcanzado"); return; }
+
+    setCatalogUploading(true);
+    const newCatalogs = [...catalogs];
+
+    for (const file of toUpload) {
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("agentId", agentId);
+        const res = await fetch("/api/upload-catalog", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error al subir");
+        newCatalogs.push({
+          title: file.name.replace(/\.pdf$/i, ""),
+          url: data.url,
+          fileName: file.name,
+        });
+      } catch (err: any) {
+        toast.error(err.message || `Error al subir ${file.name}`);
+      }
+    }
+
+    await updateAgent(agentId, { catalogs: newCatalogs } as any);
+    setCatalogUploading(false);
+    toast.success(`${newCatalogs.length - catalogs.length} catálogo(s) subido(s)`);
+  }
+
+  function removeCatalog(idx: number) {
+    const updated = catalogs.filter((_, i) => i !== idx);
+    updateAgent(agentId, { catalogs: updated.length > 0 ? updated : null } as any);
+    toast.success("Catálogo eliminado");
+  }
+
+  function updateCatalogTitle(idx: number, title: string) {
+    const updated = catalogs.map((c, i) => i === idx ? { ...c, title } : c);
+    updateAgent(agentId, { catalogs: updated } as any);
   }
 
   const importSources = [
@@ -352,6 +417,92 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Catalogs PDF section ─────────────────────────────────────── */}
+      <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
+        <button
+          onClick={() => setCatalogsOpen(!catalogsOpen)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-accent/50 active:bg-accent"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-teal-500" />
+            <span className="text-[16px] font-medium">Catálogos PDF</span>
+            {catalogs.length > 0 && (
+              <span className="text-[13px] text-muted-foreground">({catalogs.length})</span>
+            )}
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${catalogsOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {catalogsOpen && (
+          <div className="border-t border-border">
+            {/* Upload button */}
+            <div className="px-4 pt-3 pb-2">
+              <input
+                ref={catalogFileRef}
+                type="file"
+                accept="application/pdf"
+                multiple
+                className="hidden"
+                onChange={(e) => { handleCatalogUpload(Array.from(e.target.files ?? [])); e.target.value = ""; }}
+              />
+              <button
+                onClick={() => catalogFileRef.current?.click()}
+                disabled={catalogUploading || catalogs.length >= MAX_CATALOGS}
+                className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-semibold bg-teal-500/10 ring-1 ring-teal-500/20 text-teal-600 dark:text-teal-400 hover:bg-teal-500/15 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {catalogUploading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Subiendo...</>
+                ) : (
+                  <><Upload className="h-4 w-4" /> Subir PDF</>
+                )}
+              </button>
+              <p className="text-[12px] text-muted-foreground text-center mt-1.5">
+                Sube menús, fichas técnicas o catálogos para que tu agente los use como conocimiento. Máx. 10MB por archivo.
+              </p>
+            </div>
+
+            {/* Catalog list */}
+            {catalogs.length > 0 && (
+              <div className="divide-y divide-border">
+                {catalogs.map((cat, idx) => (
+                  <div key={idx} className="flex items-center gap-3 px-4 py-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10">
+                      <FileText className="h-5 w-5 text-teal-500" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <input
+                        type="text"
+                        value={cat.title}
+                        onChange={(e) => updateCatalogTitle(idx, e.target.value)}
+                        placeholder="Título del catálogo..."
+                        className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-[13px] placeholder:text-muted-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      <p className="text-[11px] text-muted-foreground/50 px-0.5 truncate">{cat.fileName}</p>
+                    </div>
+                    <button
+                      onClick={() => removeCatalog(idx)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {catalogs.length === 0 && !catalogUploading && (
+              <div className="px-4 pb-4 text-center">
+                <p className="text-[13px] text-muted-foreground/50">
+                  Sin catálogos — sube un PDF para empezar
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -15,6 +15,13 @@
       "when": 1773255125849,
       "tag": "0001_easy_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773332046078,
+      "tag": "0002_tired_doctor_strange",
+      "breakpoints": true
     }
   ]
 }

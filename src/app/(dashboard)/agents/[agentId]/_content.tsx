@@ -923,19 +923,18 @@ export default function AgentDetailPage({
             <div className="w-full rounded-xl py-3 text-center text-[15px] font-semibold bg-white/6 text-white/25 cursor-not-allowed">
               Completa los pasos para entrenar
             </div>
-          ) : !agent.trainedAt ? (
+          ) : (
             <button
               onClick={handleTrain}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[16px] font-semibold bg-orange-500 text-white active:bg-orange-600 shadow-sm transition-all"
+              className={`w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[16px] font-semibold shadow-sm transition-all ${
+                agent.trainedAt
+                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 active:bg-emerald-500/20"
+                  : "bg-orange-500 text-white active:bg-orange-600"
+              }`}
             >
               <Zap className="h-5 w-5" />
-              Entrenar agente
+              {agent.trainedAt ? "Re-entrenar agente" : "Entrenar agente"}
             </button>
-          ) : (
-            <div className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[15px] font-semibold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
-              <CheckCircle2 className="h-5 w-5" />
-              Entrenado
-            </div>
           )}
         </div>
       </motion.div>

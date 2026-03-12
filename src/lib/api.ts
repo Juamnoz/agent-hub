@@ -89,7 +89,7 @@ export async function apiFetch<T = unknown>(
 ): Promise<T> {
   const { params, ...init } = options;
 
-  let url = `${API_BASE}/v1${path}`;
+  let url = `${API_BASE}${path}`;
   if (params) {
     const qs = new URLSearchParams(
       Object.entries(params).reduce(

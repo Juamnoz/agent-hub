@@ -224,6 +224,7 @@ trainRoute.post("/:agentId/train/deploy", async (c) => {
     catalog_type: catalogLabel[agent.algorithmType] ?? "products",
     [catalogLabel[agent.algorithmType] ?? "products"]: rawProducts.map(mapProduct),
     catalogs: ((agent as any).catalogs ?? []).map((c: any) => ({
+      name: c.title,
       title: c.title,
       url: c.url,
       fileName: c.fileName,

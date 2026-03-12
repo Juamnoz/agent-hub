@@ -83,11 +83,48 @@ export class ApiError extends Error {
   }
 }
 
+let _refreshPromise: Promise<string | null> | null = null;
+
+async function tryRefreshToken(): Promise<string | null> {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const raw = localStorage.getItem("lisa-auth");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const refreshToken = parsed?.state?.refreshToken;
+      if (!refreshToken) return null;
+
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return null;
+
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+        // Update Zustand persisted store with new token
+        parsed.state.token = data.token;
+        localStorage.setItem("lisa-auth", JSON.stringify(parsed));
+        return data.token;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+  return _refreshPromise;
+}
+
 export async function apiFetch<T = unknown>(
   path: string,
-  options: RequestInit & { params?: Record<string, string | number> } = {}
+  options: RequestInit & { params?: Record<string, string | number>; _retried?: boolean } = {}
 ): Promise<T> {
-  const { params, ...init } = options;
+  const { params, _retried, ...init } = options;
 
   let url = `${API_BASE}${path}`;
   if (params) {
@@ -110,6 +147,19 @@ export async function apiFetch<T = unknown>(
       ...init.headers,
     },
   });
+
+  // Auto-refresh on 401
+  if (res.status === 401 && !_retried && typeof window !== "undefined") {
+    const newToken = await tryRefreshToken();
+    if (newToken) {
+      return apiFetch<T>(path, { ...options, _retried: true });
+    }
+    // Refresh failed — clear auth and redirect to login
+    clearToken();
+    localStorage.removeItem("lisa-auth");
+    window.location.href = "/sign-in";
+    throw new ApiError(401, "Sesión expirada");
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }));

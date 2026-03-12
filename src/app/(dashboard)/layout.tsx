@@ -1,14 +1,16 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { PanelLeft, Plus } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { useLocaleStore } from "@/stores/locale-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { useAuthStore } from "@/stores/auth-store";
+import { useAgentStore } from "@/stores/agent-store";
 
 function usePageTitle(pathname: string): string {
   const { t } = useLocaleStore();
@@ -40,6 +42,30 @@ function usePageTitle(pathname: string): string {
   return "Lisa";
 }
 
+function SplashScreen() {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-6">
+        <div className="animate-pulse">
+          <Image
+            src="/lisa-isologo-naranja.png"
+            alt="Lisa"
+            width={80}
+            height={80}
+            className="h-20 w-20 object-contain"
+            priority
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-bounce [animation-delay:0ms]" />
+          <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-bounce [animation-delay:150ms]" />
+          <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-bounce [animation-delay:300ms]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -51,12 +77,21 @@ export default function DashboardLayout({
   const isLisa = pathname === "/lisa" || pathname.startsWith("/lisa/");
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { loadAgents, loadingAgents, agents } = useAgentStore();
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/sign-in");
+      return;
     }
-  }, [isAuthenticated, router]);
+    loadAgents().finally(() => setInitialLoad(false));
+  }, [isAuthenticated, router, loadAgents]);
+
+  // Show splash while initial data loads
+  if (initialLoad && agents.length === 0) {
+    return <SplashScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

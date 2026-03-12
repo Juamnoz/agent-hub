@@ -5,40 +5,23 @@ import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   Bot,
-  Sparkles,
-  HelpCircle,
-  Globe,
-  Smartphone,
-  CheckCircle2,
-  Circle,
+  Check,
   ShoppingCart,
   CalendarCheck,
   MessageCircle,
   Building2,
   UtensilsCrossed,
-  Plus,
-  X,
-  Check,
-  Briefcase,
-  Zap,
   Home,
-  Rocket,
+  Globe,
+  Zap,
+  Link,
+  CheckCircle2,
 } from "lucide-react";
-import {
-  IconInstagram,
-  IconFacebook,
-  IconTikTok,
-  IconTripAdvisor,
-  IconGoogleMaps,
-  IconWhatsApp,
-} from "@/components/icons/brand-icons";
 import { useAgentStore } from "@/stores/agent-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import { usePlanStore } from "@/stores/plan-store";
 import { PLAN_AGENT_LIMITS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -46,15 +29,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConnectionWizard } from "@/components/whatsapp/connection-wizard";
-import { toast } from "sonner";
-import type { AlgorithmType, SocialLinks } from "@/lib/mock-data";
+import type { AlgorithmType } from "@/lib/mock-data";
 
 // ─────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 7; // steps 0–6
+const TOTAL_STEPS = 3; // steps 0–2
 
 type BusinessTypeConfig = {
   key: AlgorithmType;
@@ -118,107 +99,7 @@ const BUSINESS_TYPES: BusinessTypeConfig[] = [
   },
 ];
 
-type ToneConfig = {
-  key: "formal" | "friendly" | "casual";
-  label: string;
-  description: string;
-  bubble: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  iconBg: string;
-  iconColor: string;
-};
-
-const TONE_OPTIONS: ToneConfig[] = [
-  {
-    key: "formal",
-    label: "Formal",
-    description: "Lenguaje profesional y respetuoso",
-    bubble: "Estimado cliente, con mucho gusto le atiendo. ¿En qué le puedo asistir hoy?",
-    Icon: Briefcase,
-    iconBg: "bg-slate-100 dark:bg-slate-500/15",
-    iconColor: "text-slate-600 dark:text-slate-400",
-  },
-  {
-    key: "friendly",
-    label: "Amigable",
-    description: "Cercano y servicial, como un buen amigo",
-    bubble: "Hola, que bueno saludarte. Estoy aqui para ayudarte con lo que necesites.",
-    Icon: MessageCircle,
-    iconBg: "bg-orange-100 dark:bg-orange-500/15",
-    iconColor: "text-orange-600 dark:text-orange-400",
-  },
-  {
-    key: "casual",
-    label: "Casual",
-    description: "Relajado y directo, sin formalidades",
-    bubble: "Hey, que tal. Aqui estoy para ayudarte, dime que necesitas.",
-    Icon: Zap,
-    iconBg: "bg-violet-100 dark:bg-violet-500/15",
-    iconColor: "text-violet-600 dark:text-violet-400",
-  },
-];
-
-type SocialField = {
-  key: keyof SocialLinks;
-  label: string;
-  placeholder: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  iconBg: string;
-  iconColor: string;
-};
-
-const SOCIAL_FIELDS: SocialField[] = [
-  {
-    key: "website",
-    label: "Sitio web",
-    placeholder: "https://tuempresa.com",
-    Icon: Globe,
-    iconBg: "bg-blue-100 dark:bg-blue-500/15",
-    iconColor: "text-blue-600 dark:text-blue-400",
-  },
-  {
-    key: "instagram",
-    label: "Instagram",
-    placeholder: "https://instagram.com/tuempresa",
-    Icon: IconInstagram,
-    iconBg: "bg-pink-100 dark:bg-pink-500/15",
-    iconColor: "text-pink-600 dark:text-pink-400",
-  },
-  {
-    key: "facebook",
-    label: "Facebook",
-    placeholder: "https://facebook.com/tuempresa",
-    Icon: IconFacebook,
-    iconBg: "bg-[#1877F2]/10 dark:bg-[#1877F2]/15",
-    iconColor: "text-[#1877F2]",
-  },
-  {
-    key: "tiktok",
-    label: "TikTok",
-    placeholder: "https://tiktok.com/@tuempresa",
-    Icon: IconTikTok,
-    iconBg: "bg-gray-100 dark:bg-gray-500/15",
-    iconColor: "text-gray-900 dark:text-gray-100",
-  },
-  {
-    key: "tripadvisor",
-    label: "TripAdvisor",
-    placeholder: "https://tripadvisor.com/...",
-    Icon: IconTripAdvisor,
-    iconBg: "bg-green-100 dark:bg-green-500/15",
-    iconColor: "text-[#34E0A1] dark:text-[#34E0A1]",
-  },
-  {
-    key: "googleMaps",
-    label: "Google Maps",
-    placeholder: "https://maps.google.com/?cid=...",
-    Icon: IconGoogleMaps,
-    iconBg: "bg-red-100 dark:bg-red-500/15",
-    iconColor: "text-red-500 dark:text-red-400",
-  },
-];
-
-// Step hero configs (steps 1–5; steps 0 and 6 have custom layouts)
+// Step hero configs (step 0 and 2 have custom layouts)
 type StepHero = {
   Icon: React.ComponentType<{ className?: string }>;
   circleBg: string;
@@ -236,51 +117,15 @@ const STEP_HEROES: (StepHero | null)[] = [
     iconColor: "text-blue-500",
     sectionLabel: "Configuración",
     title: "Tu agente",
-    subtitle: "Dale un nombre y cuéntame sobre tu negocio",
+    subtitle: "Dale un nombre y configura los datos básicos",
   },
-  {
-    Icon: Sparkles,
-    circleBg: "bg-violet-100 dark:bg-violet-500/15",
-    iconColor: "text-violet-500",
-    sectionLabel: "Personalidad",
-    title: "¿Cómo habla tu agente?",
-    subtitle: "Elige el estilo de comunicación con tus clientes",
-  },
-  {
-    Icon: HelpCircle,
-    circleBg: "bg-amber-100 dark:bg-amber-500/15",
-    iconColor: "text-amber-500",
-    sectionLabel: "Conocimiento",
-    title: "Preguntas frecuentes",
-    subtitle: "Enséñale las respuestas que más necesitan tus clientes",
-  },
-  {
-    Icon: Globe,
-    circleBg: "bg-indigo-100 dark:bg-indigo-500/15",
-    iconColor: "text-indigo-500",
-    sectionLabel: "Presencia digital",
-    title: "Tus redes sociales",
-    subtitle: "El agente aprende de tu contenido publicado",
-  },
-  {
-    Icon: Smartphone,
-    circleBg: "bg-emerald-100 dark:bg-emerald-500/15",
-    iconColor: "text-emerald-500",
-    sectionLabel: "Integración",
-    title: "Conecta WhatsApp",
-    subtitle: "Tu agente empieza a responder en tiempo real",
-  },
-  null, // 6 — launch screen
+  null, // 2 — success screen
 ];
 
 const STEP_CTA = [
   "Continuar",
   "Crear agente",
-  "Continuar",
-  "Continuar",
-  "Continuar",
-  "Continuar",
-  "", // launch step has its own buttons
+  "", // success step has its own button
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -289,47 +134,25 @@ const STEP_CTA = [
 
 export default function NewAgentPage() {
   const router = useRouter();
-  const { addAgent, updateAgent, addFaq, deleteFaq, loadFaqs, faqs, agents } =
-    useAgentStore();
+  const { addAgent, updateAgent, agents } = useAgentStore();
   const { t } = useLocaleStore();
   const { currentPlan, canAddAgent } = usePlanStore();
 
   // Wizard navigation
   const [step, setStep] = useState(0);
   const [agentId, setAgentId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Step 0 — business type
   const [algorithmType, setAlgorithmType] = useState<AlgorithmType | null>(null);
 
-  // Step 1 — basic data
+  // Step 1 — basic data + webhook
   const [name, setName] = useState("");
   const [hotelName, setHotelName] = useState("");
   const [language, setLanguage] = useState("es");
-
-  // Step 2 — personality
-  const [tone, setTone] = useState<"formal" | "friendly" | "casual">("friendly");
-  const [personality, setPersonality] = useState("");
-  const [showPersonality, setShowPersonality] = useState(false);
-
-  // Step 3 — FAQs
-  const [faqQuestion, setFaqQuestion] = useState("");
-  const [faqAnswer, setFaqAnswer] = useState("");
-
-  // Step 4 — social links
-  const [socialLinks, setSocialLinks] = useState<Record<keyof SocialLinks, string>>({
-    website: "",
-    instagram: "",
-    facebook: "",
-    tiktok: "",
-    tripadvisor: "",
-    googleMaps: "",
-  });
+  const [webhookUrl, setWebhookUrl] = useState("");
 
   // Derived
-  const agentFaqs = faqs.filter((f) => f.agentId === agentId);
-  const agent = agents.find((a) => a.id === agentId);
-  const hasSocialLinks = Object.values(socialLinks).some((v) => v.trim());
-
   const businessNameLabel = algorithmType
     ? t.personalityBuilder.hotelNameLabels[
         (algorithmType === "whatsapp-store"
@@ -338,7 +161,7 @@ export default function NewAgentPage() {
       ]
     : t.agents.hotelName;
 
-  // Progress (0 % at step 0, 100 % fully into step 6)
+  // Progress (0 % at step 0, 100 % fully into step 2)
   const progress = step / (TOTAL_STEPS - 1);
 
   // ── CTA enable condition ────────────────────────────────────
@@ -348,15 +171,7 @@ export default function NewAgentPage() {
     step === 0
       ? algorithmType !== null && !atAgentLimit
       : step === 1
-      ? name.trim().length > 0 && hotelName.trim().length > 0
-      : step === 2
-      ? true
-      : step === 3
-      ? agentFaqs.length >= 1
-      : step === 4
-      ? true // social links are optional
-      : step === 5
-      ? (agent?.whatsappConnected ?? false)
+      ? name.trim().length > 0 && hotelName.trim().length > 0 && !isCreating
       : false;
 
   // ── Navigation ──────────────────────────────────────────────
@@ -366,97 +181,38 @@ export default function NewAgentPage() {
   }
 
   async function handleContinue() {
-    // Step 1 → create agent, capture ID
-    if (step === 1) {
-      const newId = await addAgent({
-        name: name.trim(),
-        hotelName: hotelName.trim(),
-        language,
-        tone: "friendly",
-        status: "setup",
-        personality: "",
-        whatsappConnected: false,
-        algorithmType: algorithmType ?? undefined,
-      });
-      setAgentId(newId);
-      loadFaqs(newId);
-      setStep(2);
+    if (step === 0) {
+      setStep(1);
       return;
     }
-    // Step 2 → save personality
-    if (step === 2 && agentId) {
-      updateAgent(agentId, { tone, personality: personality.trim() });
-    }
-    // Step 4 → save social links (non-empty only)
-    if (step === 4 && agentId && hasSocialLinks) {
-      const cleaned: Partial<SocialLinks> = {};
-      for (const [k, v] of Object.entries(socialLinks)) {
-        if (v.trim()) cleaned[k as keyof SocialLinks] = v.trim();
+
+    // Step 1 → create agent
+    if (step === 1) {
+      setIsCreating(true);
+      try {
+        const newId = await addAgent({
+          name: name.trim(),
+          hotelName: hotelName.trim(),
+          language,
+          tone: "friendly",
+          status: "setup",
+          personality: "",
+          whatsappConnected: false,
+          algorithmType: algorithmType ?? undefined,
+        });
+        if (webhookUrl.trim()) {
+          await updateAgent(newId, { webhookUrl: webhookUrl.trim() });
+        }
+        setAgentId(newId);
+        setStep(2);
+      } finally {
+        setIsCreating(false);
       }
-      updateAgent(agentId, { socialLinks: cleaned as SocialLinks });
+      return;
     }
-    setStep((s) => s + 1);
-  }
-
-  function handleSkipWhatsapp() {
-    setStep(6);
-  }
-
-  function handleDeploy() {
-    if (!agentId) return;
-    updateAgent(agentId, { status: "active" });
-    toast.success("Agente activado correctamente");
-    router.push(`/agents/${agentId}`);
-  }
-
-  function handleAddFaq() {
-    if (!faqQuestion.trim() || !faqAnswer.trim() || !agentId) return;
-    addFaq({
-      agentId,
-      question: faqQuestion.trim(),
-      answer: faqAnswer.trim(),
-      category: "",
-      isActive: true,
-    });
-    setFaqQuestion("");
-    setFaqAnswer("");
   }
 
   const hero = STEP_HEROES[step];
-
-  // Launch step summary items
-  const summaryItems = [
-    {
-      label: "Tipo de negocio",
-      done: !!algorithmType,
-      Icon: ShoppingCart,
-    },
-    {
-      label: "Datos del agente",
-      done: !!(name && hotelName),
-      Icon: Bot,
-    },
-    {
-      label: "Personalidad",
-      done: true,
-      Icon: Sparkles,
-    },
-    {
-      label: "Preguntas frecuentes",
-      done: agentFaqs.length >= 1,
-      Icon: HelpCircle,
-    },
-    {
-      label: "Redes sociales",
-      done: hasSocialLinks,
-      Icon: Globe,
-    },
-    {
-      label: "WhatsApp",
-      done: agent?.whatsappConnected ?? false,
-      Icon: Smartphone,
-    },
-  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
@@ -538,7 +294,7 @@ export default function NewAgentPage() {
           </div>
         )}
 
-        {/* Standard hero (steps 1–5) */}
+        {/* Standard hero (step 1) */}
         {hero && (
           <div className="flex items-center gap-3">
             <div
@@ -611,7 +367,7 @@ export default function NewAgentPage() {
           </div>
         )}
 
-        {/* ── Step 1 — Datos del agente (iOS grouped list) ─────── */}
+        {/* ── Step 1 — Datos del agente + webhook ─────────────── */}
         {step === 1 && (
           <div className="space-y-3">
             {/* iOS-style grouped input card */}
@@ -656,317 +412,57 @@ export default function NewAgentPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <p className="text-[15px] text-muted-foreground px-1">
-              Puedes cambiar estos datos en cualquier momento desde la configuración del agente.
-            </p>
-          </div>
-        )}
-
-        {/* ── Step 2 — Personalidad ───────────────────────────── */}
-        {step === 2 && (
-          <div className="space-y-3">
-            {/* Tone radio cards */}
-            {TONE_OPTIONS.map((opt) => {
-              const selected = tone === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setTone(opt.key)}
-                  className={`w-full text-left rounded-2xl p-4 ring-1 transition-all duration-200 active:scale-[0.99] shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${
-                    selected
-                      ? "ring-2 ring-orange-500 bg-orange-50/60 dark:bg-orange-500/10"
-                      : "ring-border bg-card"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-xl ${opt.iconBg}`}
-                      >
-                        <opt.Icon className={`h-[18px] w-[18px] ${opt.iconColor}`} />
-                      </div>
-                      <div>
-                        <p className="text-[17px] font-semibold leading-tight">
-                          {opt.label}
-                        </p>
-                        <p className="text-[14px] text-muted-foreground">
-                          {opt.description}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Radio indicator */}
-                    <div
-                      className={`h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        selected
-                          ? "border-orange-500 bg-orange-500"
-                          : "border-border"
-                      }`}
-                    >
-                      {selected && (
-                        <div className="h-2 w-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                  </div>
-                  {/* Chat bubble example */}
-                  <div className="bg-muted/70 rounded-xl px-3 py-2.5 ml-12">
-                    <p className="text-[15px] text-muted-foreground leading-relaxed">
-                      {opt.bubble}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Collapsible advanced personalization */}
-            <button
-              onClick={() => setShowPersonality((v) => !v)}
-              className="flex items-center gap-2 text-[16px] font-medium text-orange-500 active:opacity-60 transition-opacity py-1"
-            >
-              <span>{showPersonality ? "Ocultar personalización" : "Personalizar más"}</span>
-              <ChevronLeft
-                className={`h-4 w-4 transition-transform duration-200 ${
-                  showPersonality ? "rotate-90" : "-rotate-90"
-                }`}
-              />
-            </button>
-
-            {showPersonality && (
-              <div className="space-y-1.5">
-                <Label className="text-[15px] text-muted-foreground px-1">
-                  Instrucciones adicionales (opcional)
-                </Label>
-                <Textarea
-                  placeholder="Ej: Eres un asistente especializado en ventas que siempre sugiere el producto que mejor se adapta a las necesidades del cliente..."
-                  value={personality}
-                  onChange={(e) => setPersonality(e.target.value)}
-                  rows={4}
-                  className="resize-none text-[16px] rounded-2xl"
+              {/* Webhook URL */}
+              <div className="flex items-center gap-3.5 px-4 h-[58px]">
+                <Link className="h-5 w-5 text-blue-500 shrink-0" />
+                <input
+                  type="url"
+                  placeholder="https://tu-webhook.com/..."
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  className="flex-1 min-w-0 bg-transparent text-[17px] placeholder:text-muted-foreground/50 outline-none"
                 />
               </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Step 3 — FAQs ───────────────────────────────────── */}
-        {step === 3 && agentId && (
-          <div className="space-y-4">
-            {/* Existing FAQ list */}
-            {agentFaqs.length > 0 && (
-              <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden divide-y divide-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                {agentFaqs.map((faq) => (
-                  <div key={faq.id} className="flex items-start gap-3 px-4 py-3.5">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[16px] font-semibold leading-tight">
-                        {faq.question}
-                      </p>
-                      <p className="text-[15px] text-muted-foreground mt-0.5 line-clamp-2">
-                        {faq.answer}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => deleteFaq(faq.id)}
-                      className="shrink-0 text-muted-foreground hover:text-red-500 active:opacity-60 transition-all mt-0.5"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add FAQ form */}
-            <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              <div className="px-4 pt-4 space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-[15px] text-muted-foreground">
-                    {t.setupWizard.question}
-                  </Label>
-                  <input
-                    type="text"
-                    placeholder="¿Cuál es el horario de atención?"
-                    value={faqQuestion}
-                    onChange={(e) => setFaqQuestion(e.target.value)}
-                    className="w-full bg-transparent text-[17px] placeholder:text-muted-foreground/50 outline-none"
-                  />
-                </div>
-                <div className="h-px bg-border/60" />
-                <div className="space-y-1.5">
-                  <Label className="text-[15px] text-muted-foreground">
-                    {t.setupWizard.answer}
-                  </Label>
-                  <textarea
-                    placeholder="Atendemos de lunes a viernes de 9am a 6pm."
-                    value={faqAnswer}
-                    onChange={(e) => setFaqAnswer(e.target.value)}
-                    rows={3}
-                    className="w-full bg-transparent text-[16px] placeholder:text-muted-foreground/50 outline-none resize-none"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={handleAddFaq}
-                disabled={!faqQuestion.trim() || !faqAnswer.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-3 border-t border-border/60 text-[16px] font-semibold text-orange-500 disabled:text-muted-foreground disabled:opacity-50 active:bg-muted/50 transition-colors"
-              >
-                <Plus className="h-4 w-4" strokeWidth={2.5} />
-                {t.setupWizard.addFaq}
-              </button>
             </div>
 
-            {/* Empty state hint */}
-            {agentFaqs.length === 0 && (
-              <div className="rounded-2xl bg-amber-50 dark:bg-amber-500/10 ring-1 ring-amber-200 dark:ring-amber-500/20 px-4 py-3">
-                <p className="text-[15px] text-amber-700 dark:text-amber-400 font-medium">
-                  Agrega al menos una pregunta para continuar
-                </p>
-                <p className="text-[14px] text-amber-600/70 dark:text-amber-400/70 mt-0.5">
-                  Cuantas más preguntas agregues, mejor responde tu agente
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Step 4 — Redes sociales (iOS grouped list) ──────── */}
-        {step === 4 && (
-          <div className="space-y-3">
-            <div className="rounded-2xl bg-card ring-1 ring-border overflow-hidden divide-y divide-border/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              {SOCIAL_FIELDS.map((field) => (
-                <div key={field.key} className="flex items-center gap-3.5 px-4 h-[58px]">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${field.iconBg}`}
-                  >
-                    <field.Icon className={`h-4 w-4 ${field.iconColor}`} />
-                  </div>
-                  <input
-                    type="url"
-                    placeholder={field.placeholder}
-                    value={socialLinks[field.key]}
-                    onChange={(e) =>
-                      setSocialLinks((prev) => ({
-                        ...prev,
-                        [field.key]: e.target.value,
-                      }))
-                    }
-                    className="flex-1 min-w-0 bg-transparent text-[16px] placeholder:text-muted-foreground/40 outline-none"
-                  />
-                </div>
-              ))}
-            </div>
-            <p className="text-[15px] text-muted-foreground px-1">
-              Todos los campos son opcionales. El agente usará esta información para responder mejor.
+            <p className="text-[14px] text-muted-foreground px-1">
+              URL donde tu agente envía datos a n8n o tu sistema. <span className="text-muted-foreground/60">Opcional — puedes configurarlo después.</span>
             </p>
           </div>
         )}
 
-        {/* ── Step 5 — WhatsApp ───────────────────────────────── */}
-        {step === 5 && agentId && (
-          <div className="space-y-4">
-            <div className="rounded-2xl ring-1 ring-border overflow-hidden">
-              <ConnectionWizard
-                agentId={agentId}
-                isConnected={agent?.whatsappConnected ?? false}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 6 — Launch 🚀 ──────────────────────────────── */}
-        {step === 6 && agentId && (
-          <div className="flex flex-col items-center text-center">
+        {/* ── Step 2 — Éxito ───────────────────────────────────── */}
+        {step === 2 && agentId && (
+          <div className="flex flex-col items-center text-center pt-8">
             <style>{`
-              @keyframes rocketFloat {
-                0%,100% { transform: translateY(0px); }
-                50%      { transform: translateY(-10px); }
-              }
-              @keyframes exhaustPulse {
-                0%,100% { opacity:.5; transform:scaleX(1); }
-                50%      { opacity:.9; transform:scaleX(1.15); }
-              }
-              @keyframes orbitStar {
-                from { transform: rotate(0deg) translateX(52px); }
-                to   { transform: rotate(360deg) translateX(52px); }
-              }
-              @keyframes starTwinkle {
-                0%,100% { opacity:1; transform:scale(1); }
-                50%      { opacity:.3; transform:scale(.6); }
+              @keyframes scaleIn {
+                from { opacity:0; transform:scale(0.5); }
+                to   { opacity:1; transform:scale(1); }
               }
               @keyframes fadeUp {
                 from { opacity:0; transform:translateY(18px); }
                 to   { opacity:1; transform:translateY(0); }
               }
-              @keyframes glowPulse {
-                0%,100% { opacity:.25; transform:scale(1); }
-                50%      { opacity:.5; transform:scale(1.08); }
-              }
             `}</style>
 
-            {/* ── Rocket scene ── */}
-            <div className="relative flex flex-col items-center mt-6 mb-8">
-
-              {/* Glow orb */}
-              <div
-                className="absolute top-1/2 -translate-y-1/2 h-36 w-36 rounded-full bg-orange-400/30 blur-3xl"
-                style={{ animation: "glowPulse 3s ease-in-out infinite" }}
-              />
-
-              {/* Orbiting star */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-0 w-0">
-                <div style={{ animation: "orbitStar 6s linear infinite", transformOrigin: "0 0" }}>
-                  <span className="text-[12px] text-orange-300">✦</span>
-                </div>
-              </div>
-
-              {/* Static stars */}
-              <span
-                className="absolute top-0 right-6 text-[10px] text-orange-400"
-                style={{ animation: "starTwinkle 2s ease-in-out 0.3s infinite" }}
-              >✦</span>
-              <span
-                className="absolute top-6 left-2 text-[8px] text-orange-300/70"
-                style={{ animation: "starTwinkle 2.5s ease-in-out 0.7s infinite" }}
-              >✦</span>
-              <span
-                className="absolute bottom-8 right-2 text-[9px] text-orange-400/60"
-                style={{ animation: "starTwinkle 1.8s ease-in-out 1.1s infinite" }}
-              >✦</span>
-
-              {/* Rocket */}
-              <div className="relative" style={{ animation: "rocketFloat 3s ease-in-out infinite" }}>
-                <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_12px_40px_rgba(249,115,22,0.45)]">
-                  <Rocket className="h-12 w-12 text-white" strokeWidth={1.5} />
-                </div>
-                {/* WhatsApp badge — destino del cohete */}
-                <div className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] shadow-[0_4px_12px_rgba(37,211,102,0.5)] ring-2 ring-background">
-                  <IconWhatsApp className="h-5 w-5 text-white" />
-                </div>
-              </div>
-
-              {/* Exhaust trail */}
-              <div className="flex flex-col items-center gap-1 mt-2">
-                <div
-                  className="w-3 h-8 rounded-full bg-gradient-to-b from-orange-400/70 to-transparent"
-                  style={{ animation: "exhaustPulse 1.2s ease-in-out infinite" }}
-                />
-                <div
-                  className="w-1.5 h-4 rounded-full bg-gradient-to-b from-orange-300/40 to-transparent"
-                  style={{ animation: "exhaustPulse 1.2s ease-in-out 0.2s infinite" }}
-                />
-              </div>
+            {/* Success icon */}
+            <div
+              className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_12px_40px_rgba(16,185,129,0.4)]"
+              style={{ animation: "scaleIn .4s ease-out both" }}
+            >
+              <CheckCircle2 className="h-12 w-12 text-white" strokeWidth={1.5} />
             </div>
 
-            {/* ── Text ── */}
+            {/* Text */}
             <div
-              className="space-y-2 px-2"
-              style={{ animation: "fadeUp .6s ease-out .2s both" }}
+              className="space-y-2 mt-6 px-2"
+              style={{ animation: "fadeUp .5s ease-out .2s both" }}
             >
               <h1 className="text-[28px] font-bold tracking-tight leading-tight">
-                Activa tu agente
+                Agente creado
               </h1>
-              <p className="text-[16px] text-muted-foreground leading-snug max-w-[260px] mx-auto">
-                Al activarlo, <span className="font-medium text-[#25D366]">WhatsApp</span> empezará a responder mensajes de tus clientes automáticamente.
+              <p className="text-[16px] text-muted-foreground leading-snug max-w-[300px] mx-auto">
+                Configura personalidad, FAQs y productos desde el panel de tu agente.
               </p>
             </div>
           </div>
@@ -980,39 +476,21 @@ export default function NewAgentPage() {
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
       >
         <div className="max-w-lg mx-auto space-y-2.5">
-          {step === 6 ? (
-            <>
-              <Button
-                onClick={handleDeploy}
-                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
-              >
-                Activar agente
-              </Button>
-              <button
-                onClick={handleDeploy}
-                className="w-full py-2.5 text-[17px] font-medium text-white/50 active:opacity-60 transition-opacity"
-              >
-                Configurar más tarde
-              </button>
-            </>
+          {step === 2 ? (
+            <Button
+              onClick={() => router.push(`/agents/${agentId}`)}
+              className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
+            >
+              Ir a configurar
+            </Button>
           ) : (
-            <>
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinue}
-                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
-              >
-                {STEP_CTA[step]}
-              </Button>
-              {step === 5 && (
-                <button
-                  onClick={handleSkipWhatsapp}
-                  className="w-full py-2.5 text-[17px] font-medium text-white/50 active:opacity-60 transition-opacity"
-                >
-                  Conectar WhatsApp después
-                </button>
-              )}
-            </>
+            <Button
+              onClick={handleContinue}
+              disabled={!canContinue}
+              className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
+            >
+              {isCreating ? "Creando..." : STEP_CTA[step]}
+            </Button>
           )}
         </div>
       </div>

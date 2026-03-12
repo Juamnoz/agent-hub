@@ -425,6 +425,23 @@ export default function AgentDetailPage({
     setQvIsGenerating(false);
   }
 
+  async function handlePromptFileUpload(file: File) {
+    setQvIsGenerating(true);
+    try {
+      const text = await extractTextFromFile(file);
+      if (text.trim()) {
+        setQvPrompt((prev) => prev ? prev + "\n\n" + text.trim() : text.trim());
+        setQvAdvancedMode(true);
+        toast.success(`Contenido importado desde ${file.name}`);
+      } else {
+        toast.error("El archivo está vacío");
+      }
+    } catch {
+      toast.error("Error al leer el archivo");
+    }
+    setQvIsGenerating(false);
+  }
+
   function handleSavePrompt() {
     updateAgent(agent!.id, { personality: qvPrompt.trim(), systemPrompt: qvPrompt.trim() });
     setActiveQuickView(null);
@@ -1343,6 +1360,12 @@ export default function AgentDetailPage({
                         className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[14px] font-semibold bg-white/[0.07] ring-1 ring-white/[0.08] text-white/80 hover:bg-white/[0.08] active:scale-[0.98] transition-all disabled:opacity-50">
                         {qvIsGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generando...</> : <><Sparkles className="h-4 w-4" /> {qvPrompt ? "Regenerar con IA" : "Generar con IA"}</>}
                       </button>
+                      {/* Upload document */}
+                      <label className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[14px] font-semibold bg-white/[0.07] ring-1 ring-white/[0.08] text-white/80 hover:bg-white/[0.08] active:scale-[0.98] transition-all cursor-pointer">
+                        <Upload className="h-4 w-4" /> Subir documento
+                        <input type="file" accept=".txt,.csv,.docx,.pdf,.md" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePromptFileUpload(f); e.target.value = ""; }} />
+                      </label>
+                      <p className="text-[12px] text-white/30 text-center -mt-2">TXT, CSV, DOCX, PDF — el contenido se agregará al prompt</p>
                       {/* Preview bubble */}
                       {agent.algorithmType && (
                         <div className="rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 p-3">

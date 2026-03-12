@@ -1,0 +1,715 @@
+{
+  "updatedAt": "2026-01-13T21:12:50.405Z",
+  "createdAt": "2026-01-13T20:02:39.814Z",
+  "id": "i5SJLnEzS28acbZM",
+  "name": "Instagram Meta - DMs",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ivan",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        432,
+        112
+      ],
+      "id": "2c26d507-d7db-4a66-9cda-77680d396704",
+      "name": "Webhook",
+      "webhookId": "1a8427fb-5b9e-4a7a-9a0d-aad2d10cde65"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $node[\"Webhook\"].json.query[\"hub.challenge\"] }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        976,
+        48
+      ],
+      "id": "d415f99d-cf17-4170-baca-68dc4ee42889",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer el evento de Meta\nconst entry = $input.item.json.body.entry;\n\nif (!entry || entry.length === 0) {\n  return [];\n}\n\nconst results = [];\n\nfor (const item of entry) {\n  // Detectar si es mensaje (DM)\n  if (item.messaging) {\n    for (const msg of item.messaging) {\n      if (msg.message) {\n        results.push({\n          json: {\n            eventType: 'message',\n            platform: 'instagram',\n            senderId: msg.sender.id,\n            recipientId: msg.recipient.id,\n            messageId: msg.message.mid,\n            messageText: msg.message.text || '',\n            timestamp: msg.timestamp,\n            pageId: item.id\n          }\n        });\n      }\n    }\n  }\n  \n  // Detectar si es comentario\n  if (item.changes) {\n    for (const change of item.changes) {\n      if (change.field === 'comments' && change.value.item === 'comment') {\n        results.push({\n          json: {\n            eventType: 'comment',\n            platform: 'instagram',\n            commentId: change.value.id,\n            postId: change.value.media.id,\n            commentText: change.value.text,\n            userId: change.value.from.id,\n            username: change.value.from.username,\n            timestamp: change.value.created_time,\n            pageId: item.id\n          }\n        });\n      }\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        224
+      ],
+      "id": "e1f23569-433d-4405-b377-017ba91b147f",
+      "name": "Parsear Evento"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.eventType }}",
+              "operation": "equals",
+              "value2": "message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        224
+      ],
+      "id": "3c6b3579-a107-440c-b52e-ef605ea3f6b9",
+      "name": "¿Es Mensaje o Comentario?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Este nodo procesa el mensaje entrante y prepara la respuesta\nconst messageText = $input.item.json.messageText;\nconst senderId = $input.item.json.senderId;\nconst pageId = $input.item.json.pageId;\n\n// Aquí puedes agregar lógica de IA o reglas de negocio\nlet responseText = '';\n\nif (messageText.toLowerCase().includes('hola')) {\n  responseText = '¡Hola! 👋 Gracias por escribirnos. ¿En qué podemos ayudarte?';\n} else if (messageText.toLowerCase().includes('precio')) {\n  responseText = 'Con gusto te compartimos nuestros precios. ¿Qué producto te interesa?';\n} else if (messageText.toLowerCase().includes('horario')) {\n  responseText = 'Nuestro horario de atención es de Lunes a Viernes de 9am a 6pm.';\n} else {\n  responseText = 'Gracias por tu mensaje. Un asesor te responderá pronto.';\n}\n\nreturn [{\n  json: {\n    senderId: senderId,\n    pageId: pageId,\n    responseText: responseText,\n    originalMessage: messageText\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        112
+      ],
+      "id": "45441198-710f-41f5-bef6-c25305a8a2d3",
+      "name": "Procesar Mensaje"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v22.0/{{ $json.pageId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ {\"id\": $json.senderId} }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ {\"text\": $json.responseText} }}"
+            },
+            {
+              "name": "messaging_type",
+              "value": "RESPONSE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1648,
+        112
+      ],
+      "id": "bf14a6d1-bcd8-41d4-bc55-293962a665d2",
+      "name": "Enviar DM Instagram",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "stHzcDWod0x11YAK",
+          "name": "Header Auth account IG"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Este nodo procesa el comentario y prepara la respuesta\nconst commentText = $input.item.json.commentText;\nconst commentId = $input.item.json.commentId;\nconst username = $input.item.json.username;\n\n// Lógica para responder comentarios\nlet responseText = '';\n\nif (commentText.toLowerCase().includes('precio')) {\n  responseText = `@${username} Te enviamos la información por DM 📩`;\n} else if (commentText.toLowerCase().includes('disponible')) {\n  responseText = `@${username} ¡Sí está disponible! Te escribimos al DM con los detalles ✅`;\n} else if (commentText.toLowerCase().includes('gracias') || commentText.includes('❤️')) {\n  responseText = `@${username} ¡Gracias a ti! 🙌`;\n} else {\n  responseText = `@${username} ¡Gracias por tu comentario! Te respondemos por mensaje directo.`;\n}\n\nreturn [{\n  json: {\n    commentId: commentId,\n    responseText: responseText,\n    originalComment: commentText,\n    username: username\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        320
+      ],
+      "id": "944b32a8-14e4-4a30-ac39-efd5911e1cd6",
+      "name": "Procesar Comentario"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v22.0/{{ $json.commentId }}/replies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.responseText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1648,
+        320
+      ],
+      "id": "04b05dea-f16f-47a8-993b-c322742d5a0b",
+      "name": "Responder Comentario Instagram",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "stHzcDWod0x11YAK",
+          "name": "Header Auth account IG"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1856,
+        224
+      ],
+      "id": "5030ebf0-bf07-4f3a-a349-21f184b68d89",
+      "name": "Responder OK a Meta"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Parsear Evento": {
+      "main": [
+        [
+          {
+            "node": "¿Es Mensaje o Comentario?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Mensaje o Comentario?": {
+      "main": [
+        [
+          {
+            "node": "Procesar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Procesar Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Enviar DM Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar DM Instagram": {
+      "main": [
+        [
+          {
+            "node": "Responder OK a Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Comentario": {
+      "main": [
+        [
+          {
+            "node": "Responder Comentario Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Comentario Instagram": {
+      "main": [
+        [
+          {
+            "node": "Responder OK a Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "devwebhookn8n.automatesolutions.tech",
+            "user-agent": "facebookplatform/1.0 (+http://developers.facebook.com)",
+            "accept": "*/*",
+            "accept-encoding": "deflate, gzip",
+            "x-forwarded-for": "69.171.234.33",
+            "x-forwarded-host": "devwebhookn8n.automatesolutions.tech",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6caaad8e5ccb",
+            "x-real-ip": "69.171.234.33"
+          },
+          "params": {},
+          "query": {
+            "hub.mode": "subscribe",
+            "hub.challenge": "1361428434",
+            "hub.verify_token": "ivan"
+          },
+          "body": {},
+          "webhookUrl": "https://devwebhookn8n.automatesolutions.tech/webhook/ivan",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "384bb5be-d499-44bb-a04d-26ad1f529127",
+  "activeVersionId": "384bb5be-d499-44bb-a04d-26ad1f529127",
+  "versionCounter": 26,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-13T20:02:39.814Z",
+      "createdAt": "2026-01-13T20:02:39.814Z",
+      "role": "workflow:owner",
+      "workflowId": "i5SJLnEzS28acbZM",
+      "projectId": "Vt5Eyc9ezInhgXE9",
+      "project": {
+        "updatedAt": "2025-12-31T14:40:13.685Z",
+        "createdAt": "2025-12-31T14:38:28.497Z",
+        "id": "Vt5Eyc9ezInhgXE9",
+        "name": "AIC studio youtube <aicstudioai@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-31T14:38:28.497Z",
+            "createdAt": "2025-12-31T14:38:28.497Z",
+            "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+            "projectId": "Vt5Eyc9ezInhgXE9",
+            "user": {
+              "updatedAt": "2026-03-12T03:40:50.130Z",
+              "createdAt": "2025-12-31T14:38:27.198Z",
+              "id": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+              "email": "aicstudioai@gmail.com",
+              "firstName": "AIC studio",
+              "lastName": "youtube",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-31T14:40:51.287Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "automationGoalDevops": [
+                  "cloud-infrastructure-orchestration"
+                ],
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "devops",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "o8O9K4oWZdyaJqOT",
+                "userActivatedAt": 1772737355723,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1770152675504
+                },
+                "easyAIWorkflowOnboarded": true
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-03-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-01-13T20:58:34.234Z",
+    "createdAt": "2026-01-13T20:58:32.678Z",
+    "versionId": "384bb5be-d499-44bb-a04d-26ad1f529127",
+    "workflowId": "i5SJLnEzS28acbZM",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ivan",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          432,
+          112
+        ],
+        "id": "2c26d507-d7db-4a66-9cda-77680d396704",
+        "name": "Webhook",
+        "webhookId": "1a8427fb-5b9e-4a7a-9a0d-aad2d10cde65"
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $node[\"Webhook\"].json.query[\"hub.challenge\"] }}",
+          "options": {
+            "responseCode": 200,
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/plain"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          976,
+          48
+        ],
+        "id": "d415f99d-cf17-4170-baca-68dc4ee42889",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extraer el evento de Meta\nconst entry = $input.item.json.body.entry;\n\nif (!entry || entry.length === 0) {\n  return [];\n}\n\nconst results = [];\n\nfor (const item of entry) {\n  // Detectar si es mensaje (DM)\n  if (item.messaging) {\n    for (const msg of item.messaging) {\n      if (msg.message) {\n        results.push({\n          json: {\n            eventType: 'message',\n            platform: 'instagram',\n            senderId: msg.sender.id,\n            recipientId: msg.recipient.id,\n            messageId: msg.message.mid,\n            messageText: msg.message.text || '',\n            timestamp: msg.timestamp,\n            pageId: item.id\n          }\n        });\n      }\n    }\n  }\n  \n  // Detectar si es comentario\n  if (item.changes) {\n    for (const change of item.changes) {\n      if (change.field === 'comments' && change.value.item === 'comment') {\n        results.push({\n          json: {\n            eventType: 'comment',\n            platform: 'instagram',\n            commentId: change.value.id,\n            postId: change.value.media.id,\n            commentText: change.value.text,\n            userId: change.value.from.id,\n            username: change.value.from.username,\n            timestamp: change.value.created_time,\n            pageId: item.id\n          }\n        });\n      }\n    }\n  }\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          976,
+          224
+        ],
+        "id": "e1f23569-433d-4405-b377-017ba91b147f",
+        "name": "Parsear Evento"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.eventType }}",
+                "operation": "equals",
+                "value2": "message"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          224
+        ],
+        "id": "3c6b3579-a107-440c-b52e-ef605ea3f6b9",
+        "name": "¿Es Mensaje o Comentario?"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Este nodo procesa el mensaje entrante y prepara la respuesta\nconst messageText = $input.item.json.messageText;\nconst senderId = $input.item.json.senderId;\nconst pageId = $input.item.json.pageId;\n\n// Aquí puedes agregar lógica de IA o reglas de negocio\nlet responseText = '';\n\nif (messageText.toLowerCase().includes('hola')) {\n  responseText = '¡Hola! 👋 Gracias por escribirnos. ¿En qué podemos ayudarte?';\n} else if (messageText.toLowerCase().includes('precio')) {\n  responseText = 'Con gusto te compartimos nuestros precios. ¿Qué producto te interesa?';\n} else if (messageText.toLowerCase().includes('horario')) {\n  responseText = 'Nuestro horario de atención es de Lunes a Viernes de 9am a 6pm.';\n} else {\n  responseText = 'Gracias por tu mensaje. Un asesor te responderá pronto.';\n}\n\nreturn [{\n  json: {\n    senderId: senderId,\n    pageId: pageId,\n    responseText: responseText,\n    originalMessage: messageText\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1424,
+          112
+        ],
+        "id": "45441198-710f-41f5-bef6-c25305a8a2d3",
+        "name": "Procesar Mensaje"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v22.0/{{ $json.pageId }}/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "recipient",
+                "value": "={{ {\"id\": $json.senderId} }}"
+              },
+              {
+                "name": "message",
+                "value": "={{ {\"text\": $json.responseText} }}"
+              },
+              {
+                "name": "messaging_type",
+                "value": "RESPONSE"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1648,
+          112
+        ],
+        "id": "bf14a6d1-bcd8-41d4-bc55-293962a665d2",
+        "name": "Enviar DM Instagram",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "stHzcDWod0x11YAK",
+            "name": "Header Auth account IG"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Este nodo procesa el comentario y prepara la respuesta\nconst commentText = $input.item.json.commentText;\nconst commentId = $input.item.json.commentId;\nconst username = $input.item.json.username;\n\n// Lógica para responder comentarios\nlet responseText = '';\n\nif (commentText.toLowerCase().includes('precio')) {\n  responseText = `@${username} Te enviamos la información por DM 📩`;\n} else if (commentText.toLowerCase().includes('disponible')) {\n  responseText = `@${username} ¡Sí está disponible! Te escribimos al DM con los detalles ✅`;\n} else if (commentText.toLowerCase().includes('gracias') || commentText.includes('❤️')) {\n  responseText = `@${username} ¡Gracias a ti! 🙌`;\n} else {\n  responseText = `@${username} ¡Gracias por tu comentario! Te respondemos por mensaje directo.`;\n}\n\nreturn [{\n  json: {\n    commentId: commentId,\n    responseText: responseText,\n    originalComment: commentText,\n    username: username\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1424,
+          320
+        ],
+        "id": "944b32a8-14e4-4a30-ac39-efd5911e1cd6",
+        "name": "Procesar Comentario"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v22.0/{{ $json.commentId }}/replies",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.responseText }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1648,
+          320
+        ],
+        "id": "04b05dea-f16f-47a8-993b-c322742d5a0b",
+        "name": "Responder Comentario Instagram",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "stHzcDWod0x11YAK",
+            "name": "Header Auth account IG"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "OK",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1856,
+          224
+        ],
+        "id": "5030ebf0-bf07-4f3a-a349-21f184b68d89",
+        "name": "Responder OK a Meta"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          []
+        ]
+      },
+      "Parsear Evento": {
+        "main": [
+          [
+            {
+              "node": "¿Es Mensaje o Comentario?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "¿Es Mensaje o Comentario?": {
+        "main": [
+          [
+            {
+              "node": "Procesar Mensaje",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Procesar Comentario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Procesar Mensaje": {
+        "main": [
+          [
+            {
+              "node": "Enviar DM Instagram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar DM Instagram": {
+        "main": [
+          [
+            {
+              "node": "Responder OK a Meta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Procesar Comentario": {
+        "main": [
+          [
+            {
+              "node": "Responder Comentario Instagram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Responder Comentario Instagram": {
+        "main": [
+          [
+            {
+              "node": "Responder OK a Meta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "AIC studio youtube",
+    "name": "Version 384bb5be",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-13T20:58:34.233Z",
+        "id": 10,
+        "workflowId": "i5SJLnEzS28acbZM",
+        "versionId": "384bb5be-d499-44bb-a04d-26ad1f529127",
+        "event": "activated",
+        "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70"
+      }
+    ]
+  }
+}

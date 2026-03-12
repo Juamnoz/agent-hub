@@ -1,0 +1,870 @@
+{
+  "updatedAt": "2026-01-26T20:48:52.142Z",
+  "createdAt": "2026-01-26T20:25:44.260Z",
+  "id": "AViNLG8VyOFhOUQc",
+  "name": "campana",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-limpio",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        -80
+      ],
+      "id": "e596703c-96c0-4e5c-ba67-4fc6a50febbc",
+      "name": "Webhook",
+      "webhookId": "9eddade5-6939-4e96-85ca-2d0f0bb30048"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\":\"success\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -416,
+        -80
+      ],
+      "id": "7dbb9d2d-b8dc-4aa1-b28e-c43659793abb",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cbfe51b0-675b-44fa-a480-314219939690",
+              "leftValue": "={{ $('postgres').all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        -96
+      ],
+      "id": "57a962fb-486a-49fa-8ff1-fc4fd2c69919",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "registros",
+          "mode": "list",
+          "cachedResultName": "registros"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nombre_completo": "={{ $json.nombreCompleto }}",
+            "correo_electronico": "={{ $json.correoElectronico }}",
+            "telefono": "={{ $json.telefono }}",
+            "departamento": "={{ $json.departamento }}",
+            "municipio": "={{ $json.municipio }}",
+            "fuente_campana": "={{ $json.fuenteCampana }}",
+            "buyer_persona": "={{ $json.buyerPersona }}",
+            "acepta_politica_datos": "={{ $json.aceptaPoliticaDatos }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "timestamp": "={{ $json.timestamp }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nombre_completo",
+              "displayName": "nombre_completo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correo_electronico",
+              "displayName": "correo_electronico",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "departamento",
+              "displayName": "departamento",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "municipio",
+              "displayName": "municipio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fuente_campana",
+              "displayName": "fuente_campana",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buyer_persona",
+              "displayName": "buyer_persona",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "acepta_politica_datos",
+              "displayName": "acepta_politica_datos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        560,
+        -80
+      ],
+      "id": "f8ddc1ce-fe74-4a9e-9da2-b4bd0c71f183",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "CKPxQ5aeL7WnRpPE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el body que viene como string\nconst bodyString = $input.all()[0].json.body;\n\n// Parsearlo a objeto JSON\nconst data = JSON.parse(bodyString);\n\n// Devolver el objeto\nreturn [{ json: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -80
+      ],
+      "id": "e655c623-060e-4b35-8ff6-abdbcdc895c7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "registros",
+          "mode": "list",
+          "cachedResultName": "registros"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "correo_electronico",
+              "value": "={{ $json.correoElectronico }}"
+            },
+            {
+              "column": "telefono",
+              "value": "={{ $json.telefono }}"
+            }
+          ]
+        },
+        "combineConditions": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -32,
+        -224
+      ],
+      "id": "98e102ab-42bc-46e2-a995-89f2092d045f",
+      "name": "postgres",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "CKPxQ5aeL7WnRpPE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        -96
+      ],
+      "id": "2cbc8734-5099-4854-8d73-26b826b6c6bb",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "postgres",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "postgres": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "da19111a-d034-4750-931c-b4878cc82f86",
+  "activeVersionId": "584391c2-1ad3-4833-bd87-a0e4ae2e709b",
+  "versionCounter": 8,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-26T20:25:44.260Z",
+      "createdAt": "2026-01-26T20:25:44.260Z",
+      "role": "workflow:owner",
+      "workflowId": "AViNLG8VyOFhOUQc",
+      "projectId": "Vt5Eyc9ezInhgXE9",
+      "project": {
+        "updatedAt": "2025-12-31T14:40:13.685Z",
+        "createdAt": "2025-12-31T14:38:28.497Z",
+        "id": "Vt5Eyc9ezInhgXE9",
+        "name": "AIC studio youtube <aicstudioai@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-31T14:38:28.497Z",
+            "createdAt": "2025-12-31T14:38:28.497Z",
+            "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+            "projectId": "Vt5Eyc9ezInhgXE9",
+            "user": {
+              "updatedAt": "2026-03-12T03:40:50.130Z",
+              "createdAt": "2025-12-31T14:38:27.198Z",
+              "id": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+              "email": "aicstudioai@gmail.com",
+              "firstName": "AIC studio",
+              "lastName": "youtube",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-31T14:40:51.287Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "automationGoalDevops": [
+                  "cloud-infrastructure-orchestration"
+                ],
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "devops",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "o8O9K4oWZdyaJqOT",
+                "userActivatedAt": 1772737355723,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1770152675504
+                },
+                "easyAIWorkflowOnboarded": true
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-03-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-01-26T20:30:37.478Z",
+    "createdAt": "2026-01-26T20:30:35.094Z",
+    "versionId": "584391c2-1ad3-4833-bd87-a0e4ae2e709b",
+    "workflowId": "AViNLG8VyOFhOUQc",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "formulario-limpio",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -528,
+          -80
+        ],
+        "id": "e596703c-96c0-4e5c-ba67-4fc6a50febbc",
+        "name": "Webhook",
+        "webhookId": "9eddade5-6939-4e96-85ca-2d0f0bb30048"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\"status\":\"success\"}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          -368,
+          -80
+        ],
+        "id": "7dbb9d2d-b8dc-4aa1-b28e-c43659793abb",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cbfe51b0-675b-44fa-a480-314219939690",
+                "leftValue": "={{ $('postgres').all().length }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          400,
+          -112
+        ],
+        "id": "57a962fb-486a-49fa-8ff1-fc4fd2c69919",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "registros",
+            "mode": "list",
+            "cachedResultName": "registros"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "nombre_completo": "={{ $json.nombreCompleto }}",
+              "correo_electronico": "={{ $json.correoElectronico }}",
+              "telefono": "={{ $json.telefono }}",
+              "departamento": "={{ $json.departamento }}",
+              "municipio": "={{ $json.municipio }}",
+              "fuente_campana": "={{ $json.fuenteCampana }}",
+              "buyer_persona": "={{ $json.buyerPersona }}",
+              "acepta_politica_datos": "={{ $json.aceptaPoliticaDatos }}",
+              "source": "={{ $json.source }}",
+              "url": "={{ $json.url }}",
+              "timestamp": "={{ $json.timestamp }}"
+            },
+            "matchingColumns": [
+              "id"
+            ],
+            "schema": [
+              {
+                "id": "id",
+                "displayName": "id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "nombre_completo",
+                "displayName": "nombre_completo",
+                "required": true,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "correo_electronico",
+                "displayName": "correo_electronico",
+                "required": true,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "telefono",
+                "displayName": "telefono",
+                "required": true,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "departamento",
+                "displayName": "departamento",
+                "required": true,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "municipio",
+                "displayName": "municipio",
+                "required": true,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "fuente_campana",
+                "displayName": "fuente_campana",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "buyer_persona",
+                "displayName": "buyer_persona",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "acepta_politica_datos",
+                "displayName": "acepta_politica_datos",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "url",
+                "displayName": "url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "canBeUsedToMatch": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          544,
+          -32
+        ],
+        "id": "f8ddc1ce-fe74-4a9e-9da2-b4bd0c71f183",
+        "name": "Insert rows in a table",
+        "credentials": {
+          "postgres": {
+            "id": "CKPxQ5aeL7WnRpPE",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener el body que viene como string\nconst bodyString = $input.all()[0].json.body;\n\n// Parsearlo a objeto JSON\nconst data = JSON.parse(bodyString);\n\n// Devolver el objeto\nreturn [{ json: data }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -176,
+          -96
+        ],
+        "id": "e655c623-060e-4b35-8ff6-abdbcdc895c7",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "operation": "select",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "registros",
+            "mode": "list",
+            "cachedResultName": "registros"
+          },
+          "limit": 1,
+          "where": {
+            "values": [
+              {
+                "column": "correo_electronico",
+                "value": "={{ $json.correoElectronico }}"
+              },
+              {
+                "column": "telefono",
+                "value": "={{ $json.telefono }}"
+              }
+            ]
+          },
+          "combineConditions": "OR",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          0,
+          -64
+        ],
+        "id": "98e102ab-42bc-46e2-a995-89f2092d045f",
+        "name": "postgres",
+        "alwaysOutputData": false,
+        "credentials": {
+          "postgres": {
+            "id": "CKPxQ5aeL7WnRpPE",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          128,
+          -208
+        ],
+        "id": "2cbc8734-5099-4854-8d73-26b826b6c6bb",
+        "name": "Merge"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Webhook": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Insert rows in a table",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "postgres",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "postgres": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "AIC studio youtube",
+    "name": "Version 584391c2",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-26T20:30:37.472Z",
+        "id": 11,
+        "workflowId": "AViNLG8VyOFhOUQc",
+        "versionId": "584391c2-1ad3-4833-bd87-a0e4ae2e709b",
+        "event": "activated",
+        "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70"
+      }
+    ]
+  }
+}

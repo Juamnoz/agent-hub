@@ -1,0 +1,788 @@
+{
+  "updatedAt": "2026-01-29T23:44:29.529Z",
+  "createdAt": "2026-01-29T20:30:11.098Z",
+  "id": "1sJKefxmZ6mAPjPo",
+  "name": "Instagram - Auto Respuesta Comentarios (Todas las publicaciones)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "functionCode": "// Verificación inicial del webhook de Meta\nconst query = $input.item.json.query || {};\nconst mode = query['hub.mode'];\nconst token = query['hub.verify_token'];\nconst challenge = query['hub.challenge'];\n\n// Si es verificación de Meta, responder con challenge\nif (mode === 'subscribe' && token === 'Juan_munoz') {\n  return [\n    {\n      json: {\n        response: parseInt(challenge),\n        verification: true\n      }\n    }\n  ];\n}\n\n// Si no hay datos de comentario, salir\nif (!$input.item.json.entry || !$input.item.json.entry[0]) {\n  return [];\n}\n\n// Extraer datos del comentario\nconst entry = $input.item.json.entry[0];\nconst changes = entry.changes && entry.changes[0] ? entry.changes[0] : null;\n\nif (!changes || !changes.value) {\n  return [];\n}\n\nconst value = changes.value;\n\nreturn [\n  {\n    json: {\n      comment_id: value.id,\n      comment_text: value.text || '',\n      from_id: value.from ? value.from.id : '',\n      from_username: value.from ? value.from.username : '',\n      media_id: value.media ? value.media.id : '',\n      media_type: value.media ? value.media.media_product_type : '',\n      timestamp: entry.time || new Date().toISOString(),\n      raw_data: $input.item.json\n    }\n  }\n];"
+      },
+      "id": "c3fabe04-482f-47bd-9648-7bfd22bd6528",
+      "name": "Procesar Comentario",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.comment_text.toLowerCase() }}",
+              "operation": "contains",
+              "value2": "CREDENCIAL"
+            }
+          ]
+        }
+      },
+      "id": "3bedea2c-c4ad-4ad4-92a4-4b18eb064e63",
+      "name": "Verificar Palabra Clave",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAVRBz0RNZAsBPyWDMmOa8DRoupjUw8gkUICNCaMqtDAJUC5iZClEc0sxaNZC86K8NVmCJdbzl2QOzx6fOYLCVLBMPflTPSLrmeS0P8e8CKufM0QEMpWFLqe8ZCthUFbAqfKHuwI9R8RPMJx2zZCtOugEYng9xPSlfRldGZCXsbX17IdJk0153nZCoUba7deurVGgZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ { \"id\": $json.from_id } }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ { \"text\": \"¡Hola \" + $json.from_username + \"! 👋\\n\\nAquí está la información que solicitaste:\\n\\n🔗 https://devsupabase.automatesolutions.tech/storage/v1/object/public/whatsapp-image/difusion.jpg\\n\\n¡Gracias por tu interés! Si tienes alguna pregunta, estoy aquí para ayudarte. 😊\" } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9552bd17-fdf8-434c-84f8-511f60431215",
+      "name": "Enviar DM Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -112,
+        -112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "stHzcDWod0x11YAK",
+          "name": "Header Auth account IG"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.comment_id }}/replies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAVRBz0RNZAsBPyWDMmOa8DRoupjUw8gkUICNCaMqtDAJUC5iZClEc0sxaNZC86K8NVmCJdbzl2QOzx6fOYLCVLBMPflTPSLrmeS0P8e8CKufM0QEMpWFLqe8ZCthUFbAqfKHuwI9R8RPMJx2zZCtOugEYng9xPSlfRldGZCXsbX17IdJk0153nZCoUba7deurVGgZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "✅ ¡Listo @{{ $json.from_username }}! Te enviamos la información por mensaje privado. Revisa tu bandeja de entrada 📩"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9cc3ad5e-d937-443f-9565-fe87fd3be1b2",
+      "name": "Responder Comentario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -112,
+        64
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "j6X485CzbFvFu011",
+          "name": "WPP auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "user",
+              "value": "={{ $json.from_username }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $json.from_id }}"
+            },
+            {
+              "name": "media_id",
+              "value": "={{ $json.media_id }}"
+            },
+            {
+              "name": "keyword_detected",
+              "value": "info"
+            },
+            {
+              "name": "comment_text",
+              "value": "={{ $json.comment_text }}"
+            },
+            {
+              "name": "dm_sent",
+              "value": "true"
+            },
+            {
+              "name": "comment_replied",
+              "value": "true"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "95ea94f8-7d29-474b-93c6-feaf7e7fa2ad",
+      "name": "Log de Éxito",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        352,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "ignored"
+            },
+            {
+              "name": "reason",
+              "value": "Palabra clave no detectada"
+            },
+            {
+              "name": "comment_text",
+              "value": "={{ $json.comment_text }}"
+            },
+            {
+              "name": "user",
+              "value": "={{ $json.from_username }}"
+            },
+            {
+              "name": "media_id",
+              "value": "={{ $json.media_id }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "28a4e133-2edc-494c-94aa-ebf5b7ccb93f",
+      "name": "Log Ignorado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "path": "comentarios",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -720,
+        -688
+      ],
+      "id": "251fd45e-c10e-4e96-93c9-ddedf414bec5",
+      "name": "Webhook",
+      "webhookId": "60933742-a4d2-41c0-b0d5-555c51aee203"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -512,
+        -688
+      ],
+      "id": "ff829bbc-02c8-4506-b9e8-5e753fd3656b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "comentarios",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -768,
+        160
+      ],
+      "id": "7eb45346-b679-435c-95c4-295dc58cd690",
+      "name": "Webhook1",
+      "webhookId": "c9e0d451-306f-46a6-a8f0-cd9c54cd3818"
+    }
+  ],
+  "connections": {
+    "Procesar Comentario": {
+      "main": [
+        [
+          {
+            "node": "Verificar Palabra Clave",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Palabra Clave": {
+      "main": [
+        [
+          {
+            "node": "Enviar DM Instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Responder Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Ignorado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar DM Instagram": {
+      "main": [
+        [
+          {
+            "node": "Log de Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Comentario": {
+      "main": [
+        [
+          {
+            "node": "Log de Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Procesar Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "c1d46dc3-0b85-489d-b4af-bc011b8fbbac",
+  "activeVersionId": "c1d46dc3-0b85-489d-b4af-bc011b8fbbac",
+  "versionCounter": 40,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-29T20:30:11.098Z",
+      "createdAt": "2026-01-29T20:30:11.098Z",
+      "role": "workflow:owner",
+      "workflowId": "1sJKefxmZ6mAPjPo",
+      "projectId": "Vt5Eyc9ezInhgXE9",
+      "project": {
+        "updatedAt": "2025-12-31T14:40:13.685Z",
+        "createdAt": "2025-12-31T14:38:28.497Z",
+        "id": "Vt5Eyc9ezInhgXE9",
+        "name": "AIC studio youtube <aicstudioai@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-31T14:38:28.497Z",
+            "createdAt": "2025-12-31T14:38:28.497Z",
+            "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+            "projectId": "Vt5Eyc9ezInhgXE9",
+            "user": {
+              "updatedAt": "2026-03-12T03:40:50.130Z",
+              "createdAt": "2025-12-31T14:38:27.198Z",
+              "id": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+              "email": "aicstudioai@gmail.com",
+              "firstName": "AIC studio",
+              "lastName": "youtube",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-31T14:40:51.287Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "automationGoalDevops": [
+                  "cloud-infrastructure-orchestration"
+                ],
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "devops",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "o8O9K4oWZdyaJqOT",
+                "userActivatedAt": 1772737355723,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1770152675504
+                },
+                "easyAIWorkflowOnboarded": true
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-03-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-01-29T23:44:32.429Z",
+    "createdAt": "2026-01-29T23:44:29.531Z",
+    "versionId": "c1d46dc3-0b85-489d-b4af-bc011b8fbbac",
+    "workflowId": "1sJKefxmZ6mAPjPo",
+    "nodes": [
+      {
+        "parameters": {
+          "functionCode": "// Verificación inicial del webhook de Meta\nconst query = $input.item.json.query || {};\nconst mode = query['hub.mode'];\nconst token = query['hub.verify_token'];\nconst challenge = query['hub.challenge'];\n\n// Si es verificación de Meta, responder con challenge\nif (mode === 'subscribe' && token === 'Juan_munoz') {\n  return [\n    {\n      json: {\n        response: parseInt(challenge),\n        verification: true\n      }\n    }\n  ];\n}\n\n// Si no hay datos de comentario, salir\nif (!$input.item.json.entry || !$input.item.json.entry[0]) {\n  return [];\n}\n\n// Extraer datos del comentario\nconst entry = $input.item.json.entry[0];\nconst changes = entry.changes && entry.changes[0] ? entry.changes[0] : null;\n\nif (!changes || !changes.value) {\n  return [];\n}\n\nconst value = changes.value;\n\nreturn [\n  {\n    json: {\n      comment_id: value.id,\n      comment_text: value.text || '',\n      from_id: value.from ? value.from.id : '',\n      from_username: value.from ? value.from.username : '',\n      media_id: value.media ? value.media.id : '',\n      media_type: value.media ? value.media.media_product_type : '',\n      timestamp: entry.time || new Date().toISOString(),\n      raw_data: $input.item.json\n    }\n  }\n];"
+        },
+        "id": "c3fabe04-482f-47bd-9648-7bfd22bd6528",
+        "name": "Procesar Comentario",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          -544,
+          160
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.comment_text.toLowerCase() }}",
+                "operation": "contains",
+                "value2": "CREDENCIAL"
+              }
+            ]
+          }
+        },
+        "id": "3bedea2c-c4ad-4ad4-92a4-4b18eb064e63",
+        "name": "Verificar Palabra Clave",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -320,
+          160
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.facebook.com/v19.0/me/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer EAAVRBz0RNZAsBPyWDMmOa8DRoupjUw8gkUICNCaMqtDAJUC5iZClEc0sxaNZC86K8NVmCJdbzl2QOzx6fOYLCVLBMPflTPSLrmeS0P8e8CKufM0QEMpWFLqe8ZCthUFbAqfKHuwI9R8RPMJx2zZCtOugEYng9xPSlfRldGZCXsbX17IdJk0153nZCoUba7deurVGgZDZD"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "recipient",
+                "value": "={{ { \"id\": $json.from_id } }}"
+              },
+              {
+                "name": "message",
+                "value": "={{ { \"text\": \"¡Hola \" + $json.from_username + \"! 👋\\n\\nAquí está la información que solicitaste:\\n\\n🔗 https://devsupabase.automatesolutions.tech/storage/v1/object/public/whatsapp-image/difusion.jpg\\n\\n¡Gracias por tu interés! Si tienes alguna pregunta, estoy aquí para ayudarte. 😊\" } }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "9552bd17-fdf8-434c-84f8-511f60431215",
+        "name": "Enviar DM Instagram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          -112,
+          -112
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "stHzcDWod0x11YAK",
+            "name": "Header Auth account IG"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v19.0/{{ $json.comment_id }}/replies",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer EAAVRBz0RNZAsBPyWDMmOa8DRoupjUw8gkUICNCaMqtDAJUC5iZClEc0sxaNZC86K8NVmCJdbzl2QOzx6fOYLCVLBMPflTPSLrmeS0P8e8CKufM0QEMpWFLqe8ZCthUFbAqfKHuwI9R8RPMJx2zZCtOugEYng9xPSlfRldGZCXsbX17IdJk0153nZCoUba7deurVGgZDZD"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "✅ ¡Listo @{{ $json.from_username }}! Te enviamos la información por mensaje privado. Revisa tu bandeja de entrada 📩"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "9cc3ad5e-d937-443f-9565-fe87fd3be1b2",
+        "name": "Responder Comentario",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          -112,
+          64
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "j6X485CzbFvFu011",
+            "name": "WPP auth"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "status",
+                "value": "success"
+              },
+              {
+                "name": "user",
+                "value": "={{ $json.from_username }}"
+              },
+              {
+                "name": "user_id",
+                "value": "={{ $json.from_id }}"
+              },
+              {
+                "name": "media_id",
+                "value": "={{ $json.media_id }}"
+              },
+              {
+                "name": "keyword_detected",
+                "value": "info"
+              },
+              {
+                "name": "comment_text",
+                "value": "={{ $json.comment_text }}"
+              },
+              {
+                "name": "dm_sent",
+                "value": "true"
+              },
+              {
+                "name": "comment_replied",
+                "value": "true"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "95ea94f8-7d29-474b-93c6-feaf7e7fa2ad",
+        "name": "Log de Éxito",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          352,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "status",
+                "value": "ignored"
+              },
+              {
+                "name": "reason",
+                "value": "Palabra clave no detectada"
+              },
+              {
+                "name": "comment_text",
+                "value": "={{ $json.comment_text }}"
+              },
+              {
+                "name": "user",
+                "value": "={{ $json.from_username }}"
+              },
+              {
+                "name": "media_id",
+                "value": "={{ $json.media_id }}"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $now.toISO() }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "28a4e133-2edc-494c-94aa-ebf5b7ccb93f",
+        "name": "Log Ignorado",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 2,
+        "position": [
+          -96,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "path": "comentarios",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -720,
+          -688
+        ],
+        "id": "251fd45e-c10e-4e96-93c9-ddedf414bec5",
+        "name": "Webhook",
+        "webhookId": "60933742-a4d2-41c0-b0d5-555c51aee203"
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $json.query['hub.challenge'] }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          -512,
+          -688
+        ],
+        "id": "ff829bbc-02c8-4506-b9e8-5e753fd3656b",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "comentarios",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -768,
+          160
+        ],
+        "id": "7eb45346-b679-435c-95c4-295dc58cd690",
+        "name": "Webhook1",
+        "webhookId": "c9e0d451-306f-46a6-a8f0-cd9c54cd3818"
+      }
+    ],
+    "connections": {
+      "Procesar Comentario": {
+        "main": [
+          [
+            {
+              "node": "Verificar Palabra Clave",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar Palabra Clave": {
+        "main": [
+          [
+            {
+              "node": "Enviar DM Instagram",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Responder Comentario",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log Ignorado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar DM Instagram": {
+        "main": [
+          [
+            {
+              "node": "Log de Éxito",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Responder Comentario": {
+        "main": [
+          [
+            {
+              "node": "Log de Éxito",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook1": {
+        "main": [
+          [
+            {
+              "node": "Procesar Comentario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "AIC studio youtube",
+    "name": "Version c1d46dc3",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-01-29T23:44:32.427Z",
+        "id": 60,
+        "workflowId": "1sJKefxmZ6mAPjPo",
+        "versionId": "c1d46dc3-0b85-489d-b4af-bc011b8fbbac",
+        "event": "activated",
+        "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70"
+      }
+    ]
+  }
+}

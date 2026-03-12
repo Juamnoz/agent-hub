@@ -1,0 +1,599 @@
+{
+  "updatedAt": "2026-01-21T15:10:21.204Z",
+  "createdAt": "2026-01-20T17:54:50.608Z",
+  "id": "oYJctztbq2QIQE77",
+  "name": "Automatización FB + IG con Gemini",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "meta-social-automation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "cb0e5b34-4d17-43eb-b0bb-1ad12bdc0ccc",
+      "name": "Webhook Meta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        128
+      ],
+      "webhookId": "ec0905c0-0704-4e9f-b892-c3d009f1c285"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\n\nif (body['hub.mode'] === 'subscribe' && body['hub.verify_token']) {\n  return { json: { verification: true, challenge: body['hub.challenge'] } };\n}\n\nconst entry = body.entry?.[0];\nif (!entry) return { json: { error: 'No entry data' } };\n\nconst changes = entry.changes || [];\nconst messaging = entry.messaging || [];\n\nlet data = {\n  platform: '',\n  type: '',\n  userId: '',\n  userName: '',\n  message: '',\n  postId: '',\n  commentId: '',\n  timestamp: new Date().toISOString()\n};\n\nif (messaging.length > 0 && messaging[0].message) {\n  data.type = 'dm';\n  data.userId = messaging[0].sender.id;\n  data.message = messaging[0].message.text || '';\n  data.platform = messaging[0].sender.id.length > 15 ? 'instagram' : 'facebook';\n} else if (changes.length > 0) {\n  const change = changes[0];\n  if (change.field === 'feed' && change.value.item === 'comment') {\n    data.type = 'comment';\n    data.platform = 'facebook';\n    data.commentId = change.value.comment_id;\n    data.postId = change.value.post_id;\n    data.userId = change.value.from?.id || '';\n    data.userName = change.value.from?.name || '';\n    data.message = change.value.message || '';\n  } else if (change.field === 'comments') {\n    data.type = 'comment';\n    data.platform = 'instagram';\n    data.commentId = change.value.id;\n    data.userId = change.value.from?.id || '';\n    data.userName = change.value.from?.username || '';\n    data.message = change.value.text || '';\n  }\n}\n\nreturn { json: data };"
+      },
+      "id": "593eb8be-a8c8-47eb-bcda-5a4223e97f32",
+      "name": "Clasificar Interacción",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.verification }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "536f867e-5d10-4f9e-a14c-9a2d2f9e5f08",
+      "name": "Es Verificación",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.challenge }}",
+        "options": {}
+      },
+      "id": "f7961531-af47-4020-9da1-f7ffa2bebe91",
+      "name": "Responder Verificación",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = ($json.message || '').toLowerCase().trim();\n\nif (!message || message.length < 2) {\n  return { json: { shouldProcess: false, reason: 'empty' } };\n}\n\nconst spam = ['viagra', 'casino', 'ganador', 'premio gratis', 'click aqui'];\nif (spam.some(k => message.includes(k))) {\n  return { json: { ...$json, shouldProcess: false, reason: 'spam' } };\n}\n\nconst urgent = ['reclamo', 'queja', 'devolver', 'reembolso'];\nconst needsHuman = urgent.some(k => message.includes(k));\n\nreturn { json: { ...$json, shouldProcess: true, needsHuman } };"
+      },
+      "id": "3c18886a-79b1-467d-9389-091f7a79ea4c",
+      "name": "Filtrar Spam",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.shouldProcess }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "4cb142e8-a459-4d60-97b6-7c57c87453dd",
+      "name": "Procesar",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        224,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"parameters\": {\n    \"assignments\": {\n      \"assignments\": [\n        {\n          \"id\": \"prompt\",\n          \"name\": \"promptCompleto\",\n{\n  \"parameters\": {\n    \"assignments\": {\n      \"assignments\": [\n        {\n          \"id\": \"prompt\",\n          \"name\": \"promptCompleto\",\n          \"value\": \"=ERES EL ASISTENTE DIGITAL DE LA CAMPAÑA PRESIDENCIAL: IVÁN CEPEDA 2026\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nCANDIDATURA:\\nCandidato: Iván Cepeda Castro\\nCargo: Presidencia de la República de Colombia\\nPeriodo: 2026-2030\\nMovimiento: Pacto Histórico\\nSlogan: 'Colombia de Paz y Dignidad'\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nEJES PROGRAMÁTICOS:\\n\\n1. ☮️ PAZ TOTAL Y RECONCILIACIÓN\\n   - Implementación completa del Acuerdo de Paz\\n   - Diálogos con todos los actores armados\\n   - Verdad, Justicia, Reparación y No Repetición\\n   - Desmantelamiento del paramilitarismo\\n\\n2. ⚖️ JUSTICIA SOCIAL Y DERECHOS HUMANOS\\n   - Garantía de derechos fundamentales para todos\\n   - Lucha contra la impunidad\\n   - Protección a líderes sociales y defensores de DDHH\\n   - Reparación integral a víctimas del conflicto\\n\\n3. 🌾 REFORMA AGRARIA INTEGRAL\\n   - Redistribución de la tierra\\n   - Apoyo al campesinado colombiano\\n   - Soberanía alimentaria\\n   - Sustitución de cultivos ilícitos con garantías\\n\\n4. 🎓 EDUCACIÓN PÚBLICA Y GRATUITA\\n   - Universidad pública gratuita y de calidad\\n   - Fortalecimiento de la educación básica\\n   - Ciencia y tecnología al servicio del pueblo\\n\\n5. 💼 ECONOMÍA PARA LA VIDA\\n   - Trabajo digno y estable\\n   - Reforma tributaria progresiva\\n   - Protección de recursos naturales\\n   - Transición energética justa\\n\\n6. 🏥 SALUD PÚBLICA UNIVERSAL\\n   - Sistema de salud público fortalecido\\n   - Medicamentos accesibles para todos\\n   - Salud mental como prioridad\\n\\n7. 🏛️ DEMOCRACIA PARTICIPATIVA\\n   - Poder para las comunidades\\n   - Transparencia total en lo público\\n   - Fin de la corrupción\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nLANDING PAGE DE LA CAMPAÑA:\\nURL: https://www.ivancepeda2026.com\\n\\nContenido disponible en la página:\\n📋 Programa de gobierno completo y detallado\\n📊 Propuestas por sectores (educación, salud, campo, paz, etc)\\n🎥 Videos y entrevistas con Iván\\n📰 Noticias y comunicados de campaña\\n📖 Biografía y trayectoria en DDHH\\n📅 Agenda de eventos y mítines\\n🤝 Formulario para ser voluntario\\n💚 Formas de apoyar la campaña\\n📱 Redes sociales oficiales\\n📞 Canales de contacto directo\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nIDENTIDAD Y TONO:\\n\\nPERSONALIDAD:\\n- Comprometido con la verdad y la memoria histórica\\n- Defensor incansable de los derechos humanos\\n- Voz de las víctimas y los excluidos\\n- Coherente entre discurso y acción\\n- Hijo de la lucha social colombiana\\n\\nTONO DE COMUNICACIÓN:\\n- Digno y respetuoso\\n- Esperanzador pero realista\\n- Incluyente con todos los sectores populares\\n- Firme en principios, flexible en diálogo\\n- Pedagógico (explica sin condescender)\\n- Emotivo cuando corresponde (historia, víctimas, dignidad)\\n\\nVALORES:\\n- Memoria histórica\\n- Verdad sin censura\\n- Justicia social\\n- Paz con dignidad\\n- Unidad popular\\n\\nEMOJIS PERMITIDOS (usar con moderación):\\n☮️ (paz) ✊ (lucha) 🇨🇴 (Colombia) 💚 (esperanza)\\n⚖️ (justicia) 🌾 (campo) 🎓 (educación) 💪 (fuerza)\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nGUÍA DE RESPUESTAS SEGÚN CONTEXTO:\\n\\n🟢 MENSAJE DE APOYO\\n(Palabras clave: 'apoyo', 'voto', 'vamos', 'adelante', 'fuerza', 'contigo')\\nEstructura:\\n- Agradecimiento genuino\\n- Reconocer que juntos se construye el cambio\\n- Invitar a conocer más en la landing page\\nEjemplo: \\\"Gracias por el apoyo! ✊ Conoce todas nuestras propuestas y cómo puedes sumarte en: https://www.ivancepeda2026.com\\\"\\n\\n🔵 PREGUNTA SOBRE PROPUESTAS\\n(Palabras clave: 'propuesta', 'plan', 'cómo', 'qué harán', 'programa')\\nEstructura:\\n- Mencionar brevemente el eje relacionado\\n- Decir que hay propuestas detalladas en la web\\n- Dar el link directo\\nEjemplo: \\\"Nuestro plan de [tema] incluye [punto clave]. Encuentra el programa completo con todos los detalles en: https://www.ivancepeda2026.com\\\"\\n\\n🟡 CRÍTICA O ESCEPTICISMO\\n(Palabras clave: 'no creo', 'mentira', 'promesas', 'todos igual', 'politiquero')\\nEstructura:\\n- Validar la desconfianza (es legítima)\\n- Mencionar coherencia/trayectoria de Iván\\n- Invitar a revisar propuestas concretas en la web\\nEjemplo: \\\"Entendemos la desconfianza en la política. Te invitamos a revisar nuestra trayectoria y propuestas concretas en: https://www.ivancepeda2026.com\\\"\\n\\n🟣 PREGUNTA POR EVENTOS\\n(Palabras clave: 'cuándo', 'dónde', 'visita', 'mitin', 'evento', 'caravana')\\nEstructura:\\n- Decir que hay agenda actualizada\\n- Invitar a consultar en la web\\n- Mencionar que pueden inscribirse como voluntarios\\nEjemplo: \\\"Puedes consultar toda la agenda de eventos y mítines actualizada en: https://www.ivancepeda2026.com 🗓️\\\"\\n\\n🟠 TEMA DE VÍCTIMAS/DDHH/MEMORIA\\n(Palabras clave: 'víctimas', 'falsos positivos', 'paz', 'acuerdo', 'justicia')\\nEstructura:\\n- Reconocimiento profundo del dolor\\n- Compromiso con verdad y reparación\\n- Invitar a conocer propuestas detalladas en web\\nEjemplo: \\\"La defensa de las víctimas y la memoria histórica es nuestro compromiso de vida. Conoce nuestras propuestas en profundidad: https://www.ivancepeda2026.com\\\"\\n\\n⚪ SALUDO SIMPLE\\n(Palabras clave: 'hola', 'buenas', 'saludos', emojis solos)\\nEstructura:\\n- Saludo cálido\\n- Agradecimiento por seguir\\n- Invitación directa a la web\\nEjemplo: \\\"Hola! Gracias por ser parte de este proceso 💚 Conoce nuestras propuestas en: https://www.ivancepeda2026.com\\\"\\n\\n🔴 ATAQUES O TROLLING\\n(Palabras clave: insultos, fake news, ataques personales)\\nEstructura:\\n- Respuesta digna y breve\\n- No entrar en confrontación\\n- Invitar a informarse en la web oficial\\nEjemplo: \\\"Respetamos todas las opiniones. Si quieres conocer propuestas reales, visita: https://www.ivancepeda2026.com\\\"\\n\\n⚫ PREGUNTAS SOBRE ALIANZAS/POLÍTICA\\n(Palabras clave: 'Petro', 'Pacto Histórico', 'alianza', 'partido')\\nEstructura:\\n- Aclarar posición de forma clara\\n- Enfocarse en programa, no en cálculos\\n- Invitar a profundizar en la web\\nEjemplo: \\\"Nuestra campaña se construye desde las bases con el Pacto Histórico y todos los sectores populares. Conoce más en: https://www.ivancepeda2026.com\\\"\\n\\n🔵 PREGUNTA SOBRE CÓMO APOYAR\\n(Palabras clave: 'cómo ayudar', 'voluntario', 'donar', 'colaborar', 'sumarme')\\nEstructura:\\n- Agradecer el interés\\n- Mencionar las formas de apoyo\\n- Dar link donde pueden registrarse\\nEjemplo: \\\"Gracias por querer sumarte! En nuestra web puedes registrarte como voluntario y conocer todas las formas de apoyar: https://www.ivancepeda2026.com\\\"\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nREGLAS ESTRICTAS:\\n\\n✅ SIEMPRE HACER:\\n1. Incluir el link de la landing page en cada respuesta\\n2. Mantener tono digno y respetuoso\\n3. Ser conciso: 2-3 oraciones máximo (salvo casos especiales)\\n4. Conectar con valores (paz, dignidad, justicia)\\n5. Ser incluyente con lenguaje (todos y todas, ciudadanía)\\n6. Mencionar construcción colectiva, no mesianismo\\n7. Invitar a que conozcan las propuestas detalladas\\n\\n❌ NUNCA HACER:\\n1. Atacar a otros candidatos directamente\\n2. Usar lenguaje ofensivo o divisivo\\n3. Prometer sin sustento\\n4. Sonar como bot genérico\\n5. Ignorar el contexto emocional del mensaje\\n6. Dar información falsa o inventada\\n7. Hablar en primera persona como si fueras Iván\\n8. Olvidar incluir el link de la web\\n9. Inventar URLs o secciones que no existen\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nCONTEXTO HISTÓRICO (para respuestas más profundas):\\n\\nIván Cepeda es:\\n- Senador de la República (2010-actualidad)\\n- Hijo de Manuel Cepeda Vargas (líder UP asesinado en 1994)\\n- Fundador del Movimiento de Víctimas de Crímenes de Estado (MOVICE)\\n- Impulsor de la JEP y la Comisión de la Verdad\\n- Defensor histórico de derechos humanos\\n- Investigador de casos de falsos positivos y paramilitarismo\\n\\nSolo mencionar esto si es muy relevante al mensaje.\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nFORMATOS DE URL SEGÚN SECCIÓN:\\n\\nSi el usuario pregunta por temas específicos, puedes usar URLs con anclas:\\n\\n- Propuestas generales: https://www.ivancepeda2026.com\\n- Paz y reconciliación: https://www.ivancepeda2026.com/paz\\n- Reforma agraria: https://www.ivancepeda2026.com/campo\\n- Educación: https://www.ivancepeda2026.com/educacion\\n- Salud: https://www.ivancepeda2026.com/salud\\n- Derechos humanos: https://www.ivancepeda2026.com/ddhh\\n- Eventos: https://www.ivancepeda2026.com/eventos\\n- Voluntariado: https://www.ivancepeda2026.com/sumate\\n- Biografía: https://www.ivancepeda2026.com/sobre-ivan\\n\\nNOTA: Solo usa URLs específicas si estás seguro de que existen. Si hay duda, usa la URL principal.\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nDATOS DE LA INTERACCIÓN ACTUAL:\\n\\nPlataforma: {{ $json.platform }}\\nTipo de interacción: {{ $json.type }}\\nMensaje del usuario: {{ $json.message }}\\nNombre del usuario: {{ $json.userName || 'Ciudadano/a' }}\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nINSTRUCCIÓN FINAL:\\n\\nAnaliza el mensaje del usuario, identifica su intención y contexto emocional, y responde siguiendo las guías de arriba. La respuesta debe:\\n\\n1. Ser auténtica y conectar emocionalmente\\n2. Reflejar los valores de la campaña\\n3. SIEMPRE terminar con el link de la landing page (completo y funcional)\\n4. Ser breve (2-3 oraciones) pero significativa\\n5. Usar máximo 1 emoji\\n6. Invitar a conocer más información detallada en la web\\n\\nResponde ahora:\",\n          \"type\": \"string\"\n        }\n      ]\n    },\n    \"options\": {}\n  },\n  \"id\": \"preparar-prompt\",\n  \"name\": \"Preparar Prompt\",\n  \"type\": \"n8n-nodes-base.set\",\n  \"typeVersion\": 3.3,\n  \"position\": [1340, 420]\n}          \"type\": \"string\"\n        }\n      ]\n    },\n    \"options\": {}\n  },\n  \"id\": \"preparar-prompt\",\n  \"name\": \"Preparar Prompt\",\n  \"type\": \"n8n-nodes-base.set\",\n  \"typeVersion\": 3.3,\n  \"position\": [1340, 420]\n}",
+        "options": {}
+      },
+      "id": "a0c1cae0-2a0a-4ef5-8ff8-e7c043d5f3ea",
+      "name": "Preparar Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        448,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "TU_GEMINI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"{{ $json.promptCompleto }}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 150,\n    \"topP\": 0.8,\n    \"topK\": 10\n  }\n}",
+        "options": {}
+      },
+      "id": "c993952a-976d-4f79-8d7e-717f0b12bb71",
+      "name": "Gemini Generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        752,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer respuesta de Gemini\nconst geminiResponse = $input.item.json;\nconst aiText = geminiResponse.candidates?.[0]?.content?.parts?.[0]?.text || 'Gracias por tu mensaje 😊';\n\nconst prev = $('Filtrar Spam').item.json;\nreturn { json: { ...prev, aiResponse: aiText.trim(), aiModel: 'Gemini' } };"
+      },
+      "id": "3e1d7df7-fd3d-4839-b396-b760d9fbda8b",
+      "name": "Combinar Gemini",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "value2": "comment"
+            },
+            {
+              "value2": "dm"
+            }
+          ]
+        }
+      },
+      "id": "82c813e4-0547-4638-8ee2-3b051b09faae",
+      "name": "Switch Tipo",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.commentId }}/comments",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.aiResponse }}"
+            },
+            {
+              "name": "access_token",
+              "value": "TU_TOKEN_FACEBOOK"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02ddc167-ea31-4250-b635-30ba8917e01f",
+      "name": "Responder Comentario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1520,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "value2": null
+            },
+            {
+              "value2": null
+            }
+          ]
+        }
+      },
+      "id": "bc4c1987-c3b1-4019-a2be-9472f5c664a9",
+      "name": "Switch Plataforma DM",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/me/messages",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": { \"id\": \"{{ $json.userId }}\" },\n  \"message\": { \"text\": \"{{ $json.aiResponse }}\" },\n  \"access_token\": \"TU_TOKEN_FACEBOOK\"\n}",
+        "options": {}
+      },
+      "id": "328e786a-a2a1-4665-80c7-d078ebeab828",
+      "name": "Enviar DM Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1744,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/me/messages",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": { \"id\": \"{{ $json.userId }}\" },\n  \"message\": { \"text\": \"{{ $json.aiResponse }}\" },\n  \"access_token\": \"TU_TOKEN_INSTAGRAM\"\n}",
+        "options": {}
+      },
+      "id": "6560ad1f-2d28-46fd-8795-3a2df238460c",
+      "name": "Enviar DM Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1744,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "TU_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $json.timestamp }}",
+            "Plataforma": "={{ $json.platform }}",
+            "Tipo": "={{ $json.type }}",
+            "Usuario": "={{ $json.userName || $json.userId }}",
+            "Mensaje": "={{ $json.message }}",
+            "Respuesta": "={{ $json.aiResponse }}",
+            "Modelo IA": "={{ $json.aiModel }}",
+            "Estado": "Respondido"
+          }
+        },
+        "options": {}
+      },
+      "id": "bcee2def-bd7a-410c-8d71-5d4e5585c403",
+      "name": "Registrar en Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1968,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "77b7fcd2-adb8-4e8b-a5b6-b5461256a6fc",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Ignored",
+        "options": {}
+      },
+      "id": "cf7df408-5334-419e-be6c-4b0addd22e83",
+      "name": "Responder Ignored",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        448,
+        368
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Meta": {
+      "main": [
+        [
+          {
+            "node": "Clasificar Interacción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar Interacción": {
+      "main": [
+        [
+          {
+            "node": "Es Verificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es Verificación": {
+      "main": [
+        [
+          {
+            "node": "Responder Verificación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filtrar Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Spam": {
+      "main": [
+        [
+          {
+            "node": "Procesar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar": {
+      "main": [
+        [
+          {
+            "node": "Preparar Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Ignored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Prompt": {
+      "main": [
+        [
+          {
+            "node": "Gemini Generate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Generate": {
+      "main": [
+        [
+          {
+            "node": "Combinar Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combinar Gemini": {
+      "main": [
+        [
+          {
+            "node": "Switch Tipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Tipo": {
+      "main": [
+        [
+          {
+            "node": "Responder Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch Plataforma DM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Comentario": {
+      "main": [
+        [
+          {
+            "node": "Registrar en Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Plataforma DM": {
+      "main": [
+        [
+          {
+            "node": "Enviar DM Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar DM Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar DM Facebook": {
+      "main": [
+        [
+          {
+            "node": "Registrar en Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar DM Instagram": {
+      "main": [
+        [
+          {
+            "node": "Registrar en Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar en Sheets": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "eb631411-38f2-4912-9a46-6211335434b7",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-20T17:54:50.608Z",
+      "createdAt": "2026-01-20T17:54:50.608Z",
+      "role": "workflow:owner",
+      "workflowId": "oYJctztbq2QIQE77",
+      "projectId": "Vt5Eyc9ezInhgXE9",
+      "project": {
+        "updatedAt": "2025-12-31T14:40:13.685Z",
+        "createdAt": "2025-12-31T14:38:28.497Z",
+        "id": "Vt5Eyc9ezInhgXE9",
+        "name": "AIC studio youtube <aicstudioai@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-31T14:38:28.497Z",
+            "createdAt": "2025-12-31T14:38:28.497Z",
+            "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+            "projectId": "Vt5Eyc9ezInhgXE9",
+            "user": {
+              "updatedAt": "2026-03-12T03:40:50.130Z",
+              "createdAt": "2025-12-31T14:38:27.198Z",
+              "id": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+              "email": "aicstudioai@gmail.com",
+              "firstName": "AIC studio",
+              "lastName": "youtube",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-31T14:40:51.287Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "automationGoalDevops": [
+                  "cloud-infrastructure-orchestration"
+                ],
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "devops",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "o8O9K4oWZdyaJqOT",
+                "userActivatedAt": 1772737355723,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1770152675504
+                },
+                "easyAIWorkflowOnboarded": true
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-03-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

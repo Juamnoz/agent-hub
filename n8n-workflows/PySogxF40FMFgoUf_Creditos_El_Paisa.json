@@ -1,0 +1,1712 @@
+{
+  "updatedAt": "2026-02-10T19:10:16.056Z",
+  "createdAt": "2026-01-19T19:16:25.375Z",
+  "id": "PySogxF40FMFgoUf",
+  "name": "Creditos El Paisa",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "51cedba9-4ccc-41a4-8573-6fb436cd0adc",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7e10326c-f74b-42bb-b428-296e305246ee",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-form",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b0cf21f4-a45d-4aef-8bb9-30c7bc9b258c",
+      "name": "Webhook - Recibir Respuesta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        352
+      ],
+      "webhookId": "whatsapp-form-response"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -80
+      ],
+      "id": "6b6e56bc-39bb-475d-bbdf-6790679a7135",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================\n// PROCESAR RESPUESTAS DE BOTONES (TIPO BUTTON)\n// ====================================\nconst entries = $input.all();\nconst buttonResponses = [];\n\nfor (const entry of entries) {\n  const body = entry.json.body;\n  \n  if (body?.entry?.[0]?.changes?.[0]?.value?.messages) {\n    const messages = body.entry[0].changes[0].value.messages;\n    \n    for (const message of messages) {\n      // Filtrar solo respuestas de botones (type: button)\n      if (message.type === 'button') {\n        \n        const phone = message.from;\n        const messageId = message.id;\n        const timestamp = message.timestamp;\n        \n        // Extraer datos del botón\n        const buttonPayload = message.button.payload;\n        const buttonText = message.button.text;\n        \n        console.log('=== RESPUESTA DE BOTÓN ===');\n        console.log('Teléfono:', phone);\n        console.log('Button Payload:', buttonPayload);\n        console.log('Button Text:', buttonText);\n        \n        const phoneFormatted = phone.replace(/[^0-9]/g, '');\n        \n        let mensajeRespuesta = '';\n        let shouldRespond = false;\n        let saveToTable = false;\n        \n        // Comparar por payload O por texto\n        if (buttonPayload === 'Me_interesa' || \n            buttonPayload === 'me_interesa' || \n            buttonText === 'Me interesa') {\n          shouldRespond = true;\n          saveToTable = true;\n          \n          const mensajeAsesor = \"Hola, me interesa solicitar un crédito. ¿Pueden darme más información?\";\n          \n          mensajeRespuesta = \n            \"🎉 *¡Perfecto!*\\n\\n\" +\n            \"💡 Un asesor está listo para atenderte AHORA MISMO.\\n\\n\" +\n            \"📲 *TOCA AQUÍ* para hablar directamente con un asesor:\\n\" +\n            \"https://wa.me/595974270790?text=\" + encodeURIComponent(mensajeAsesor) + \"\\n\\n\" +\n            \"⚡ Obtené tu crédito en minutos\\n\" +\n            \"💰 Sin papeleos complicados\\n\" +\n            \"✅ Aprobación inmediata\\n\\n\" +\n            \"💼 *Créditos El Paisa*\\n\" +\n            \"Tu mejor opción en créditos rápidos y confiables.\";\n        } \n        else if (buttonPayload === 'No_me_interesa' || \n                 buttonPayload === 'no_me_interesa' || \n                 buttonText === 'No me interesa') {\n          shouldRespond = true;\n          saveToTable = false;\n          \n          mensajeRespuesta = \n            \"Entendemos. 😊\\n\\n\" +\n            \"Si en algún momento necesitás un crédito rápido para tu negocio, aquí estaremos para ayudarte.\\n\\n\" +\n            \"¡Que tengas un excelente día! 👋\\n\\n\" +\n            \"💰 *Créditos El Paisa*\";\n        }\n        \n        if (shouldRespond) {\n          // CALCULAR TIMESTAMPS EN MILISEGUNDOS (ZONA HORARIA COLOMBIA)\n          const now = new Date();\n          \n          // Colombia es UTC-5\n          const colombiaOffsetMs = -5 * 60 * 60 * 1000;\n          const currentTimeColombia = now.getTime() + colombiaOffsetMs;\n          const reminderTimeColombia = currentTimeColombia + (15 * 60 * 1000); // +15 minutos\n          \n          console.log('Timestamp actual (Colombia):', currentTimeColombia);\n          console.log('Timestamp recordatorio (Colombia):', reminderTimeColombia);\n          console.log('Fecha actual legible:', new Date(currentTimeColombia).toISOString());\n          console.log('Fecha recordatorio legible:', new Date(reminderTimeColombia).toISOString());\n          \n          buttonResponses.push({\n            json: {\n              phone: phoneFormatted,\n              button_id: buttonPayload,\n              button_title: buttonText,\n              message_id: messageId,\n              response_date: String(currentTimeColombia),  // Guardar como STRING del número\n              reminder_date: String(reminderTimeColombia), // Guardar como STRING del número\n              reminder_sent: false,\n              saveToTable: saveToTable,\n              whatsapp_payload: {\n                messaging_product: \"whatsapp\",\n                to: phoneFormatted,\n                type: \"text\",\n                text: {\n                  body: mensajeRespuesta\n                }\n              }\n            }\n          });\n        }\n      }\n    }\n  }\n}\n\nconsole.log(`Total de respuestas procesadas: ${buttonResponses.length}`);\nreturn buttonResponses;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        352
+      ],
+      "id": "41102ce3-43c2-4367-9928-581da399e190",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        816,
+        256
+      ],
+      "id": "14ddd4a5-a560-4153-9ba4-27d9273b19e9",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dff9ffd7-44c7-47c0-9ddb-e1030c9dc838",
+              "name": "numero de telefono ",
+              "value": "573001999030",
+              "type": "string"
+            },
+            {
+              "id": "3d06444b-b072-449b-b625-e727b0aa7042",
+              "name": "nombre",
+              "value": "Jose",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -256
+      ],
+      "id": "ff5a185e-1806-43e1-a369-88e67e5fa161",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw",
+          "mode": "list",
+          "cachedResultName": "Prueba oscar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "9c48fff7-d528-4356-b965-3526ed227900",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        32,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jBQzjbkKrJHsDcJS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "770f87e2-a9ab-4232-a78c-ab416eb8c124",
+              "leftValue": "={{ $json.saveToTable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        352
+      ],
+      "id": "5af4cfd6-2dcf-4079-9f94-6c20c00b32f7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "fxdH4xEZ80VzdMSN",
+          "mode": "list",
+          "cachedResultName": "creditos_seguimiento",
+          "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reminder_sent": "={{ $json.reminder_sent }}",
+            "phone": "={{ $json.phone }}",
+            "button_id": "={{ $json.button_id }}",
+            "button_title": "={{ $json.button_title }}",
+            "response_date": "={{ $json.response_date }}",
+            "reminder_date": "={{ $json.reminder_date }}",
+            "message_id": "={{ $json.message_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "button_id",
+              "displayName": "button_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "button_title",
+              "displayName": "button_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "response_date",
+              "displayName": "response_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reminder_date",
+              "displayName": "reminder_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        256
+      ],
+      "id": "d728fcb1-64f8-4803-a2c6-c4e891c91134",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1025263887333338",
+        "recipientPhoneNumber": "={{ $('Code in JavaScript').item.json.phone }}",
+        "textBody": "={{ $('Code in JavaScript').item.json.whatsapp_payload.text.body }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        256
+      ],
+      "id": "831ccec9-b9d1-4145-8c77-f26453cbe24c",
+      "name": "Send message",
+      "webhookId": "9772d182-a6d0-47a3-8a9f-f0dee797e058",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "uqOMtNdEsEculwem",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        624
+      ],
+      "id": "fab449a7-e1c9-41e9-bee7-7e9eae00c42b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "fxdH4xEZ80VzdMSN",
+          "mode": "list",
+          "cachedResultName": "creditos_seguimiento",
+          "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reminder_sent",
+              "condition": "isFalse"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        624
+      ],
+      "id": "4c420257-88fb-4cee-9de6-ad9f9d770d1d",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================\n// FILTRAR RECORDATORIOS PENDIENTES Y PREPARAR MENSAJES\n// ====================================\nconst allRows = $input.all();\n\n// Calcular timestamp actual en Colombia\nconst now = new Date();\nconst colombiaOffsetMs = -5 * 60 * 60 * 1000;\nconst nowColombiaMs = now.getTime() + colombiaOffsetMs;\n\nconst remindersToSend = [];\n\nconsole.log(`Total de filas con reminder_sent=false: ${allRows.length}`);\nconsole.log(`Timestamp actual (Colombia): ${nowColombiaMs}`);\nconsole.log(`Fecha actual legible: ${new Date(nowColombiaMs).toISOString()}`);\n\nfor (const row of allRows) {\n  const data = row.json;\n  \n  // Parsear reminder_date (guardado como string de timestamp)\n  const reminderDateMs = parseInt(data.reminder_date);\n  \n  if (!isNaN(reminderDateMs)) {\n    console.log(`Evaluando: ${data.phone}`);\n    console.log(`  - Reminder timestamp: ${reminderDateMs}`);\n    console.log(`  - Reminder legible: ${new Date(reminderDateMs).toISOString()}`);\n    console.log(`  - Now timestamp: ${nowColombiaMs}`);\n    \n    // Verificar si ya pasó el tiempo\n    if (reminderDateMs <= nowColombiaMs) {\n      console.log(`✓ RECORDATORIO LISTO para ${data.phone}`);\n      \n      const mensajeRecordatorio = \n        \"👋 *¡Hola de nuevo!*\\n\\n\" +\n        \"Vimos que te interesó nuestro crédito. 😊\\n\\n\" +\n        \"💡 *¿Todavía lo necesitás?*\\n\\n\" +\n        \"Un asesor está disponible AHORA para ayudarte:\\n\\n\" +\n        \"📲 *TOCA AQUÍ:*\\n\" +\n        \"https://wa.me/595974270790?text=\" + encodeURIComponent(\"Hola, me interesa un credito, quiero mas informacion\") + \"\\n\\n\" +\n        \"⚡ Respuesta inmediata\\n\" +\n        \"💰 Sin complicaciones\\n\" +\n        \"✅ Aprobación al instante\\n\\n\" +\n        \"💼 *Créditos El Paisa*\\n\" +\n        \"Estamos para ayudarte cuando lo necesités.\";\n      \n      remindersToSend.push({\n        json: {\n          id: data.id,\n          phone: data.phone,\n          whatsapp_payload: {\n            messaging_product: \"whatsapp\",\n            to: data.phone,\n            type: \"text\",\n            text: {\n              body: mensajeRecordatorio\n            }\n          }\n        }\n      });\n    } else {\n      const minutosRestantes = Math.round((reminderDateMs - nowColombiaMs) / 60000);\n      console.log(`✗ Aún no es hora para ${data.phone} - Faltan ${minutosRestantes} minutos`);\n    }\n  } else {\n    console.log(`⚠️ No se pudo parsear la fecha para ${data.phone}: ${data.reminder_date}`);\n  }\n}\n\nconsole.log(`Total de recordatorios a enviar: ${remindersToSend.length}`);\nreturn remindersToSend;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        624
+      ],
+      "id": "3b9495a4-bc4b-4f4d-aa28-f6a70c447f94",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1025263887333338",
+        "recipientPhoneNumber": "={{ $json.phone }}",
+        "textBody": "={{ $json.whatsapp_payload.text.body }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        624
+      ],
+      "id": "927f6aa3-b9f0-46ad-bdec-147250d5c545",
+      "name": "Send message1",
+      "webhookId": "9dd2c615-cdad-45be-b5fb-3c1021312ae3",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "uqOMtNdEsEculwem",
+          "name": "WhatsApp account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        432
+      ],
+      "id": "a3b348ee-44f3-4191-997c-cd8f1202c74b",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "fxdH4xEZ80VzdMSN",
+          "mode": "list",
+          "cachedResultName": "creditos_seguimiento",
+          "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Code in JavaScript1').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reminder_sent": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "button_id",
+              "displayName": "button_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "button_title",
+              "displayName": "button_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "response_date",
+              "displayName": "response_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "reminder_date",
+              "displayName": "reminder_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "reminder_sent",
+              "displayName": "reminder_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        624
+      ],
+      "id": "63de6275-c384-461a-a7bc-6dd9b5f8eb44",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        512,
+        528
+      ],
+      "id": "7c48645f-d5cc-4369-8d8e-dd6b14460a49",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "phoneNumberId": "1025263887333338",
+        "recipientPhoneNumber": "={{ $json[\"numero de telefono \"] }}",
+        "template": "creditos_el_paisa_nuevo|es",
+        "components": {
+          "component": [
+            {
+              "type": "header",
+              "headerParameters": {
+                "parameter": [
+                  {
+                    "type": "image",
+                    "imageLink": "https://devsupabase.automatesolutions.tech/storage/v1/object/public/whatsapp-image/Gemini_Generated_Image_84ompv84ompv84om.png"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "button",
+              "buttonParameters": {
+                "parameter": {
+                  "payload": "Me_interesa"
+                }
+              }
+            },
+            {
+              "type": "button",
+              "index": 1,
+              "buttonParameters": {
+                "parameter": {
+                  "payload": "No_me_interesa"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        48
+      ],
+      "id": "545b12ae-0dab-4b2a-ad9f-6d04e7251f76",
+      "name": "Send template",
+      "webhookId": "60a3fcff-28bf-4d74-b412-0c7333efd9eb",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "uqOMtNdEsEculwem",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Limpiar y preparar el teléfono para el nodo de WhatsApp\nconst items = $input.all();\n\nreturn items.map(item => {\n  let telefono = item.json.Telefono || item.json[\"numero de telefono\"];\n  \n  // Asegurarse que sea string y limpiar\n  telefono = String(telefono).trim().replace(/[^0-9]/g, '');\n  \n  return {\n    json: {\n      ...item.json,\n      telefono_limpio: telefono\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        16
+      ],
+      "id": "61378909-9838-4f66-b9b4-8890ae7d80ae",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook - Recibir Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message1": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d1145237-1297-4e5c-ba2b-bd121484ec7a",
+  "activeVersionId": "d1145237-1297-4e5c-ba2b-bd121484ec7a",
+  "versionCounter": 244,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-19T19:16:25.375Z",
+      "createdAt": "2026-01-19T19:16:25.375Z",
+      "role": "workflow:owner",
+      "workflowId": "PySogxF40FMFgoUf",
+      "projectId": "Vt5Eyc9ezInhgXE9",
+      "project": {
+        "updatedAt": "2025-12-31T14:40:13.685Z",
+        "createdAt": "2025-12-31T14:38:28.497Z",
+        "id": "Vt5Eyc9ezInhgXE9",
+        "name": "AIC studio youtube <aicstudioai@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-31T14:38:28.497Z",
+            "createdAt": "2025-12-31T14:38:28.497Z",
+            "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+            "projectId": "Vt5Eyc9ezInhgXE9",
+            "user": {
+              "updatedAt": "2026-03-12T03:40:50.130Z",
+              "createdAt": "2025-12-31T14:38:27.198Z",
+              "id": "058da315-9cf0-40b2-a5e7-f1395e13be70",
+              "email": "aicstudioai@gmail.com",
+              "firstName": "AIC studio",
+              "lastName": "youtube",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-31T14:40:51.287Z",
+                "personalization_survey_n8n_version": "2.1.4",
+                "automationGoalDevops": [
+                  "cloud-infrastructure-orchestration"
+                ],
+                "companySize": "<20",
+                "companyType": "saas",
+                "role": "devops",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "o8O9K4oWZdyaJqOT",
+                "userActivatedAt": 1772737355723,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1770152675504
+                },
+                "easyAIWorkflowOnboarded": true
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-03-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-10T19:10:19.481Z",
+    "createdAt": "2026-02-10T00:36:37.932Z",
+    "versionId": "d1145237-1297-4e5c-ba2b-bd121484ec7a",
+    "workflowId": "PySogxF40FMFgoUf",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "51cedba9-4ccc-41a4-8573-6fb436cd0adc",
+        "name": "Loop Over Items",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          448,
+          -80
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "7e10326c-f74b-42bb-b428-296e305246ee",
+        "name": "No Operation, do nothing",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          656,
+          -144
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "whatsapp-form",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "b0cf21f4-a45d-4aef-8bb9-30c7bc9b258c",
+        "name": "Webhook - Recibir Respuesta",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -304,
+          352
+        ],
+        "webhookId": "whatsapp-form-response"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -288,
+          -80
+        ],
+        "id": "6b6e56bc-39bb-475d-bbdf-6790679a7135",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ====================================\n// PROCESAR RESPUESTAS DE BOTONES (TIPO BUTTON)\n// ====================================\nconst entries = $input.all();\nconst buttonResponses = [];\n\nfor (const entry of entries) {\n  const body = entry.json.body;\n  \n  if (body?.entry?.[0]?.changes?.[0]?.value?.messages) {\n    const messages = body.entry[0].changes[0].value.messages;\n    \n    for (const message of messages) {\n      // Filtrar solo respuestas de botones (type: button)\n      if (message.type === 'button') {\n        \n        const phone = message.from;\n        const messageId = message.id;\n        const timestamp = message.timestamp;\n        \n        // Extraer datos del botón\n        const buttonPayload = message.button.payload;\n        const buttonText = message.button.text;\n        \n        console.log('=== RESPUESTA DE BOTÓN ===');\n        console.log('Teléfono:', phone);\n        console.log('Button Payload:', buttonPayload);\n        console.log('Button Text:', buttonText);\n        \n        const phoneFormatted = phone.replace(/[^0-9]/g, '');\n        \n        let mensajeRespuesta = '';\n        let shouldRespond = false;\n        let saveToTable = false;\n        \n        // Comparar por payload O por texto\n        if (buttonPayload === 'Me_interesa' || \n            buttonPayload === 'me_interesa' || \n            buttonText === 'Me interesa') {\n          shouldRespond = true;\n          saveToTable = true;\n          \n          const mensajeAsesor = \"Hola, me interesa solicitar un crédito. ¿Pueden darme más información?\";\n          \n          mensajeRespuesta = \n            \"🎉 *¡Perfecto!*\\n\\n\" +\n            \"💡 Un asesor está listo para atenderte AHORA MISMO.\\n\\n\" +\n            \"📲 *TOCA AQUÍ* para hablar directamente con un asesor:\\n\" +\n            \"https://wa.me/595974270790?text=\" + encodeURIComponent(mensajeAsesor) + \"\\n\\n\" +\n            \"⚡ Obtené tu crédito en minutos\\n\" +\n            \"💰 Sin papeleos complicados\\n\" +\n            \"✅ Aprobación inmediata\\n\\n\" +\n            \"💼 *Créditos El Paisa*\\n\" +\n            \"Tu mejor opción en créditos rápidos y confiables.\";\n        } \n        else if (buttonPayload === 'No_me_interesa' || \n                 buttonPayload === 'no_me_interesa' || \n                 buttonText === 'No me interesa') {\n          shouldRespond = true;\n          saveToTable = false;\n          \n          mensajeRespuesta = \n            \"Entendemos. 😊\\n\\n\" +\n            \"Si en algún momento necesitás un crédito rápido para tu negocio, aquí estaremos para ayudarte.\\n\\n\" +\n            \"¡Que tengas un excelente día! 👋\\n\\n\" +\n            \"💰 *Créditos El Paisa*\";\n        }\n        \n        if (shouldRespond) {\n          // CALCULAR TIMESTAMPS EN MILISEGUNDOS (ZONA HORARIA COLOMBIA)\n          const now = new Date();\n          \n          // Colombia es UTC-5\n          const colombiaOffsetMs = -5 * 60 * 60 * 1000;\n          const currentTimeColombia = now.getTime() + colombiaOffsetMs;\n          const reminderTimeColombia = currentTimeColombia + (15 * 60 * 1000); // +15 minutos\n          \n          console.log('Timestamp actual (Colombia):', currentTimeColombia);\n          console.log('Timestamp recordatorio (Colombia):', reminderTimeColombia);\n          console.log('Fecha actual legible:', new Date(currentTimeColombia).toISOString());\n          console.log('Fecha recordatorio legible:', new Date(reminderTimeColombia).toISOString());\n          \n          buttonResponses.push({\n            json: {\n              phone: phoneFormatted,\n              button_id: buttonPayload,\n              button_title: buttonText,\n              message_id: messageId,\n              response_date: String(currentTimeColombia),  // Guardar como STRING del número\n              reminder_date: String(reminderTimeColombia), // Guardar como STRING del número\n              reminder_sent: false,\n              saveToTable: saveToTable,\n              whatsapp_payload: {\n                messaging_product: \"whatsapp\",\n                to: phoneFormatted,\n                type: \"text\",\n                text: {\n                  body: mensajeRespuesta\n                }\n              }\n            }\n          });\n        }\n      }\n    }\n  }\n}\n\nconsole.log(`Total de respuestas procesadas: ${buttonResponses.length}`);\nreturn buttonResponses;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -16,
+          352
+        ],
+        "id": "41102ce3-43c2-4367-9928-581da399e190",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\n  \"status\": \"success\"\n}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          816,
+          256
+        ],
+        "id": "14ddd4a5-a560-4153-9ba4-27d9273b19e9",
+        "name": "Respond to Webhook2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "dff9ffd7-44c7-47c0-9ddb-e1030c9dc838",
+                "name": "numero de telefono ",
+                "value": "573001999030",
+                "type": "string"
+              },
+              {
+                "id": "3d06444b-b072-449b-b625-e727b0aa7042",
+                "name": "nombre",
+                "value": "Jose",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          32,
+          -256
+        ],
+        "id": "ff5a185e-1806-43e1-a369-88e67e5fa161",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw",
+            "mode": "list",
+            "cachedResultName": "Prueba oscar",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Hoja 1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zLOKS7_-gZ8O_hrzDf9dLdTHSkvrfBToqjZc-4LMaxw/edit#gid=0"
+          },
+          "options": {}
+        },
+        "id": "9c48fff7-d528-4356-b965-3526ed227900",
+        "name": "Get row(s) in sheet",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4,
+        "position": [
+          32,
+          -80
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "jBQzjbkKrJHsDcJS",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "770f87e2-a9ab-4232-a78c-ab416eb8c124",
+                "leftValue": "={{ $json.saveToTable }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          192,
+          352
+        ],
+        "id": "5af4cfd6-2dcf-4079-9f94-6c20c00b32f7",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "dataTableId": {
+            "__rl": true,
+            "value": "fxdH4xEZ80VzdMSN",
+            "mode": "list",
+            "cachedResultName": "creditos_seguimiento",
+            "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "reminder_sent": "={{ $json.reminder_sent }}",
+              "phone": "={{ $json.phone }}",
+              "button_id": "={{ $json.button_id }}",
+              "button_title": "={{ $json.button_title }}",
+              "response_date": "={{ $json.response_date }}",
+              "reminder_date": "={{ $json.reminder_date }}",
+              "message_id": "={{ $json.message_id }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "phone",
+                "displayName": "phone",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "button_id",
+                "displayName": "button_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "button_title",
+                "displayName": "button_title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "message_id",
+                "displayName": "message_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "response_date",
+                "displayName": "response_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "reminder_date",
+                "displayName": "reminder_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "reminder_sent",
+                "displayName": "reminder_sent",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          400,
+          256
+        ],
+        "id": "d728fcb1-64f8-4803-a2c6-c4e891c91134",
+        "name": "Insert row"
+      },
+      {
+        "parameters": {
+          "operation": "send",
+          "phoneNumberId": "1025263887333338",
+          "recipientPhoneNumber": "={{ $('Code in JavaScript').item.json.phone }}",
+          "textBody": "={{ $('Code in JavaScript').item.json.whatsapp_payload.text.body }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          608,
+          256
+        ],
+        "id": "831ccec9-b9d1-4145-8c77-f26453cbe24c",
+        "name": "Send message",
+        "webhookId": "9772d182-a6d0-47a3-8a9f-f0dee797e058",
+        "credentials": {
+          "whatsAppApi": {
+            "id": "uqOMtNdEsEculwem",
+            "name": "WhatsApp account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 10
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -320,
+          624
+        ],
+        "id": "fab449a7-e1c9-41e9-bee7-7e9eae00c42b",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "fxdH4xEZ80VzdMSN",
+            "mode": "list",
+            "cachedResultName": "creditos_seguimiento",
+            "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "reminder_sent",
+                "condition": "isFalse"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -112,
+          624
+        ],
+        "id": "4c420257-88fb-4cee-9de6-ad9f9d770d1d",
+        "name": "Get row(s)"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ====================================\n// FILTRAR RECORDATORIOS PENDIENTES Y PREPARAR MENSAJES\n// ====================================\nconst allRows = $input.all();\n\n// Calcular timestamp actual en Colombia\nconst now = new Date();\nconst colombiaOffsetMs = -5 * 60 * 60 * 1000;\nconst nowColombiaMs = now.getTime() + colombiaOffsetMs;\n\nconst remindersToSend = [];\n\nconsole.log(`Total de filas con reminder_sent=false: ${allRows.length}`);\nconsole.log(`Timestamp actual (Colombia): ${nowColombiaMs}`);\nconsole.log(`Fecha actual legible: ${new Date(nowColombiaMs).toISOString()}`);\n\nfor (const row of allRows) {\n  const data = row.json;\n  \n  // Parsear reminder_date (guardado como string de timestamp)\n  const reminderDateMs = parseInt(data.reminder_date);\n  \n  if (!isNaN(reminderDateMs)) {\n    console.log(`Evaluando: ${data.phone}`);\n    console.log(`  - Reminder timestamp: ${reminderDateMs}`);\n    console.log(`  - Reminder legible: ${new Date(reminderDateMs).toISOString()}`);\n    console.log(`  - Now timestamp: ${nowColombiaMs}`);\n    \n    // Verificar si ya pasó el tiempo\n    if (reminderDateMs <= nowColombiaMs) {\n      console.log(`✓ RECORDATORIO LISTO para ${data.phone}`);\n      \n      const mensajeRecordatorio = \n        \"👋 *¡Hola de nuevo!*\\n\\n\" +\n        \"Vimos que te interesó nuestro crédito. 😊\\n\\n\" +\n        \"💡 *¿Todavía lo necesitás?*\\n\\n\" +\n        \"Un asesor está disponible AHORA para ayudarte:\\n\\n\" +\n        \"📲 *TOCA AQUÍ:*\\n\" +\n        \"https://wa.me/595974270790?text=\" + encodeURIComponent(\"Hola, me interesa un credito, quiero mas informacion\") + \"\\n\\n\" +\n        \"⚡ Respuesta inmediata\\n\" +\n        \"💰 Sin complicaciones\\n\" +\n        \"✅ Aprobación al instante\\n\\n\" +\n        \"💼 *Créditos El Paisa*\\n\" +\n        \"Estamos para ayudarte cuando lo necesités.\";\n      \n      remindersToSend.push({\n        json: {\n          id: data.id,\n          phone: data.phone,\n          whatsapp_payload: {\n            messaging_product: \"whatsapp\",\n            to: data.phone,\n            type: \"text\",\n            text: {\n              body: mensajeRecordatorio\n            }\n          }\n        }\n      });\n    } else {\n      const minutosRestantes = Math.round((reminderDateMs - nowColombiaMs) / 60000);\n      console.log(`✗ Aún no es hora para ${data.phone} - Faltan ${minutosRestantes} minutos`);\n    }\n  } else {\n    console.log(`⚠️ No se pudo parsear la fecha para ${data.phone}: ${data.reminder_date}`);\n  }\n}\n\nconsole.log(`Total de recordatorios a enviar: ${remindersToSend.length}`);\nreturn remindersToSend;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          96,
+          624
+        ],
+        "id": "3b9495a4-bc4b-4f4d-aa28-f6a70c447f94",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "operation": "send",
+          "phoneNumberId": "1025263887333338",
+          "recipientPhoneNumber": "={{ $json.phone }}",
+          "textBody": "={{ $json.whatsapp_payload.text.body }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          720,
+          624
+        ],
+        "id": "927f6aa3-b9f0-46ad-bdec-147250d5c545",
+        "name": "Send message1",
+        "webhookId": "9dd2c615-cdad-45be-b5fb-3c1021312ae3",
+        "credentials": {
+          "whatsAppApi": {
+            "id": "uqOMtNdEsEculwem",
+            "name": "WhatsApp account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          720,
+          432
+        ],
+        "id": "a3b348ee-44f3-4191-997c-cd8f1202c74b",
+        "name": "No Operation, do nothing1"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "value": "fxdH4xEZ80VzdMSN",
+            "mode": "list",
+            "cachedResultName": "creditos_seguimiento",
+            "cachedResultUrl": "/projects/Vt5Eyc9ezInhgXE9/datatables/fxdH4xEZ80VzdMSN"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyValue": "={{ $('Code in JavaScript1').item.json.id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "reminder_sent": true
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "phone",
+                "displayName": "phone",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "button_id",
+                "displayName": "button_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "button_title",
+                "displayName": "button_title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "message_id",
+                "displayName": "message_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "response_date",
+                "displayName": "response_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "reminder_date",
+                "displayName": "reminder_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "reminder_sent",
+                "displayName": "reminder_sent",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          928,
+          624
+        ],
+        "id": "63de6275-c384-461a-a7bc-6dd9b5f8eb44",
+        "name": "Update row(s)"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          512,
+          528
+        ],
+        "id": "7c48645f-d5cc-4369-8d8e-dd6b14460a49",
+        "name": "Loop Over Items1"
+      },
+      {
+        "parameters": {
+          "phoneNumberId": "1025263887333338",
+          "recipientPhoneNumber": "={{ $json[\"numero de telefono \"] }}",
+          "template": "creditos_el_paisa_nuevo|es",
+          "components": {
+            "component": [
+              {
+                "type": "header",
+                "headerParameters": {
+                  "parameter": [
+                    {
+                      "type": "image",
+                      "imageLink": "https://devsupabase.automatesolutions.tech/storage/v1/object/public/whatsapp-image/Gemini_Generated_Image_84ompv84ompv84om.png"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "button",
+                "buttonParameters": {
+                  "parameter": {
+                    "payload": "Me_interesa"
+                  }
+                }
+              },
+              {
+                "type": "button",
+                "index": 1,
+                "buttonParameters": {
+                  "parameter": {
+                    "payload": "No_me_interesa"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          928,
+          48
+        ],
+        "id": "545b12ae-0dab-4b2a-ad9f-6d04e7251f76",
+        "name": "Send template",
+        "webhookId": "60a3fcff-28bf-4d74-b412-0c7333efd9eb",
+        "credentials": {
+          "whatsAppApi": {
+            "id": "uqOMtNdEsEculwem",
+            "name": "WhatsApp account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Limpiar y preparar el teléfono para el nodo de WhatsApp\nconst items = $input.all();\n\nreturn items.map(item => {\n  let telefono = item.json.Telefono || item.json[\"numero de telefono\"];\n  \n  // Asegurarse que sea string y limpiar\n  telefono = String(telefono).trim().replace(/[^0-9]/g, '');\n  \n  return {\n    json: {\n      ...item.json,\n      telefono_limpio: telefono\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          688,
+          16
+        ],
+        "id": "61378909-9838-4f66-b9b4-8890ae7d80ae",
+        "name": "Code in JavaScript2"
+      }
+    ],
+    "connections": {
+      "Loop Over Items": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code in JavaScript2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "No Operation, do nothing": {
+        "main": [
+          []
+        ]
+      },
+      "Webhook - Recibir Respuesta": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet": {
+        "main": [
+          []
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Insert row",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert row": {
+        "main": [
+          [
+            {
+              "node": "Send message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send message": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get row(s)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s)": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send message1": {
+        "main": [
+          [
+            {
+              "node": "Update row(s)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items1": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send template": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript2": {
+        "main": [
+          [
+            {
+              "node": "Send template",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "AIC studio youtube",
+    "name": "Version d1145237",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-10T19:10:19.474Z",
+        "id": 93,
+        "workflowId": "PySogxF40FMFgoUf",
+        "versionId": "d1145237-1297-4e5c-ba2b-bd121484ec7a",
+        "event": "activated",
+        "userId": "058da315-9cf0-40b2-a5e7-f1395e13be70"
+      }
+    ]
+  }
+}

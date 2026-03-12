@@ -796,7 +796,7 @@ export default function AgentProductsPage({
   const isHotel = agent.algorithmType === "hotel";
 
   return (
-    <div className="space-y-4 lg:max-w-[800px] lg:mx-auto">
+    <div className="space-y-4 pb-24 lg:pb-8 lg:max-w-[800px] lg:mx-auto">
       <motion.div {...fadeUp(0)}>
         <Button
           variant="ghost"

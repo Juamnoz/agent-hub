@@ -83,7 +83,7 @@ export default function AgentSettingsPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 pb-10">
+    <div className="mx-auto max-w-2xl space-y-6 pb-24 lg:pb-8">
       <motion.div {...fadeUp(0)}>
         <Link
           href={`/agents/${agentId}`}

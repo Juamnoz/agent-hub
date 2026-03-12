@@ -151,7 +151,7 @@ export default function PanelPage() {
   });
 
   return (
-    <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
+    <div className="space-y-5 pb-24 lg:pb-8 lg:max-w-[800px] lg:mx-auto">
 
       {/* ── Greeting + Stats ── */}
       <motion.div {...fadeUp(0)} className="flex items-center justify-between">

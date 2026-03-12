@@ -155,7 +155,7 @@ export default function AgentsPage() {
     const emptyOrgs = allOrgs.filter(o => !orgSlugsWithAgents.has(o.slug) && o.slug !== "aicstudioai");
 
     return (
-      <div className="space-y-6 lg:max-w-[960px] lg:mx-auto">
+      <div className="space-y-6 pb-24 lg:pb-8 lg:max-w-[960px] lg:mx-auto">
         {/* Header */}
         <motion.div {...fadeUp(0)} className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -228,7 +228,7 @@ export default function AgentsPage() {
 
   // Normal user view (unchanged)
   return (
-    <div className="space-y-4 lg:max-w-[900px] lg:mx-auto">
+    <div className="space-y-4 pb-24 lg:pb-8 lg:max-w-[900px] lg:mx-auto">
       {agents.length > 0 ? (
         <>
           {atLimit && (

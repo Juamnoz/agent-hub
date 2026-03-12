@@ -154,7 +154,7 @@ export default function TrainPage({
   }
 
   return (
-    <div className="space-y-6 pb-10 lg:max-w-[800px] lg:mx-auto">
+    <div className="space-y-6 pb-24 lg:pb-8 lg:max-w-[800px] lg:mx-auto">
       {/* Header */}
       <motion.div {...fadeUp(0)}>
         <Link

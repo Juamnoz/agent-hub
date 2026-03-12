@@ -48,7 +48,7 @@ export default function SettingsPage() {
   const handleSave = () => toast.success(t.settingsPage.saved);
 
   return (
-    <div className="space-y-5 pb-4 lg:max-w-[640px] lg:mx-auto">
+    <div className="space-y-5 pb-24 lg:pb-8 lg:max-w-[640px] lg:mx-auto">
 
       {/* Perfil */}
       <motion.div {...fadeUp(0)}>

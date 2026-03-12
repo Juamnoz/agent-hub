@@ -52,7 +52,7 @@ export default function AgentFaqsPage({
   const agentFaqCount = faqs.filter((f) => f.agentId === agentId).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 lg:pb-8">
       <motion.div {...fadeUp(0)}>
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link href={`/agents/${agentId}`}>

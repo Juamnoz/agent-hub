@@ -16,7 +16,7 @@ export default function ReservationsPage({
   const agent = agents.find((a) => a.id === agentId);
 
   return (
-    <div className="space-y-4 pb-4 lg:max-w-[800px] lg:mx-auto">
+    <div className="space-y-4 pb-24 lg:pb-8 lg:max-w-[800px] lg:mx-auto">
       <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
         <Link href={`/agents/${agentId}`}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />

@@ -84,7 +84,7 @@ export default function BillingPage() {
   // Non-superadmin: show simplified client billing view
   if (!isSuperAdmin) {
     return (
-      <div className="space-y-5 pb-4 lg:max-w-[720px] lg:mx-auto">
+      <div className="space-y-5 pb-24 lg:pb-8 lg:max-w-[720px] lg:mx-auto">
         {/* Active plan banner */}
         <motion.div
           {...fadeUp(0)}
@@ -156,7 +156,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="space-y-5 pb-4 lg:max-w-[720px] lg:mx-auto">
+    <div className="space-y-5 pb-24 lg:pb-8 lg:max-w-[720px] lg:mx-auto">
 
       {/* Current plan banner */}
       <motion.div {...fadeUp(0)} className="rounded-2xl bg-[#1a1a1a] dark:bg-[#111] ring-1 ring-orange-500/20 shadow-[0_2px_16px_rgba(0,0,0,0.2)] overflow-hidden">

@@ -697,7 +697,7 @@ export const trainApi = {
     ),
 
   /** Partial update — only re-processes the changed section in n8n */
-  update: (agentId: string, updateType: "prompt" | "faqs" | "products" | "phones" | "social_links") =>
+  update: (agentId: string, updateType: "prompt" | "faqs" | "products" | "catalogs" | "phones" | "social_links") =>
     apiFetch<{ success: boolean; update_type: string; agent_id: string }>(
       `/agents/${agentId}/train/update`,
       { method: "POST", body: JSON.stringify({ update_type: updateType }) }

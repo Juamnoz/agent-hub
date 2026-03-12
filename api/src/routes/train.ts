@@ -223,6 +223,11 @@ trainRoute.post("/:agentId/train/deploy", async (c) => {
       })),
     catalog_type: catalogLabel[agent.algorithmType] ?? "products",
     [catalogLabel[agent.algorithmType] ?? "products"]: rawProducts.map(mapProduct),
+    catalogs: ((agent as any).catalogs ?? []).map((c: any) => ({
+      title: c.title,
+      url: c.url,
+      fileName: c.fileName,
+    })),
     conversation_examples: agent.conversationExamples ?? [],
     images: rawProducts
       .filter((p: any) => p.imageUrl)
@@ -271,7 +276,7 @@ trainRoute.post(
   zValidator(
     "json",
     z.object({
-      update_type: z.enum(["prompt", "faqs", "products", "phones", "social_links"]),
+      update_type: z.enum(["prompt", "faqs", "products", "catalogs", "phones", "social_links"]),
     })
   ),
   async (c) => {
@@ -347,8 +352,16 @@ trainRoute.post(
             url: p.imageUrl,
             category: p.category ?? "general",
           }));
+        payload.catalogs = ((agent as any).catalogs ?? []).map((c: any) => ({
+          title: c.title, url: c.url, fileName: c.fileName,
+        }));
         break;
       }
+      case "catalogs":
+        payload.catalogs = ((agent as any).catalogs ?? []).map((c: any) => ({
+          title: c.title, url: c.url, fileName: c.fileName,
+        }));
+        break;
       case "phones":
         payload.admin_phone = agent.adminPhone ?? "";
         payload.escalation_phone = agent.escalationPhone ?? "";

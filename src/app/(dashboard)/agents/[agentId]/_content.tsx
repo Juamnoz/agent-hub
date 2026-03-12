@@ -698,7 +698,7 @@ export default function AgentDetailPage({
   });
 
   return (
-    <div className="space-y-5 lg:max-w-[800px] lg:mx-auto">
+    <div className="space-y-5 pb-24 lg:pb-8 lg:max-w-[800px] lg:mx-auto">
       {/* Back */}
       <motion.div {...fadeUp(0)}>
       <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">

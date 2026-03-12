@@ -743,8 +743,8 @@ export default function AgentDetailPage({
             <Settings className="h-4 w-4 text-muted-foreground/40 shrink-0" />
           )}
         </Link>
-        {/* Fila 2: controles de estado — solo cuando ya salió de setup (entrenado) */}
-        {agent.status !== "setup" && agent.trainedAt && (
+        {/* Fila 2: controles de estado — visible cuando ya fue entrenado */}
+        {agent.trainedAt && (
           <div className="px-4 py-2.5 border-t border-border/60 bg-muted/30 flex items-center justify-between gap-3">
             {/* Toggle encendido/apagado */}
             <div className="flex items-center gap-2">
@@ -779,7 +779,9 @@ export default function AgentDetailPage({
                   { key: "testing", label: "Pruebas" },
                   { key: "active", label: "Producción" },
                 ] as const).map((mode) => {
-                  const isActive = agent.status === mode.key;
+                  const isActive = mode.key === "testing"
+                    ? (agent.status === "testing" || agent.status === "setup")
+                    : agent.status === mode.key;
                   return (
                     <button
                       key={mode.key}
@@ -788,7 +790,7 @@ export default function AgentDetailPage({
                         e.stopPropagation();
                         if (isActive) return;
                         updateAgent(agentId, { status: mode.key as any });
-                        toast.success(mode.key === "testing" ? "Modo pruebas" : "En producción");
+                        toast.success(mode.key === "testing" ? "Modo pruebas — solo responde al admin" : "En producción — responde a todos");
                         trainApi.changeMode(agentId, mode.key).catch(console.error);
                       }}
                       className={`px-2.5 py-1 rounded-md text-[12px] font-medium transition-all ${

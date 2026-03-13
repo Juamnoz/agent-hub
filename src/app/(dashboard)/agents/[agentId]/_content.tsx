@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState, useEffect, useCallback } from "react";
+import React, { use, useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
@@ -407,6 +407,65 @@ export default function AgentDetailPage({
       trainApi.update(agent!.id, "prompt").catch(console.error);
     }
   }
+
+  // --- Drag & drop for conversation examples ---
+  const [draggingExamples, setDraggingExamples] = useState(false);
+  const [uploadingExamples, setUploadingExamples] = useState(false);
+  const examplesFileRef = useRef<HTMLInputElement>(null);
+
+  const processExamplesFile = useCallback(async (file: File) => {
+    setUploadingExamples(true);
+    try {
+      const text = await extractTextFromFile(file);
+      // Parse conversation pairs from text
+      const parsed: { userMessage: string; agentResponse: string }[] = [];
+      // Try Cliente:/Agente: or P:/R: pairs
+      const pairRegex = /(?:Cliente|Customer|User|Pregunta|P)[:\.\-]\s*(.+?)\n(?:Agente|Agent|Bot|Respuesta|R)[:\.\-]\s*([\s\S]+?)(?=\n(?:Cliente|Customer|User|Pregunta|P)[:\.\-]|$)/gi;
+      let match;
+      while ((match = pairRegex.exec(text)) !== null) {
+        parsed.push({ userMessage: match[1].trim(), agentResponse: match[2].trim() });
+      }
+      // Fallback: lines with "?" are questions
+      if (parsed.length === 0) {
+        const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].endsWith("?") && i + 1 < lines.length) {
+            parsed.push({ userMessage: lines[i], agentResponse: lines[i + 1] });
+            i++;
+          }
+        }
+      }
+      // Last fallback: pairs of lines
+      if (parsed.length === 0) {
+        const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+        for (let i = 0; i + 1 < lines.length; i += 2) {
+          parsed.push({ userMessage: lines[i], agentResponse: lines[i + 1] });
+        }
+      }
+      if (parsed.length === 0) {
+        toast.error("No se encontraron ejemplos. Usa formato Cliente:/Agente: o pregunta/respuesta.");
+        return;
+      }
+      setQvExamples(parsed.map((e) => ({ ...e, id: crypto.randomUUID() })));
+      toast.success(`${parsed.length} ejemplo${parsed.length !== 1 ? "s" : ""} importado${parsed.length !== 1 ? "s" : ""}`);
+    } catch {
+      toast.error("Error al leer el archivo");
+    } finally {
+      setUploadingExamples(false);
+    }
+  }, []);
+
+  const examplesDrag = {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDraggingExamples(true); },
+    onDragEnter: (e: React.DragEvent) => { e.preventDefault(); setDraggingExamples(true); },
+    onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDraggingExamples(false); },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDraggingExamples(false);
+      const file = e.dataTransfer.files[0];
+      if (file) processExamplesFile(file);
+    },
+  };
 
   async function handleGeneratePrompt() {
     setQvIsGenerating(true);
@@ -1287,14 +1346,34 @@ export default function AgentDetailPage({
                         </div>
                       </div>
                       {/* Conversation examples */}
-                      <div className="space-y-2.5">
+                      <div className="space-y-2.5 relative" {...examplesDrag}>
+                        {draggingExamples && (
+                          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-blue-500/15 backdrop-blur-[2px] ring-2 ring-blue-400/60">
+                            <Upload className="h-7 w-7 text-blue-400" />
+                            <p className="text-[14px] font-semibold text-blue-300">Suelta el documento aquí</p>
+                            <p className="text-[11px] text-blue-400/60">.txt · .pdf · .docx · .md</p>
+                          </div>
+                        )}
+                        {uploadingExamples && (
+                          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/40">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                          </div>
+                        )}
                         <div className="flex items-center justify-between">
                           <p className="text-[14px] font-semibold text-white/80">Ejemplos de conversación</p>
-                          <button onClick={() => setQvExamples((prev) => [...prev, { id: crypto.randomUUID(), userMessage: "", agentResponse: "" }])}
-                            className="flex items-center gap-1 text-[13px] font-medium text-orange-400 hover:text-orange-300 transition-colors">
-                            <Plus className="h-3.5 w-3.5" /> Agregar
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <input ref={examplesFileRef} type="file" accept=".txt,.pdf,.docx,.md" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) processExamplesFile(f); e.target.value = ""; }} />
+                            <button onClick={() => examplesFileRef.current?.click()} disabled={uploadingExamples}
+                              className="flex items-center gap-1 text-[13px] font-medium text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50">
+                              <FileText className="h-3.5 w-3.5" /> Importar
+                            </button>
+                            <button onClick={() => setQvExamples((prev) => [...prev, { id: crypto.randomUUID(), userMessage: "", agentResponse: "" }])}
+                              className="flex items-center gap-1 text-[13px] font-medium text-orange-400 hover:text-orange-300 transition-colors">
+                              <Plus className="h-3.5 w-3.5" /> Agregar
+                            </button>
+                          </div>
                         </div>
+                        <p className="text-[11px] text-white/30 -mt-1">Arrastra un documento o usa Importar</p>
                         {qvExamples.map((ex, idx) => (
                           <div key={ex.id} className="rounded-xl bg-white/[0.06] ring-1 ring-white/[0.10] p-3 space-y-2">
                             <div className="flex items-center justify-between">

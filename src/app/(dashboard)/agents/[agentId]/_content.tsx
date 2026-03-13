@@ -61,6 +61,7 @@ import { ALGORITHM_ICONS, ALGORITHM_KEYS, REGION_KEYS, REGISTER_KEYS, REGION_FLA
 import type { AlgorithmType, CommunicationRegion, CommunicationRegister, SocialLinks } from "@/lib/mock-data";
 import { trainApi } from "@/lib/api";
 import { Sparkles, Loader2, Phone, Zap, Power, Play, Shield } from "lucide-react";
+import { CalendarStep } from "@/components/agent-setup/calendar-step";
 
 const TRAINING_STEPS = [
   "Procesando datos del agente",
@@ -766,7 +767,18 @@ export default function AgentDetailPage({
         color: hasWebhook ? "emerald" : "orange",
         onClick: () => openQuickView("webhook"),
       },
-      // 8. Social
+      // 8. Calendario (solo appointments)
+      ...(agent.algorithmType === "appointments" ? [{
+        id: "calendar",
+        label: "Calendario",
+        icon: CalendarDays,
+        href: "#",
+        configured: !!agent.calBookingUrl,
+        stat: "",
+        color: agent.calBookingUrl ? "emerald" : "blue",
+        onClick: () => openQuickView("calendar"),
+      }] : []),
+      // 9. Social
       {
         id: "social",
         label: t.agents.setupCards.socialTitle,
@@ -1566,6 +1578,28 @@ export default function AgentDetailPage({
                         className="w-full rounded-xl py-3 text-[16px] font-semibold bg-orange-500 text-white active:bg-orange-600 transition-all mt-2">
                         Guardar redes
                       </button>
+                    </div>
+                  </>
+                )}
+
+                {/* ═══ CALENDARIO ═══ */}
+                {activeQuickView === "calendar" && (
+                  <>
+                    <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                      <div>
+                        <h2 className="text-[19px] font-bold text-white">Calendario</h2>
+                        <p className="text-[14px] text-white/50 mt-0.5">Conecta Cal.com para gestionar citas</p>
+                      </div>
+                      <button onClick={() => setActiveQuickView(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.12] transition-colors">
+                        <X className="h-4 w-4 text-white/70" />
+                      </button>
+                    </div>
+                    <div className="px-5 pb-5">
+                      <CalendarStep
+                        agentId={agentId as string}
+                        calConnected={false}
+                        onConfigured={() => {}}
+                      />
                     </div>
                   </>
                 )}

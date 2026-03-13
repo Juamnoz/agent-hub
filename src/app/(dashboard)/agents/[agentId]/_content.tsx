@@ -1630,10 +1630,10 @@ export default function AgentDetailPage({
                                 {/* Collapsed row */}
                                 <div className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-white/[0.06] transition-colors"
                                   onClick={() => setQvFaqExpanded(isExpanded ? null : faq.id)}>
-                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[12px] font-bold text-white/50 tabular-nums">
+                                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold tabular-nums ${!faq.question.trim() || !faq.answer.trim() ? "bg-orange-500/20 text-orange-400" : "bg-white/[0.06] text-white/50"}`}>
                                     {idx + 1}
                                   </span>
-                                  <p className="flex-1 text-[14px] text-white/80 truncate min-w-0">
+                                  <p className={`flex-1 text-[14px] truncate min-w-0 ${!faq.answer.trim() ? "text-orange-400/70" : "text-white/80"}`}>
                                     {faq.question || "Nueva pregunta..."}
                                   </p>
                                   <button
@@ -1697,30 +1697,43 @@ export default function AgentDetailPage({
 
                       {/* Save */}
                       {(() => {
-                        const hasValidFaq = qvFaqs.some(
+                        const validFaqs = qvFaqs.filter(
                           (f) => f.question.trim() && f.answer.trim()
                         );
+                        const incompleteFaqs = qvFaqs.filter(
+                          (f) => f.question.trim() && !f.answer.trim()
+                        );
+                        const hasValidFaq = validFaqs.length > 0;
                         return (
                           <button
                             onClick={async () => {
-                              const existingIds = new Set(agentFaqs.map((f) => f.id));
-                              const newIds = new Set(qvFaqs.map((f) => f.id));
-                              for (const f of agentFaqs) {
-                                if (!newIds.has(f.id)) await deleteFaq(f.id);
-                              }
-                              for (const f of qvFaqs) {
-                                if (!f.question.trim()) continue;
-                                if (existingIds.has(f.id)) {
-                                  await updateFaq(f.id, { question: f.question, answer: f.answer });
-                                } else {
-                                  await addFaq({ agentId, question: f.question, answer: f.answer, category: "general", isActive: true });
+                              try {
+                                const existingIds = new Set(agentFaqs.map((f) => f.id));
+                                const newIds = new Set(qvFaqs.map((f) => f.id));
+                                for (const f of agentFaqs) {
+                                  if (!newIds.has(f.id)) await deleteFaq(f.id);
                                 }
-                              }
-                              await loadFaqs(agentId);
-                              setActiveQuickView(null);
-                              toast.success("Preguntas frecuentes guardadas");
-                              if (agent.trainedAt) {
-                                trainApi.update(agentId, "faqs").catch(console.error);
+                                for (const f of qvFaqs) {
+                                  if (!f.question.trim() || !f.answer.trim()) continue;
+                                  if (existingIds.has(f.id)) {
+                                    await updateFaq(f.id, { question: f.question, answer: f.answer });
+                                  } else {
+                                    await addFaq({ agentId, question: f.question, answer: f.answer, category: "general", isActive: true });
+                                  }
+                                }
+                                await loadFaqs(agentId);
+                                setActiveQuickView(null);
+                                const skipped = incompleteFaqs.length;
+                                toast.success(skipped > 0
+                                  ? `${validFaqs.length} preguntas guardadas (${skipped} sin respuesta omitidas)`
+                                  : "Preguntas frecuentes guardadas"
+                                );
+                                if (agent.trainedAt) {
+                                  trainApi.update(agentId, "faqs").catch(console.error);
+                                }
+                              } catch (err) {
+                                console.error("Error guardando FAQs:", err);
+                                toast.error("Error al guardar las preguntas. Revisa que todas tengan pregunta y respuesta.");
                               }
                             }}
                             disabled={!hasValidFaq}
@@ -1730,7 +1743,12 @@ export default function AgentDetailPage({
                                 : "bg-white/[0.06] text-white/30 cursor-not-allowed"
                             }`}
                           >
-                            {hasValidFaq ? "Guardar preguntas" : "Completa al menos una pregunta"}
+                            {!hasValidFaq
+                              ? "Completa al menos una pregunta"
+                              : incompleteFaqs.length > 0
+                                ? `Guardar ${validFaqs.length} preguntas (${incompleteFaqs.length} incompletas)`
+                                : "Guardar preguntas"
+                            }
                           </button>
                         );
                       })()}

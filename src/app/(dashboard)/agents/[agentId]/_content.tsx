@@ -114,6 +114,7 @@ export default function AgentDetailPage({
   const [qvAdvancedMode, setQvAdvancedMode] = useState(false);
   const [qvIsGenerating, setQvIsGenerating] = useState(false);
   const [qvWebhookUrl, setQvWebhookUrl] = useState(agent?.webhookUrl ?? "");
+  const [qvApiKey, setQvApiKey] = useState(agent?.apiKey ?? "");
   const [qvSocialLinks, setQvSocialLinks] = useState<Record<string, string>>({
     website: (agent?.socialLinks as Record<string, string>)?.website ?? "",
     facebook: (agent?.socialLinks as Record<string, string>)?.facebook ?? "",
@@ -357,6 +358,7 @@ export default function AgentDetailPage({
       setQvAdvancedMode(false);
     } else if (id === "webhook") {
       setQvWebhookUrl(agent!.webhookUrl ?? "");
+      setQvApiKey(agent!.apiKey ?? "");
     } else if (id === "faqs") {
       const existing = faqs.filter((f) => f.agentId === agentId);
       setQvFaqs(existing.map((f) => ({ id: f.id, question: f.question, answer: f.answer })));
@@ -511,7 +513,7 @@ export default function AgentDetailPage({
   }
 
   function handleSaveWebhook() {
-    updateAgent(agent!.id, { webhookUrl: qvWebhookUrl.trim() || null });
+    updateAgent(agent!.id, { webhookUrl: qvWebhookUrl.trim() || null, apiKey: qvApiKey.trim() || null });
     setActiveQuickView(null);
     toast.success("Webhook guardado");
   }
@@ -1500,6 +1502,12 @@ export default function AgentDetailPage({
                         <input type="url" value={qvWebhookUrl} onChange={(e) => setQvWebhookUrl(e.target.value)}
                           placeholder="https://tu-servidor.com/webhook"
                           className="w-full bg-white/[0.06] rounded-xl px-4 py-3 text-[15px] text-white/90 placeholder:text-white/20 ring-1 ring-white/[0.10] focus:ring-orange-500/50 focus:outline-none" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[13px] text-white/50">API Key para autenticación en workflows</p>
+                        <input type="text" value={qvApiKey} onChange={(e) => setQvApiKey(e.target.value)}
+                          placeholder="sk-..."
+                          className="w-full bg-white/[0.06] rounded-xl px-4 py-3 text-[15px] text-white/90 placeholder:text-white/20 ring-1 ring-white/[0.10] focus:ring-orange-500/50 focus:outline-none font-mono" />
                       </div>
                       <button onClick={handleSaveWebhook}
                         className="w-full rounded-xl py-3 text-[16px] font-semibold bg-orange-500 text-white active:bg-orange-600 transition-all">

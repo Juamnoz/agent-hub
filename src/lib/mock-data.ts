@@ -110,6 +110,7 @@ export interface Agent {
   knowledgeBase?: string;
   catalogs?: Array<{ title: string; url: string; fileName: string }> | null;
   webhookUrl?: string | null;
+  apiKey?: string | null;
   adminPhone?: string | null;
   escalationPhone?: string | null;
   trainedAt?: string | null;

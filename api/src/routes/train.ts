@@ -213,6 +213,7 @@ trainRoute.post("/:agentId/train/deploy", async (c) => {
     mode: agent.status === "active" ? "production" : "testing",
     waba_id: (agent as any).whatsappConnection?.wabaId ?? null,
     social_links: agent.socialLinks ?? {},
+    api_key: agent.apiKey ?? null,
     avatar: agent.avatar ?? null,
     faqs: ((agent as any).faqs ?? [])
       .filter((f: any) => f.isActive)

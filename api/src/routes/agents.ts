@@ -84,6 +84,7 @@ agentsRoute.post(
       socialLinks: z.record(z.unknown()).optional(),
       avatar: z.string().optional(),
       webhookUrl: z.string().url().optional(),
+      apiKey: z.string().optional(),
       organizationId: z.string().uuid().optional(),
     })
   ),
@@ -145,6 +146,7 @@ agentsRoute.patch(
       systemPrompt: z.string().optional(),
       knowledgeBase: z.string().optional(),
       webhookUrl: z.string().url().nullable().optional(),
+      apiKey: z.string().nullable().optional(),
       adminPhone: z.string().nullable().optional(),
       escalationPhone: z.string().nullable().optional(),
       trainedAt: z.string().nullable().optional(),

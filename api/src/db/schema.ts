@@ -163,6 +163,7 @@ export const agents = pgTable("agents", {
   systemPrompt: text("system_prompt"),
   knowledgeBase: text("knowledge_base"),
   webhookUrl: text("webhook_url"),
+  apiKey: text("api_key"),
   adminPhone: text("admin_phone"),
   escalationPhone: text("escalation_phone"),
   trainedAt: timestamp("trained_at"),

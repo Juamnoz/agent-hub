@@ -49,6 +49,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
   const [importOpen, setImportOpen] = useState(false);
   const [catalogsOpen, setCatalogsOpen] = useState(false);
   const [catalogUploading, setCatalogUploading] = useState(false);
+  const [catalogDragging, setCatalogDragging] = useState(false);
   const catalogFileRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -493,7 +494,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
 
         {catalogsOpen && (
           <div className="border-t border-border">
-            {/* Upload button */}
+            {/* Upload drop zone */}
             <div className="px-4 pt-3 pb-2">
               <input
                 ref={catalogFileRef}
@@ -503,17 +504,23 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
                 className="hidden"
                 onChange={(e) => { handleCatalogUpload(Array.from(e.target.files ?? [])); e.target.value = ""; }}
               />
-              <button
+              <div
+                onDragOver={(e) => { e.preventDefault(); setCatalogDragging(true); }}
+                onDragLeave={() => setCatalogDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setCatalogDragging(false); handleCatalogUpload(Array.from(e.dataTransfer.files)); }}
                 onClick={() => catalogFileRef.current?.click()}
-                disabled={catalogUploading || catalogs.length >= MAX_CATALOGS}
-                className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-semibold bg-teal-500/10 ring-1 ring-teal-500/20 text-teal-600 dark:text-teal-400 hover:bg-teal-500/15 active:scale-[0.98] transition-all disabled:opacity-50"
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-colors ${
+                  catalogDragging
+                    ? "border-teal-400 bg-teal-50 dark:bg-teal-500/10"
+                    : "border-border hover:border-teal-400/50 hover:bg-teal-500/5"
+                } ${(catalogUploading || catalogs.length >= MAX_CATALOGS) ? "opacity-50 pointer-events-none" : ""}`}
               >
                 {catalogUploading ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Subiendo...</>
+                  <><Loader2 className="h-5 w-5 animate-spin text-teal-500" /><p className="text-[13px] text-teal-600 dark:text-teal-400 mt-1.5 font-medium">Subiendo...</p></>
                 ) : (
-                  <><Upload className="h-4 w-4" /> Subir PDF</>
+                  <><Upload className="h-5 w-5 text-teal-500" /><p className="text-[13px] text-teal-600 dark:text-teal-400 mt-1.5 font-medium">Subir PDF</p><p className="text-[11px] text-muted-foreground/60 mt-0.5">Arrastra archivos aquí o haz clic para seleccionar</p></>
                 )}
-              </button>
+              </div>
               <p className="text-[12px] text-muted-foreground text-center mt-1.5">
                 Sube menús, fichas técnicas o catálogos para que tu agente los use como conocimiento. Máx. 10MB por archivo.
               </p>
@@ -722,7 +729,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
             </div>
             <div className="space-y-2">
               <Label>{t.products.imageUrl}</Label>
-              <ImageUpload value={imageUrl} onChange={setImageUrl} />
+              <ImageUpload value={imageUrl} onChange={setImageUrl} agentId={agentId} token={token} />
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -773,19 +780,32 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
   );
 }
 
-function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+function ImageUpload({ value, onChange, agentId, token }: { value: string; onChange: (url: string) => void; agentId: string; token: string | null }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLocaleStore();
+  const [uploading, setUploading] = useState(false);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const result = ev.target?.result;
-      if (typeof result === "string") onChange(result);
-    };
-    reader.readAsDataURL(file);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("agentId", agentId);
+      const res = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      onChange(data.url);
+    } catch (err: any) {
+      toast.error(err.message || "Error al subir imagen");
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleRemove() {
@@ -811,11 +831,12 @@ function ImageUpload({ value, onChange }: { value: string; onChange: (url: strin
   return (
     <button
       type="button"
-      onClick={() => fileInputRef.current?.click()}
-      className="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-border py-6 text-sm text-muted-foreground hover:border-orange-300 hover:bg-orange-50/50 dark:hover:bg-orange-500/5 transition-colors cursor-pointer"
+      onClick={() => !uploading && fileInputRef.current?.click()}
+      disabled={uploading}
+      className="flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-border py-6 text-sm text-muted-foreground hover:border-orange-300 hover:bg-orange-50/50 dark:hover:bg-orange-500/5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      <Upload className="h-6 w-6 text-muted-foreground/60" />
-      <span className="text-[15px] font-medium">{t.products.imageUrl}</span>
+      {uploading ? <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/60" /> : <Upload className="h-6 w-6 text-muted-foreground/60" />}
+      <span className="text-[15px] font-medium">{uploading ? "Subiendo..." : t.products.imageUrl}</span>
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
     </button>
   );

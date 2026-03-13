@@ -197,8 +197,8 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           agents: state.agents.map((a) => a.id === id ? { ...a, ...updated, ...updates } : a),
           currentAgent: state.currentAgent?.id === id ? { ...state.currentAgent, ...updated, ...updates } : state.currentAgent,
         }));
-      } catch {
-        // API falló — estado local optimista se mantiene
+      } catch (err) {
+        console.error("[updateAgent] API falló:", err);
       }
     }
   },

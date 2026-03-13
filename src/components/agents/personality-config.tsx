@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { useLocaleStore } from "@/stores/locale-store";
 import type { Agent, AlgorithmType, CommunicationRegion, CommunicationRegister } from "@/lib/mock-data";
 import { toast } from "sonner";
@@ -56,7 +57,9 @@ interface PersonalityConfigProps {
 
 export function PersonalityConfig({ agent }: PersonalityConfigProps) {
   const { updateAgent } = useAgentStore();
+  const { token } = useAuthStore();
   const { t } = useLocaleStore();
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   // Persistent draft — auto-saves to localStorage while editing
   const initialDraft = useMemo(() => ({
@@ -185,18 +188,23 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
               {/* Preview */}
               <button
                 type="button"
-                onClick={() => document.getElementById("avatar-file-input")?.click()}
-                className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-neutral-700 dark:bg-neutral-600 group"
+                onClick={() => !avatarUploading && document.getElementById("avatar-file-input")?.click()}
+                disabled={avatarUploading}
+                className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-neutral-700 dark:bg-neutral-600 group disabled:opacity-60 disabled:cursor-not-allowed"
                 title="Subir foto"
               >
-                {avatar ? (
+                {avatarUploading ? (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                ) : avatar ? (
                   <img src={avatar} alt={name} className="h-full w-full object-cover" />
                 ) : (
                   <Bot className="h-6 w-6 text-neutral-400" />
                 )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-[12px] font-semibold">Subir</span>
-                </div>
+                {!avatarUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-[12px] font-semibold">Subir</span>
+                  </div>
+                )}
               </button>
               {/* URL input */}
               <Input
@@ -213,12 +221,27 @@ export function PersonalityConfig({ agent }: PersonalityConfigProps) {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => setAvatar(ev.target?.result as string);
-                reader.readAsDataURL(file);
+                setAvatarUploading(true);
+                try {
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  fd.append("agentId", agent.id);
+                  const res = await fetch("/api/upload-image", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: fd,
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || "Error al subir avatar");
+                  setAvatar(data.url);
+                } catch (err: any) {
+                  toast.error(err.message || "Error al subir avatar");
+                } finally {
+                  setAvatarUploading(false);
+                }
               }}
             />
             <p className="text-[13px] text-muted-foreground">

@@ -24,6 +24,7 @@ function usePageTitle(pathname: string): string {
     "/billing": t.nav.billing,
     "/settings": t.nav.settings,
     "/chats": "Chats",
+    "/calendar": "Calendario",
   };
 
   if (titles[pathname]) return titles[pathname];

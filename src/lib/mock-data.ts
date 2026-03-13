@@ -115,6 +115,12 @@ export interface Agent {
   escalationPhone?: string | null;
   trainedAt?: string | null;
   conversationExamples?: ConversationExample[] | null;
+  // Cal.com integration (populated by Stream 1 backend)
+  calAccessToken?: string | null;
+  calRefreshToken?: string | null;
+  calEventTypeId?: string | null;
+  calBookingUrl?: string | null;
+  calUsername?: string | null;
   messageCount: number;
   faqCount: number;
   productCount: number;
@@ -456,6 +462,30 @@ export const mockAgents: Agent[] = [
     productCount: 3,
     createdAt: "2026-02-10T14:00:00Z",
     updatedAt: "2026-02-10T14:00:00Z",
+  },
+  {
+    id: "agent-004",
+    userId: "user-001",
+    name: "Clínica Salud Bot",
+    hotelName: "Clínica Salud Integral",
+    status: "active",
+    personality: "Asistente amigable para agendar citas médicas.",
+    tone: "friendly",
+    language: "es",
+    whatsappConnected: true,
+    whatsappPhoneNumber: "+52 55 1234 5678",
+    algorithmType: "appointments",
+    communicationStyle: { region: "neutral", register: "professional" },
+    calAccessToken: "mock_cal_token_agent004",
+    calRefreshToken: "mock_cal_refresh_agent004",
+    calEventTypeId: "evt-001",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general",
+    calUsername: "clinica-salud",
+    messageCount: 312,
+    faqCount: 5,
+    productCount: 0,
+    createdAt: "2026-01-20T10:00:00Z",
+    updatedAt: "2026-03-10T09:00:00Z",
   },
 ];
 
@@ -1362,4 +1392,131 @@ export const mockMenuItems: MenuItem[] = [
   { id: "menu-008", agentId: "agent-003", category: "Bebidas", name: "Cerveza artesanal", description: "IPA o Stout local", price: 80, isAvailable: true },
   { id: "menu-009", agentId: "agent-003", category: "Postres", name: "Churros con Chocolate", description: "Seis churros con chocolate caliente", price: 65, isAvailable: true },
   { id: "menu-010", agentId: "agent-003", category: "Postres", name: "Pastel de tres leches", description: "Porción de pastel esponjoso con crema batida", price: 75, isAvailable: true },
+];
+
+// ---------------------------------------------------------------------------
+// Cal.com Bookings (mock — will come from GET /v1/agents/:id/calendar/bookings)
+// ---------------------------------------------------------------------------
+
+export type BookingStatus = "confirmed" | "pending" | "cancelled";
+
+export interface CalBooking {
+  id: string;
+  agentId: string;
+  uid: string;
+  eventType: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  startTime: string; // ISO
+  endTime: string;   // ISO
+  status: BookingStatus;
+  calBookingUrl?: string;
+  notes?: string;
+}
+
+export const mockBookings: CalBooking[] = [
+  {
+    id: "booking-001",
+    agentId: "agent-004",
+    uid: "cal-uid-001",
+    eventType: "Consulta General",
+    clientName: "María García",
+    clientEmail: "maria.garcia@email.com",
+    clientPhone: "+52 55 1111 2222",
+    startTime: "2026-03-13T09:00:00Z",
+    endTime: "2026-03-13T09:30:00Z",
+    status: "confirmed",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-001",
+  },
+  {
+    id: "booking-002",
+    agentId: "agent-004",
+    uid: "cal-uid-002",
+    eventType: "Consulta General",
+    clientName: "Carlos López",
+    clientEmail: "carlos.lopez@email.com",
+    clientPhone: "+52 55 3333 4444",
+    startTime: "2026-03-13T10:00:00Z",
+    endTime: "2026-03-13T10:30:00Z",
+    status: "confirmed",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-002",
+  },
+  {
+    id: "booking-003",
+    agentId: "agent-004",
+    uid: "cal-uid-003",
+    eventType: "Revisión de seguimiento",
+    clientName: "Ana Martínez",
+    clientEmail: "ana.martinez@email.com",
+    startTime: "2026-03-14T11:00:00Z",
+    endTime: "2026-03-14T11:30:00Z",
+    status: "pending",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-003",
+  },
+  {
+    id: "booking-004",
+    agentId: "agent-004",
+    uid: "cal-uid-004",
+    eventType: "Consulta General",
+    clientName: "Roberto Sánchez",
+    clientEmail: "roberto.sanchez@email.com",
+    clientPhone: "+52 55 5555 6666",
+    startTime: "2026-03-17T09:00:00Z",
+    endTime: "2026-03-17T09:30:00Z",
+    status: "confirmed",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-004",
+  },
+  {
+    id: "booking-005",
+    agentId: "agent-004",
+    uid: "cal-uid-005",
+    eventType: "Revisión de seguimiento",
+    clientName: "Lucía Hernández",
+    clientEmail: "lucia.hernandez@email.com",
+    clientPhone: "+52 55 7777 8888",
+    startTime: "2026-03-17T10:30:00Z",
+    endTime: "2026-03-17T11:00:00Z",
+    status: "cancelled",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-005",
+    notes: "Canceló por viaje",
+  },
+  {
+    id: "booking-006",
+    agentId: "agent-004",
+    uid: "cal-uid-006",
+    eventType: "Consulta General",
+    clientName: "Diego Ramírez",
+    clientEmail: "diego.ramirez@email.com",
+    startTime: "2026-03-19T15:00:00Z",
+    endTime: "2026-03-19T15:30:00Z",
+    status: "confirmed",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-006",
+  },
+  {
+    id: "booking-007",
+    agentId: "agent-004",
+    uid: "cal-uid-007",
+    eventType: "Consulta General",
+    clientName: "Sofía Torres",
+    clientEmail: "sofia.torres@email.com",
+    clientPhone: "+52 55 9999 0000",
+    startTime: "2026-03-20T09:00:00Z",
+    endTime: "2026-03-20T09:30:00Z",
+    status: "pending",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-007",
+  },
+  {
+    id: "booking-008",
+    agentId: "agent-004",
+    uid: "cal-uid-008",
+    eventType: "Revisión de seguimiento",
+    clientName: "Fernando Cruz",
+    clientEmail: "fernando.cruz@email.com",
+    clientPhone: "+52 55 1122 3344",
+    startTime: "2026-03-24T14:00:00Z",
+    endTime: "2026-03-24T14:30:00Z",
+    status: "confirmed",
+    calBookingUrl: "https://cal.com/clinica-salud/consulta-general/booking/cal-uid-008",
+  },
 ];

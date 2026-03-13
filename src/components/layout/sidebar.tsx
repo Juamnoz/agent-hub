@@ -24,6 +24,7 @@ import {
   Building2,
   Lock,
   ChevronLeft,
+  Calendar,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -173,6 +174,11 @@ export function Sidebar() {
   const isPanelActive = pathname === "/panel" || pathname.startsWith("/panel/");
   const isAgentsActive = pathname === "/agents" || pathname.startsWith("/agents/");
   const isChatsActive = pathname === "/chats" || pathname.startsWith("/chats/");
+  const isCalendarActive = pathname === "/calendar" || pathname.startsWith("/calendar/");
+
+  const hasAppointmentsAgent = agents.some(
+    (a) => a.algorithmType === "appointments" && !!a.calAccessToken
+  );
 
   const secondaryNavItems = [
     { label: t.nav.billing, href: "/billing", icon: CreditCard },
@@ -184,9 +190,15 @@ export function Sidebar() {
         { label: "Panel", href: "/panel", icon: LayoutDashboard, active: isPanelActive },
         { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
         { label: "Chats", href: "/chats", icon: MessagesSquare, active: isChatsActive },
+        ...(hasAppointmentsAgent
+          ? [{ label: "Calendario", href: "/calendar", icon: Calendar, active: isCalendarActive }]
+          : []),
       ]
     : [
         { label: t.nav.agents, href: "/agents", icon: Bot, active: isAgentsActive },
+        ...(hasAppointmentsAgent
+          ? [{ label: "Calendario", href: "/calendar", icon: Calendar, active: isCalendarActive }]
+          : []),
       ];
 
   return (

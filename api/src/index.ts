@@ -18,6 +18,7 @@ import analyticsRoute from "./routes/analytics.js";
 import trainRoute from "./routes/train.js";
 import billingRoute from "./routes/billing.js";
 import webhooksRoute from "./routes/webhooks.js";
+import calendarRoute from "./routes/calendar.js";
 
 const app = new Hono();
 
@@ -59,6 +60,8 @@ v1.route("/agents", ordersRoute);
 v1.route("/agents", crmRoute);
 v1.route("/agents", analyticsRoute);
 v1.route("/agents", trainRoute);
+v1.route("/agents", calendarRoute);
+v1.route("/integrations", calendarRoute);
 v1.route("/billing", billingRoute);
 
 // Conversaciones sin prefix /agents/:id (GET /conversations/:id)

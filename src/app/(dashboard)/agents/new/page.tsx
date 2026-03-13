@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   Bot,
@@ -30,12 +30,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AlgorithmType } from "@/lib/mock-data";
+import { CalendarStep } from "@/components/agent-setup/calendar-step";
 
 // ─────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 3; // steps 0–2
+// TOTAL_STEPS es dinámico: 4 si appointments (0-tipo, 1-datos, 2-calendario, 3-éxito)
+//                          3 si otros       (0-tipo, 1-datos, 2-éxito)
 
 type BusinessTypeConfig = {
   key: AlgorithmType;
@@ -119,13 +121,15 @@ const STEP_HEROES: (StepHero | null)[] = [
     title: "Tu agente",
     subtitle: "Dale un nombre y configura los datos básicos",
   },
-  null, // 2 — success screen
-];
-
-const STEP_CTA = [
-  "Continuar",
-  "Crear agente",
-  "", // success step has its own button
+  {
+    Icon: CalendarCheck,
+    circleBg: "bg-blue-100 dark:bg-blue-500/15",
+    iconColor: "text-blue-500",
+    sectionLabel: "Calendario",
+    title: "Conecta tu calendario",
+    subtitle: "Vincula Cal.com para gestionar citas desde WhatsApp",
+  },
+  null, // 3 — success screen (appointments) / unused for others
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -134,6 +138,7 @@ const STEP_CTA = [
 
 export default function NewAgentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addAgent, updateAgent, agents } = useAgentStore();
   const { t } = useLocaleStore();
   const { currentPlan, canAddAgent } = usePlanStore();
@@ -152,6 +157,27 @@ export default function NewAgentPage() {
   const [language, setLanguage] = useState("es");
   const [webhookUrl, setWebhookUrl] = useState("");
 
+  // Step 2 (appointments) — calendario
+  const [calConfigured, setCalConfigured] = useState(false);
+  const [calConnectedFromCallback, setCalConnectedFromCallback] = useState(false);
+
+  // Computed
+  const isAppointments = algorithmType === "appointments";
+  const totalSteps = isAppointments ? 4 : 3;
+  const successStepIdx = isAppointments ? 3 : 2;
+
+  // Inicializar desde URL params tras callback OAuth de Cal.com
+  useEffect(() => {
+    const paramAgentId = searchParams.get("agentId");
+    const calStatus = searchParams.get("cal");
+    if (paramAgentId && calStatus) {
+      setAgentId(paramAgentId);
+      setAlgorithmType("appointments");
+      setStep(2); // paso calendario
+      if (calStatus === "connected") setCalConnectedFromCallback(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Derived
   const businessNameLabel = algorithmType
     ? t.personalityBuilder.hotelNameLabels[
@@ -161,9 +187,6 @@ export default function NewAgentPage() {
       ]
     : t.agents.hotelName;
 
-  // Progress (0 % at step 0, 100 % fully into step 2)
-  const progress = step / (TOTAL_STEPS - 1);
-
   // ── CTA enable condition ────────────────────────────────────
   const atAgentLimit = !canAddAgent(agents.length);
 
@@ -172,7 +195,12 @@ export default function NewAgentPage() {
       ? algorithmType !== null && !atAgentLimit
       : step === 1
       ? name.trim().length > 0 && hotelName.trim().length > 0 && !isCreating
+      : step === 2 && isAppointments
+      ? calConfigured
       : false;
+
+  // CTA labels por paso
+  const stepCta = ["Continuar", "Crear agente", isAppointments ? "Continuar" : "", ""];
 
   // ── Navigation ──────────────────────────────────────────────
   function handleBack() {
@@ -204,15 +232,22 @@ export default function NewAgentPage() {
           await updateAgent(newId, { webhookUrl: webhookUrl.trim() });
         }
         setAgentId(newId);
-        setStep(2);
+        setStep(isAppointments ? 2 : successStepIdx);
       } finally {
         setIsCreating(false);
       }
       return;
     }
+
+    // Step 2 (appointments) → success
+    if (step === 2 && isAppointments) {
+      setStep(3);
+      return;
+    }
   }
 
-  const hero = STEP_HEROES[step];
+  // Hero: para step 2 solo mostramos si es appointments
+  const hero = step === 2 && !isAppointments ? null : STEP_HEROES[step];
 
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
@@ -231,12 +266,12 @@ export default function NewAgentPage() {
             {step === 0 ? "Cancelar" : "Atrás"}
           </button>
           <span className="text-[15px] font-medium text-white/40 tabular-nums">
-            {step + 1} / {TOTAL_STEPS}
+            {step + 1} / {totalSteps}
           </span>
         </div>
         {/* Segmented progress — Apple style: white translucent on dark */}
         <div className="flex gap-1 pb-3 max-w-lg mx-auto">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+          {Array.from({ length: totalSteps }).map((_, i) => (
             <div
               key={i}
               className={`flex-1 h-[3px] rounded-full transition-all duration-300 ${
@@ -431,8 +466,19 @@ export default function NewAgentPage() {
           </div>
         )}
 
-        {/* ── Step 2 — Éxito ───────────────────────────────────── */}
-        {step === 2 && agentId && (
+        {/* ── Step 2 — Calendario (solo appointments) ──────────── */}
+        {step === 2 && isAppointments && agentId && (
+          <CalendarStep
+            agentId={agentId}
+            calConnected={calConnectedFromCallback}
+            onConfigured={(eventTypeId, bookingUrl) => {
+              setCalConfigured(!!(eventTypeId && bookingUrl));
+            }}
+          />
+        )}
+
+        {/* ── Step 2/3 — Éxito ─────────────────────────────────── */}
+        {step === successStepIdx && agentId && (
           <div className="flex flex-col items-center text-center pt-8">
             <style>{`
               @keyframes scaleIn {
@@ -476,7 +522,7 @@ export default function NewAgentPage() {
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 24px)" }}
       >
         <div className="max-w-lg mx-auto space-y-2.5">
-          {step === 2 ? (
+          {step === successStepIdx ? (
             <Button
               onClick={() => router.push(`/agents/${agentId}`)}
               className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
@@ -484,13 +530,24 @@ export default function NewAgentPage() {
               Ir a configurar
             </Button>
           ) : (
-            <Button
-              onClick={handleContinue}
-              disabled={!canContinue}
-              className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
-            >
-              {isCreating ? "Creando..." : STEP_CTA[step]}
-            </Button>
+            <>
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinue}
+                className="w-full h-14 lisa-btn text-white border-0 font-semibold text-[19px] rounded-2xl"
+              >
+                {isCreating ? "Creando..." : stepCta[step]}
+              </Button>
+              {/* En el paso calendario se puede omitir */}
+              {step === 2 && isAppointments && !calConfigured && (
+                <button
+                  onClick={() => setStep(successStepIdx)}
+                  className="w-full text-center text-[14px] text-muted-foreground hover:text-foreground transition-colors py-1"
+                >
+                  Omitir por ahora
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

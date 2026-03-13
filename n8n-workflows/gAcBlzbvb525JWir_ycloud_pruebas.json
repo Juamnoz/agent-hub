@@ -1749,7 +1749,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT ap.escalation_phone, ap.admin_phone, ap.phones_list, ap.agent_id, \n       COALESCE(a.status, 'active') as agent_status\nFROM agent_phones ap\nLEFT JOIN agents a ON a.id::text = ap.agent_id\nWHERE ap.waba_id = '{{ $json.account_id ?? $json.accountId ?? \"\" }}'\nAND ap.agent_id IS NOT NULL\nLIMIT 1;",
+        "query": "SELECT ap.escalation_phone, ap.admin_phone, ap.phones_list, ap.agent_id, \n       COALESCE(a.status, 'active') as agent_status,\n       COALESCE(a.algorithm_type, 'default') as algorithm_type\nFROM agent_phones ap\nLEFT JOIN agents a ON a.id::text = ap.agent_id\nWHERE ap.waba_id = '{{ $json.account_id ?? $json.accountId ?? \"\" }}'\nAND ap.agent_id IS NOT NULL\nLIMIT 1;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
@@ -1766,6 +1766,70 @@
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.algorithm_type }}",
+                    "rightValue": "appointments",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "appointments"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [208, 2240],
+      "id": "switch-algorithm-type-001",
+      "name": "Switch: Algorithm Type"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6LBitbc9szNZ7LDR",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "agent_id": "={{ $json.agent_id }}",
+            "messageText": "={{ $('concatenar mensaje').item.json.messageText }}",
+            "from": "={{ $('concatenar mensaje').item.json.from }}",
+            "wabaId": "={{ $('concatenar mensaje').item.json.wabaId }}",
+            "sessionId": "={{ $('concatenar mensaje').item.json.from + '_' + $json.agent_id }}"
+          },
+          "schema": [
+            { "id": "agent_id", "displayName": "agent_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "messageText", "displayName": "messageText", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "from", "displayName": "from", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "wabaId", "displayName": "wabaId", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "sessionId", "displayName": "sessionId", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [432, 2160],
+      "id": "exec-subwf-citas-001",
+      "name": "Ejecutar Sub-Workflow Citas"
     },
     {
       "parameters": {
@@ -2572,6 +2636,24 @@
     },
     "traer los numeros": {
       "main": [
+        [
+          {
+            "node": "Switch: Algorithm Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Algorithm Type": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Sub-Workflow Citas",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Filtro Modo Pruebas",
@@ -4524,7 +4606,7 @@
       {
         "parameters": {
           "operation": "executeQuery",
-          "query": "SELECT ap.escalation_phone, ap.admin_phone, ap.phones_list, ap.agent_id, \n       COALESCE(a.status, 'active') as agent_status\nFROM agent_phones ap\nLEFT JOIN agents a ON a.id::text = ap.agent_id\nWHERE ap.waba_id = '{{ $json.account_id ?? $json.accountId ?? \"\" }}'\nAND ap.agent_id IS NOT NULL\nLIMIT 1;",
+          "query": "SELECT ap.escalation_phone, ap.admin_phone, ap.phones_list, ap.agent_id, \n       COALESCE(a.status, 'active') as agent_status,\n       COALESCE(a.algorithm_type, 'default') as algorithm_type\nFROM agent_phones ap\nLEFT JOIN agents a ON a.id::text = ap.agent_id\nWHERE ap.waba_id = '{{ $json.account_id ?? $json.accountId ?? \"\" }}'\nAND ap.agent_id IS NOT NULL\nLIMIT 1;",
           "options": {}
         },
         "type": "n8n-nodes-base.postgres",
@@ -4541,6 +4623,68 @@
             "name": "Postgres account"
           }
         }
+      },
+      {
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.algorithm_type }}",
+                      "rightValue": "appointments",
+                      "operator": { "type": "string", "operation": "equals" }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "appointments"
+              }
+            ]
+          },
+          "options": { "fallbackOutput": "extra" }
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [208, 2240],
+        "id": "switch-algorithm-type-001",
+        "name": "Switch: Algorithm Type"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "6LBitbc9szNZ7LDR",
+            "mode": "id"
+          },
+          "options": { "waitForSubWorkflow": true },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "agent_id": "={{ $json.agent_id }}",
+              "messageText": "={{ $('concatenar mensaje').item.json.messageText }}",
+              "from": "={{ $('concatenar mensaje').item.json.from }}",
+              "wabaId": "={{ $('concatenar mensaje').item.json.wabaId }}",
+              "sessionId": "={{ $('concatenar mensaje').item.json.from + '_' + $json.agent_id }}"
+            },
+            "schema": [
+              { "id": "agent_id", "displayName": "agent_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+              { "id": "messageText", "displayName": "messageText", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+              { "id": "from", "displayName": "from", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+              { "id": "wabaId", "displayName": "wabaId", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+              { "id": "sessionId", "displayName": "sessionId", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [432, 2160],
+        "id": "exec-subwf-citas-001",
+        "name": "Ejecutar Sub-Workflow Citas"
       },
       {
         "parameters": {
@@ -5347,6 +5491,24 @@
       },
       "traer los numeros": {
         "main": [
+          [
+            {
+              "node": "Switch: Algorithm Type",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Algorithm Type": {
+        "main": [
+          [
+            {
+              "node": "Ejecutar Sub-Workflow Citas",
+              "type": "main",
+              "index": 0
+            }
+          ],
           [
             {
               "node": "Filtro Modo Pruebas",

@@ -173,6 +173,11 @@ export const agents = pgTable("agents", {
   messageCount: integer("message_count").notNull().default(0),
   faqCount: integer("faq_count").notNull().default(0),
   productCount: integer("product_count").notNull().default(0),
+  calAccessToken: text("cal_access_token"),
+  calRefreshToken: text("cal_refresh_token"),
+  calEventTypeId: text("cal_event_type_id"),
+  calBookingUrl: text("cal_booking_url"),
+  calUsername: text("cal_username"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -1,0 +1,600 @@
+{
+  "name": "LISA - Appointments Sub-workflow",
+  "nodes": [
+    {
+      "id": "appt-trigger-001",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "appt-get-agent-data-001",
+      "name": "Obtener datos agente citas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [460, 300],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT cal_booking_url, cal_username, prompt\nFROM agents\nWHERE id = '{{ $json.agent_id }}'\nLIMIT 1;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CKPxQ5aeL7WnRpPE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "appt-get-prompt-001",
+      "name": "Obtener prompt agente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [680, 300],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT prompt FROM agent_prompts WHERE agent_id = '{{ $('When Executed by Another Workflow').item.json.agent_id }}' LIMIT 1;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CKPxQ5aeL7WnRpPE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "appt-set-context-001",
+      "name": "Preparar contexto",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 300],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ctx-001",
+              "name": "cal_booking_url",
+              "value": "={{ $('Obtener datos agente citas').item.json.cal_booking_url }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-002",
+              "name": "agent_prompt",
+              "value": "={{ $('Obtener prompt agente').item.json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-003",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.messageText }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-004",
+              "name": "phone",
+              "value": "={{ $('When Executed by Another Workflow').item.json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-005",
+              "name": "agent_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-006",
+              "name": "sessionId",
+              "value": "={{ $('When Executed by Another Workflow').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-007",
+              "name": "wabaId",
+              "value": "={{ $('When Executed by Another Workflow').item.json.wabaId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-classify-intent-001",
+      "name": "Clasificar Intent Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Eres un clasificador de intenciones. Analiza el mensaje del usuario y responde ÚNICAMENTE con una de estas palabras exactas (sin puntuación ni explicación):\\n- AGENDAR (si el usuario quiere crear, pedir, reservar o agendar una cita)\\n- CANCELAR (si el usuario quiere cancelar, eliminar o anular una cita existente)\\n- CONSULTAR (si el usuario pregunta sobre disponibilidad, horarios, fechas o citas existentes)\\n- OTRO (cualquier otro tipo de mensaje)\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.message }}\"\n    }\n  ],\n  \"max_tokens\": 10,\n  \"temperature\": 0\n}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-header-cred",
+          "name": "OpenAI Header"
+        }
+      }
+    },
+    {
+      "id": "appt-extract-intent-001",
+      "name": "Extraer intent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 300],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "intent-001",
+              "name": "intent",
+              "value": "={{ $json.choices[0].message.content.trim().toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-002",
+              "name": "cal_booking_url",
+              "value": "={{ $('Preparar contexto').item.json.cal_booking_url }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-003",
+              "name": "agent_prompt",
+              "value": "={{ $('Preparar contexto').item.json.agent_prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-004",
+              "name": "message",
+              "value": "={{ $('Preparar contexto').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-005",
+              "name": "phone",
+              "value": "={{ $('Preparar contexto').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-006",
+              "name": "wabaId",
+              "value": "={{ $('Preparar contexto').item.json.wabaId }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-007",
+              "name": "agent_id",
+              "value": "={{ $('Preparar contexto').item.json.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "intent-008",
+              "name": "sessionId",
+              "value": "={{ $('Preparar contexto').item.json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-switch-intent-001",
+      "name": "Switch por Intent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1560, 300],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "AGENDAR",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AGENDAR"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "CANCELAR",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CANCELAR"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intent }}",
+                    "rightValue": "CONSULTAR",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CONSULTAR"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      }
+    },
+    {
+      "id": "appt-msg-agendar-001",
+      "name": "Mensaje AGENDAR",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1780, 60],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-ag-001",
+              "name": "responseText",
+              "value": "=¡Claro! Puedes agendar tu cita fácilmente aquí 👇\n\n{{ $json.cal_booking_url }}\n\nElige el día y horario que mejor te convenga. ¡Te esperamos!",
+              "type": "string"
+            },
+            {
+              "id": "msg-ag-002",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "msg-ag-003",
+              "name": "wabaId",
+              "value": "={{ $json.wabaId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-msg-cancelar-001",
+      "name": "Mensaje CANCELAR",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1780, 220],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-ca-001",
+              "name": "responseText",
+              "value": "=Entiendo que necesitas cancelar tu cita. Puedes gestionarlo desde el enlace de confirmación que recibiste por email, o accede aquí para ver tus reservas:\n\n{{ $json.cal_booking_url }}\n\n¿Necesitas ayuda con algo más?",
+              "type": "string"
+            },
+            {
+              "id": "msg-ca-002",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "msg-ca-003",
+              "name": "wabaId",
+              "value": "={{ $json.wabaId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-llm-consultar-001",
+      "name": "LLM Consultar Disponibilidad",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 380],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"{{ $json.agent_prompt }}\\n\\nEres un asistente de agenda. El cliente puede agendar su cita en: {{ $json.cal_booking_url }}\\nResponde brevemente sobre disponibilidad e invita al cliente a ver los horarios disponibles en el enlace.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.message }}\"\n    }\n  ],\n  \"max_tokens\": 300,\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-header-cred",
+          "name": "OpenAI Header"
+        }
+      }
+    },
+    {
+      "id": "appt-llm-otro-001",
+      "name": "LLM Respuesta General",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 540],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"{{ $json.agent_prompt }}\\n\\nSi el cliente menciona querer agendar, cancelar o consultar una cita, indícale que puede hacerlo en: {{ $json.cal_booking_url }}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.message }}\"\n    }\n  ],\n  \"max_tokens\": 300,\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openai-header-cred",
+          "name": "OpenAI Header"
+        }
+      }
+    },
+    {
+      "id": "appt-set-consultar-resp-001",
+      "name": "Formatear respuesta CONSULTAR",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2000, 380],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "resp-con-001",
+              "name": "responseText",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "resp-con-002",
+              "name": "phone",
+              "value": "={{ $('Extraer intent').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "resp-con-003",
+              "name": "wabaId",
+              "value": "={{ $('Extraer intent').item.json.wabaId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-set-otro-resp-001",
+      "name": "Formatear respuesta OTRO",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2000, 540],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "resp-otro-001",
+              "name": "responseText",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "resp-otro-002",
+              "name": "phone",
+              "value": "={{ $('Extraer intent').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "resp-otro-003",
+              "name": "wabaId",
+              "value": "={{ $('Extraer intent').item.json.wabaId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-send-wp-agendar-001",
+      "name": "Enviar WA AGENDAR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 60],
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat-api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $vars.YCLOUD_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $json.wabaId }}\",\n  \"to\": \"{{ $json.phone }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.responseText }}\" }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-send-wp-cancelar-001",
+      "name": "Enviar WA CANCELAR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 220],
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat-api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $vars.YCLOUD_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $json.wabaId }}\",\n  \"to\": \"{{ $json.phone }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.responseText }}\" }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-send-wp-consultar-001",
+      "name": "Enviar WA CONSULTAR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 380],
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat-api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $vars.YCLOUD_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $json.wabaId }}\",\n  \"to\": \"{{ $json.phone }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.responseText }}\" }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "appt-send-wp-otro-001",
+      "name": "Enviar WA OTRO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 540],
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat-api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $vars.YCLOUD_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $json.wabaId }}\",\n  \"to\": \"{{ $json.phone }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.responseText }}\" }\n}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [[{ "node": "Obtener datos agente citas", "type": "main", "index": 0 }]]
+    },
+    "Obtener datos agente citas": {
+      "main": [[{ "node": "Obtener prompt agente", "type": "main", "index": 0 }]]
+    },
+    "Obtener prompt agente": {
+      "main": [[{ "node": "Preparar contexto", "type": "main", "index": 0 }]]
+    },
+    "Preparar contexto": {
+      "main": [[{ "node": "Clasificar Intent Cita", "type": "main", "index": 0 }]]
+    },
+    "Clasificar Intent Cita": {
+      "main": [[{ "node": "Extraer intent", "type": "main", "index": 0 }]]
+    },
+    "Extraer intent": {
+      "main": [[{ "node": "Switch por Intent", "type": "main", "index": 0 }]]
+    },
+    "Switch por Intent": {
+      "main": [
+        [{ "node": "Mensaje AGENDAR", "type": "main", "index": 0 }],
+        [{ "node": "Mensaje CANCELAR", "type": "main", "index": 0 }],
+        [{ "node": "LLM Consultar Disponibilidad", "type": "main", "index": 0 }],
+        [{ "node": "LLM Respuesta General", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mensaje AGENDAR": {
+      "main": [[{ "node": "Enviar WA AGENDAR", "type": "main", "index": 0 }]]
+    },
+    "Mensaje CANCELAR": {
+      "main": [[{ "node": "Enviar WA CANCELAR", "type": "main", "index": 0 }]]
+    },
+    "LLM Consultar Disponibilidad": {
+      "main": [[{ "node": "Formatear respuesta CONSULTAR", "type": "main", "index": 0 }]]
+    },
+    "LLM Respuesta General": {
+      "main": [[{ "node": "Formatear respuesta OTRO", "type": "main", "index": 0 }]]
+    },
+    "Formatear respuesta CONSULTAR": {
+      "main": [[{ "node": "Enviar WA CONSULTAR", "type": "main", "index": 0 }]]
+    },
+    "Formatear respuesta OTRO": {
+      "main": [[{ "node": "Enviar WA OTRO", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {}
+}

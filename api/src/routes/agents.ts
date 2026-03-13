@@ -56,7 +56,7 @@ agentsRoute.get("/:id", async (c) => {
 
   if (!agent) return c.json({ message: "Agente no encontrado" }, 404);
 
-  return c.json(agent);
+  return c.json({ ...agent, calConnected: !!agent.calAccessToken });
 });
 
 // POST /agents

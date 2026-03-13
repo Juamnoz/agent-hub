@@ -1,0 +1,395 @@
+{
+  "name": "LISA - Cal.com Webhook Handler",
+  "nodes": [
+    {
+      "id": "calwh-webhook-001",
+      "name": "Webhook Cal.com",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calcom-booking",
+        "options": {}
+      },
+      "webhookId": "calcom-booking-handler-001"
+    },
+    {
+      "id": "calwh-extract-001",
+      "name": "Extraer datos booking",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ext-001",
+              "name": "triggerEvent",
+              "value": "={{ $json.body.triggerEvent }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-002",
+              "name": "bookingId",
+              "value": "={{ $json.body.payload.uid }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-003",
+              "name": "attendeeName",
+              "value": "={{ $json.body.payload.attendees[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-004",
+              "name": "attendeeEmail",
+              "value": "={{ $json.body.payload.attendees[0].email }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-005",
+              "name": "attendeePhone",
+              "value": "={{ $json.body.payload.responses?.phone?.value ?? $json.body.payload.attendees[0].phoneNumber ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-006",
+              "name": "startTime",
+              "value": "={{ $json.body.payload.startTime }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-007",
+              "name": "endTime",
+              "value": "={{ $json.body.payload.endTime }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-008",
+              "name": "eventTitle",
+              "value": "={{ $json.body.payload.title }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-009",
+              "name": "organizerName",
+              "value": "={{ $json.body.payload.organizer.name }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-010",
+              "name": "cancelReason",
+              "value": "={{ $json.body.payload.cancellationReason ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "ext-011",
+              "name": "bookingUrl",
+              "value": "={{ 'https://cal.com/reschedule/' + ($json.body.payload.uid ?? '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-check-phone-001",
+      "name": "Tiene teléfono?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [680, 300],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-phone-001",
+              "leftValue": "={{ $json.attendeePhone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-get-waba-001",
+      "name": "Obtener wabaId del agente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [900, 220],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ap.waba_id\nFROM agent_phones ap\nJOIN agents a ON a.id::text = ap.agent_id\nWHERE a.cal_access_token IS NOT NULL\nLIMIT 1;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "CKPxQ5aeL7WnRpPE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "calwh-switch-event-001",
+      "name": "Switch por evento",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1120, 220],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Extraer datos booking').item.json.triggerEvent }}",
+                    "rightValue": "BOOKING_CREATED",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CREADA"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Extraer datos booking').item.json.triggerEvent }}",
+                    "rightValue": "BOOKING_CANCELLED",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CANCELADA"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Extraer datos booking').item.json.triggerEvent }}",
+                    "rightValue": "BOOKING_RESCHEDULED",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "REAGENDADA"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-msg-creada-001",
+      "name": "Mensaje cita CREADA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 80],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-cr-001",
+              "name": "whatsappMessage",
+              "value": "=✅ ¡Tu cita ha sido confirmada!\n\n📅 *{{ $('Extraer datos booking').item.json.eventTitle }}*\n🕐 {{ DateTime.fromISO($('Extraer datos booking').item.json.startTime).setLocale('es').toFormat(\"cccc dd 'de' LLLL 'a las' h:mm a\") }}\n👤 Con: {{ $('Extraer datos booking').item.json.organizerName }}\n\nTe esperamos. Si necesitas reagendar o cancelar, usa el enlace del email de confirmación.\n\n_¿Tienes alguna pregunta?_",
+              "type": "string"
+            },
+            {
+              "id": "msg-cr-002",
+              "name": "phone",
+              "value": "={{ $('Extraer datos booking').item.json.attendeePhone }}",
+              "type": "string"
+            },
+            {
+              "id": "msg-cr-003",
+              "name": "waba_id",
+              "value": "={{ $('Obtener wabaId del agente').item.json.waba_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-msg-cancelada-001",
+      "name": "Mensaje cita CANCELADA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 240],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-ca-001",
+              "name": "whatsappMessage",
+              "value": "=❌ Tu cita ha sido cancelada.\n\n📅 *{{ $('Extraer datos booking').item.json.eventTitle }}*\n🕐 {{ DateTime.fromISO($('Extraer datos booking').item.json.startTime).setLocale('es').toFormat(\"cccc dd 'de' LLLL 'a las' h:mm a\") }}\n\n{{ $('Extraer datos booking').item.json.cancelReason ? '📝 Motivo: ' + $('Extraer datos booking').item.json.cancelReason + '\\n\\n' : '' }}Si deseas agendar una nueva cita, escríbenos y con gusto te ayudamos. 😊",
+              "type": "string"
+            },
+            {
+              "id": "msg-ca-002",
+              "name": "phone",
+              "value": "={{ $('Extraer datos booking').item.json.attendeePhone }}",
+              "type": "string"
+            },
+            {
+              "id": "msg-ca-003",
+              "name": "waba_id",
+              "value": "={{ $('Obtener wabaId del agente').item.json.waba_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-msg-reagendada-001",
+      "name": "Mensaje cita REAGENDADA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 400],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-re-001",
+              "name": "whatsappMessage",
+              "value": "=🔄 Tu cita ha sido reagendada.\n\n📅 *{{ $('Extraer datos booking').item.json.eventTitle }}*\n🕐 Nueva fecha: {{ DateTime.fromISO($('Extraer datos booking').item.json.startTime).setLocale('es').toFormat(\"cccc dd 'de' LLLL 'a las' h:mm a\") }}\n👤 Con: {{ $('Extraer datos booking').item.json.organizerName }}\n\n¡Te esperamos en la nueva fecha! Si necesitas hacer algún cambio, usa el enlace del email de confirmación.",
+              "type": "string"
+            },
+            {
+              "id": "msg-re-002",
+              "name": "phone",
+              "value": "={{ $('Extraer datos booking').item.json.attendeePhone }}",
+              "type": "string"
+            },
+            {
+              "id": "msg-re-003",
+              "name": "waba_id",
+              "value": "={{ $('Obtener wabaId del agente').item.json.waba_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-send-wp-001",
+      "name": "Enviar WhatsApp confirmacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 240],
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat-api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $vars.YCLOUD_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $json.waba_id }}\",\n  \"to\": \"{{ $json.phone }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.whatsappMessage }}\"\n  }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "calwh-noop-no-phone-001",
+      "name": "Sin teléfono - ignorar",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 440],
+      "parameters": {}
+    },
+    {
+      "id": "calwh-respond-001",
+      "name": "Responder 200 a Cal.com",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 240],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Cal.com": {
+      "main": [[{ "node": "Extraer datos booking", "type": "main", "index": 0 }]]
+    },
+    "Extraer datos booking": {
+      "main": [[{ "node": "Tiene teléfono?", "type": "main", "index": 0 }]]
+    },
+    "Tiene teléfono?": {
+      "main": [
+        [{ "node": "Obtener wabaId del agente", "type": "main", "index": 0 }],
+        [{ "node": "Sin teléfono - ignorar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Obtener wabaId del agente": {
+      "main": [[{ "node": "Switch por evento", "type": "main", "index": 0 }]]
+    },
+    "Switch por evento": {
+      "main": [
+        [{ "node": "Mensaje cita CREADA", "type": "main", "index": 0 }],
+        [{ "node": "Mensaje cita CANCELADA", "type": "main", "index": 0 }],
+        [{ "node": "Mensaje cita REAGENDADA", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mensaje cita CREADA": {
+      "main": [[{ "node": "Enviar WhatsApp confirmacion", "type": "main", "index": 0 }]]
+    },
+    "Mensaje cita CANCELADA": {
+      "main": [[{ "node": "Enviar WhatsApp confirmacion", "type": "main", "index": 0 }]]
+    },
+    "Mensaje cita REAGENDADA": {
+      "main": [[{ "node": "Enviar WhatsApp confirmacion", "type": "main", "index": 0 }]]
+    },
+    "Enviar WhatsApp confirmacion": {
+      "main": [[{ "node": "Responder 200 a Cal.com", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {}
+}

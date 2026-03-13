@@ -682,6 +682,14 @@ export default function AgentDetailPage({
         href: "#",
         onClick: () => openQuickView("webhook"),
       },
+      ...(agent.algorithmType === "appointments" ? [{
+        id: "calendar",
+        title: "Calendario",
+        description: agent.calBookingUrl ? "Cal.com conectado" : "Conecta Cal.com para gestionar citas",
+        done: !!agent.calBookingUrl,
+        href: "#",
+        onClick: () => openQuickView("calendar"),
+      }] : []),
       {
         id: "social",
         title: "Web y redes sociales",

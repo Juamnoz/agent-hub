@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,6 +11,9 @@ import {
   MessageCircle,
   User,
   Bot,
+  Upload,
+  Loader2,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +46,61 @@ const fadeUp = (delay: number) => ({
     delay,
   },
 });
+
+async function parseDocument(file: File): Promise<string> {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".txt") || name.endsWith(".md")) return await file.text();
+  if (name.endsWith(".pdf")) {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pages.push(content.items.map((item: any) => item.str ?? "").join(" "));
+    }
+    return pages.join("\n");
+  }
+  if (name.endsWith(".docx")) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require("mammoth/mammoth.browser");
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+  throw new Error("Formato no soportado. Usa .txt, .pdf, .docx o .md");
+}
+
+function parseExamplesFromText(text: string): { userMessage: string; agentResponse: string }[] {
+  const examples: { userMessage: string; agentResponse: string }[] = [];
+
+  // Try Cliente:/Agente: pairs
+  const pairRegex = /(?:Cliente|Customer|User|Pregunta|P)[:\.\-]\s*(.+?)\n(?:Agente|Agent|Bot|Respuesta|R)[:\.\-]\s*([\s\S]+?)(?=\n(?:Cliente|Customer|User|Pregunta|P)[:\.\-]|$)/gi;
+  let match;
+  while ((match = pairRegex.exec(text)) !== null) {
+    examples.push({ userMessage: match[1].trim(), agentResponse: match[2].trim() });
+  }
+  if (examples.length > 0) return examples;
+
+  // Fallback: lines with "?" are user messages, next line is agent response
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].endsWith("?") && i + 1 < lines.length) {
+      examples.push({ userMessage: lines[i], agentResponse: lines[i + 1] });
+      i++;
+    }
+  }
+  if (examples.length > 0) return examples;
+
+  // Last fallback: pairs of lines
+  for (let i = 0; i + 1 < lines.length; i += 2) {
+    examples.push({ userMessage: lines[i], agentResponse: lines[i + 1] });
+  }
+  return examples;
+}
 
 interface ConversationExample {
   id: string;
@@ -151,6 +209,47 @@ export default function TrainPage({
       conversationExamples: validExamples,
     });
     toast.success(t.agentSettings.settingsSaved);
+  }
+
+  // --- Document drag & drop for conversation examples ---
+  const [draggingExamples, setDraggingExamples] = useState(false);
+  const [uploadingExamples, setUploadingExamples] = useState(false);
+  const examplesFileRef = useRef<HTMLInputElement>(null);
+
+  const processExamplesFile = useCallback(async (file: File) => {
+    setUploadingExamples(true);
+    try {
+      const text = await parseDocument(file);
+      const parsed = parseExamplesFromText(text);
+      if (parsed.length === 0) {
+        toast.error("No se encontraron ejemplos en el documento. Usa formato Cliente:/Agente: o líneas pregunta/respuesta.");
+        return;
+      }
+      setExamples(parsed.map((e) => ({ ...e, id: crypto.randomUUID() })));
+      toast.success(`${parsed.length} ejemplo${parsed.length !== 1 ? "s" : ""} importado${parsed.length !== 1 ? "s" : ""}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al leer el archivo");
+    } finally {
+      setUploadingExamples(false);
+    }
+  }, []);
+
+  const examplesDrag = {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDraggingExamples(true); },
+    onDragEnter: (e: React.DragEvent) => { e.preventDefault(); setDraggingExamples(true); },
+    onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDraggingExamples(false); },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDraggingExamples(false);
+      const file = e.dataTransfer.files[0];
+      if (file) processExamplesFile(file);
+    },
+  };
+
+  function handleExamplesFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processExamplesFile(file);
+    e.target.value = "";
   }
 
   return (
@@ -420,8 +519,21 @@ export default function TrainPage({
       {/* Section 3: Conversation examples */}
       <motion.div
         {...fadeUp(0.24)}
-        className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-4"
+        {...examplesDrag}
+        className={`relative rounded-2xl bg-card ring-1 p-4 space-y-4 transition-all ${draggingExamples ? "ring-2 ring-blue-400/60 bg-blue-500/5" : "ring-border"}`}
       >
+        {draggingExamples && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-blue-500/10 backdrop-blur-[2px]">
+            <Upload className="h-8 w-8 text-blue-400" />
+            <p className="text-[15px] font-semibold text-blue-300">Suelta el documento aquí</p>
+            <p className="text-[12px] text-blue-400/60">.txt · .pdf · .docx · .md</p>
+          </div>
+        )}
+        {uploadingExamples && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/40">
+            <Loader2 className="h-7 w-7 animate-spin text-blue-400" />
+          </div>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-[17px] font-semibold">
@@ -431,16 +543,32 @@ export default function TrainPage({
               Agrega ejemplos de cómo quieres que el agente responda a tus
               clientes. Esto le enseña el tono y estilo.
             </p>
+            <p className="text-[12px] text-muted-foreground/60 mt-1">
+              Arrastra un documento o usa el botón para importar ejemplos
+            </p>
           </div>
-          <Button
-            onClick={addExample}
-            size="sm"
-            variant="outline"
-            className="gap-1.5 shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            Agregar
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <input ref={examplesFileRef} type="file" accept=".txt,.pdf,.docx,.md" className="hidden" onChange={handleExamplesFile} />
+            <Button
+              onClick={() => examplesFileRef.current?.click()}
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={uploadingExamples}
+            >
+              <FileText className="h-4 w-4" />
+              Importar
+            </Button>
+            <Button
+              onClick={addExample}
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              Agregar
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-3">

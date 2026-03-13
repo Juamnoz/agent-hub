@@ -335,7 +335,7 @@ export default function AgentDetailPage({
       clearInterval(progressInterval);
       clearInterval(stepTimer);
       setTrainProgress(100);
-      updateAgent(agentId, { trainedAt: new Date().toISOString(), status: "testing" as any }).catch(() => {});
+      updateAgent(agentId, { trainedAt: new Date().toISOString(), status: "testing" as any, configDirty: false } as any).catch(() => {});
       setTimeout(() => setTrainDone(true), 500);
     }, TRAIN_DURATION);
   }
@@ -389,6 +389,7 @@ export default function AgentDetailPage({
     updateAgent(agent!.id, {
       adminPhone: adminPhoneFull || null,
       escalationPhone: escalationPhoneFull || null,
+      ...(agent!.trainedAt ? { configDirty: true } : {}),
     } as any);
     setActiveQuickView(null);
     toast.success("Teléfonos guardados");
@@ -402,7 +403,8 @@ export default function AgentDetailPage({
     updateAgent(agent!.id, {
       communicationStyle: { region: qvRegion, register: qvRegister, regionTemperature: qvRegionTemp },
       conversationExamples: validExamples,
-    });
+      ...(agent!.trainedAt ? { configDirty: true } : {}),
+    } as any);
     setActiveQuickView(null);
     toast.success("Personalidad guardada");
     if (agent!.trainedAt) {
@@ -504,7 +506,11 @@ export default function AgentDetailPage({
   }
 
   function handleSavePrompt() {
-    updateAgent(agent!.id, { personality: qvPrompt.trim(), systemPrompt: qvPrompt.trim() });
+    updateAgent(agent!.id, {
+      personality: qvPrompt.trim(),
+      systemPrompt: qvPrompt.trim(),
+      ...(agent!.trainedAt ? { configDirty: true } : {}),
+    } as any);
     setActiveQuickView(null);
     toast.success("Prompt guardado");
     if (agent!.trainedAt) {
@@ -519,7 +525,10 @@ export default function AgentDetailPage({
   }
 
   function handleSaveSocial() {
-    updateAgent(agent!.id, { socialLinks: qvSocialLinks });
+    updateAgent(agent!.id, {
+      socialLinks: qvSocialLinks,
+      ...(agent!.trainedAt ? { configDirty: true } : {}),
+    } as any);
     setActiveQuickView(null);
     toast.success("Redes sociales guardadas");
     if (agent!.trainedAt) {
@@ -1032,18 +1041,27 @@ export default function AgentDetailPage({
             <div className="w-full rounded-xl py-3 text-center text-[15px] font-semibold bg-white/6 text-white/25 cursor-not-allowed">
               Completa los pasos para entrenar
             </div>
-          ) : (
+          ) : !agent.trainedAt ? (
             <button
               onClick={handleTrain}
-              className={`w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[16px] font-semibold shadow-sm transition-all ${
-                agent.trainedAt
-                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 active:bg-emerald-500/20"
-                  : "bg-orange-500 text-white active:bg-orange-600"
-              }`}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[16px] font-semibold shadow-sm transition-all bg-orange-500 text-white active:bg-orange-600"
             >
               <Zap className="h-5 w-5" />
-              {agent.trainedAt ? "Re-entrenar agente" : "Entrenar agente"}
+              Entrenar agente
             </button>
+          ) : (agent as any).configDirty ? (
+            <button
+              onClick={handleTrain}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[16px] font-semibold shadow-sm transition-all bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/25 active:bg-amber-500/25"
+            >
+              <Zap className="h-5 w-5" />
+              Re-entrenar agente
+            </button>
+          ) : (
+            <div className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-[15px] font-semibold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 cursor-default select-none">
+              <CheckCircle2 className="h-5 w-5" />
+              Agente entrenado
+            </div>
           )}
         </div>
       </motion.div>
@@ -1730,6 +1748,7 @@ export default function AgentDetailPage({
                                 );
                                 if (agent.trainedAt) {
                                   trainApi.update(agentId, "faqs").catch(console.error);
+                                  updateAgent(agentId, { configDirty: true } as any).catch(console.error);
                                 }
                               } catch (err) {
                                 console.error("Error guardando FAQs:", err);

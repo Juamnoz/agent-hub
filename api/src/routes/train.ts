@@ -258,10 +258,11 @@ trainRoute.post("/:agentId/train/deploy", async (c) => {
     console.error("n8n webhook fetch error:", err);
   }
 
-  // Mark agent as trained
+  // Mark agent as trained and clear dirty flag
+  const now = new Date();
   const [updated] = await db
     .update(agents)
-    .set({ trainedAt: new Date(), updatedAt: new Date() })
+    .set({ trainedAt: now, updatedAt: now, configDirty: false })
     .where(eq(agents.id, agentId))
     .returning();
 

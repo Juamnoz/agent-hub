@@ -337,98 +337,7 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
         </Button>
       </div>
 
-      {/* Product list */}
-      {agentProducts.length === 0 ? (
-        <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col items-center justify-center py-10 text-center px-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-500/15 mb-3">
-            <Package className="h-6 w-6 text-orange-600" />
-          </div>
-          <h3 className="text-[17px] font-semibold mb-1">{t.products.noProductsTitle}</h3>
-          <p className="text-[15px] text-muted-foreground mb-4 max-w-[260px] leading-relaxed">
-            {t.products.noProductsDescription}
-          </p>
-          <Button
-            size="sm"
-            onClick={openNew}
-            className="h-8 rounded-full px-4 text-[15px] font-medium lisa-btn text-white border-0"
-          >
-            {t.products.addFirstProduct}
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          {categories.map((cat) => (
-            <div key={cat}>
-              <p className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider px-0.5 mb-1.5 mt-3 first:mt-0">
-                {cat}
-              </p>
-              {agentProducts
-                .filter((p) => p.category === cat)
-                .map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex items-center gap-3 rounded-2xl bg-card px-3.5 py-3 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-                  >
-                    {/* Thumbnail */}
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/15 overflow-hidden">
-                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="h-10 w-10 object-cover" />
-                      ) : (
-                        <Package className="h-5 w-5 text-orange-600" />
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-[16px] font-semibold leading-tight truncate">{product.name}</p>
-                        <span className="text-[15px] font-bold text-orange-600 shrink-0">${product.price}</span>
-                      </div>
-                      {product.description && (
-                        <p className="text-[14px] text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
-                      )}
-                      {(product.stock != null || product.sku) && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          {product.stock != null && (
-                            <span className="text-[12px] text-muted-foreground">
-                              Stock: <span className="font-medium text-foreground">{product.stock}</span>
-                            </span>
-                          )}
-                          {product.sku && (
-                            <span className="text-[12px] text-muted-foreground">{product.sku}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      <Switch
-                        checked={product.isActive}
-                        onCheckedChange={() => handleToggle(product)}
-                        className="scale-75 origin-right"
-                      />
-                      <button
-                        onClick={() => openEdit(product)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent transition-colors"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Import — collapsible, always at the bottom */}
+      {/* Import — collapsible */}
       <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
         <button
           onClick={() => setImportOpen(!importOpen)}
@@ -649,6 +558,97 @@ export function ProductsEditor({ agentId }: ProductsEditorProps) {
           </div>
         )}
       </div>
+
+      {/* Product list */}
+      {agentProducts.length === 0 ? (
+        <div className="rounded-2xl bg-card ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col items-center justify-center py-10 text-center px-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-500/15 mb-3">
+            <Package className="h-6 w-6 text-orange-600" />
+          </div>
+          <h3 className="text-[17px] font-semibold mb-1">{t.products.noProductsTitle}</h3>
+          <p className="text-[15px] text-muted-foreground mb-4 max-w-[260px] leading-relaxed">
+            {t.products.noProductsDescription}
+          </p>
+          <Button
+            size="sm"
+            onClick={openNew}
+            className="h-8 rounded-full px-4 text-[15px] font-medium lisa-btn text-white border-0"
+          >
+            {t.products.addFirstProduct}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {categories.map((cat) => (
+            <div key={cat}>
+              <p className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider px-0.5 mb-1.5 mt-3 first:mt-0">
+                {cat}
+              </p>
+              {agentProducts
+                .filter((p) => p.category === cat)
+                .map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-3 rounded-2xl bg-card px-3.5 py-3 ring-1 ring-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                  >
+                    {/* Thumbnail */}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/15 overflow-hidden">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="h-10 w-10 object-cover" />
+                      ) : (
+                        <Package className="h-5 w-5 text-orange-600" />
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-[16px] font-semibold leading-tight truncate">{product.name}</p>
+                        <span className="text-[15px] font-bold text-orange-600 shrink-0">${product.price}</span>
+                      </div>
+                      {product.description && (
+                        <p className="text-[14px] text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
+                      )}
+                      {(product.stock != null || product.sku) && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          {product.stock != null && (
+                            <span className="text-[12px] text-muted-foreground">
+                              Stock: <span className="font-medium text-foreground">{product.stock}</span>
+                            </span>
+                          )}
+                          {product.sku && (
+                            <span className="text-[12px] text-muted-foreground">{product.sku}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <Switch
+                        checked={product.isActive}
+                        onCheckedChange={() => handleToggle(product)}
+                        className="scale-75 origin-right"
+                      />
+                      <button
+                        onClick={() => openEdit(product)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent transition-colors"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Add/Edit product dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
